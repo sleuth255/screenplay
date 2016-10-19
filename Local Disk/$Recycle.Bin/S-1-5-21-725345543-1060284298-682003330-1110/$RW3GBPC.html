@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="./script/emby.js"></script>
+	<script type="text/javascript" src="./script/ajax.js"></script>
+	<script type="text/javascript" src="./script/keys.js"></script>	
+	<script type="text/javascript" src="./script/dom.js"></script>	
+	<script type="text/javascript" src="./script/sha1.js"></script>
+	<script type="text/javascript" src="./script/mime.js"></script>
+	<script type="text/javascript" src="./script/guid.js"></script>
+	<script type="text/javascript" src="./script/storage.js"></script>
+	<script type="text/javascript" src="./script/caret.js"></script>
+	<script type="text/javascript" src="./script/message.js"></script>	
+	<script type="text/javascript" src="./script/playerpopup.js"></script>	
+	<script type="text/javascript" src="./script/device.js"></script>
+
+	<script type="text/javascript" src="./script/models/renderer.js"></script>	
+	<script type="text/javascript" src="./script/models/prefs.js"></script>		
+	<script type="text/javascript" src="./script/models/splash.js"></script>		
+	<script type="text/javascript" src="./script/models/server.js"></script>
+	<script type="text/javascript" src="./script/models/user.js"></script>
+	<script type="text/javascript" src="./script/models/home.js"></script>
+	<script type="text/javascript" src="./script/models/collection.js"></script>
+	<script type="text/javascript" src="./script/models/collection.summary.js"></script>
+	<script type="text/javascript" src="./script/models/item.js"></script>
+	<script type="text/javascript" src="./script/models/player.js"></script>
+										
+	<script type="text/javascript">
+		dom.on(document, "DOMContentLoaded", function() {
+			var splash = new Splash();
+			var server = new Server();
+			var user = new User();
+			var home = new Home();						
+			var collection = new Collection();	
+			var summary = new CollectionSummary();	
+			var item = new Item();
+			var player = new Player();
+			var controlsVisible = false;
+			var firstEvent = true;
+			var homeState = null;
+			var summaryState = null;
+			var allItemState = null;
+			var itemState = null;
+									
+			dom.addClass("body", device.bodyClass);
+			
+			dom.on(document, "keydown", function(event) {
+				if (event.which == keys.KEY_RED) {
+					storage.remove("emby.settings.current.server");
+					storage.remove("emby.settings.current.user");
+					storage.remove("emby.settings.servers");	
+					storage.remove("emby.settings.prefs");	
+					location.reload(true);
+				}
+			});
+												
+			dom.on(document, "serverOpened", function(event) {
+				user.load(event.detail); 
+			});
+			
+			dom.on(document, "userAuthenticated", function(event) {
+				home.load();
+			});
+
+			dom.on(document, "userPrefsSelected", function(event) {
+				homeState = event;
+				setHistoryState()
+			});
+
+			dom.on(document, "userViewSelected", function(event) {
+				summaryState = event;
+				setHistoryState(event);
+				summary.load(event.detail);
+			});
+
+			dom.on(document, "userViewMoreSelected", function(event) {	
+				summaryState = event;
+				setHistoryState(event);
+				summary.load(event.detail);
+			});				
+				
+			dom.on(document, "allCollectionSelected", function(event) {	
+				allItemState = event;
+				setHistoryState(event)
+				collection.load(event.detail);
+			});					
+
+			dom.on(document, "mediaItemSelected", function(event) {
+				itemState = event;
+				setHistoryState(event)
+				item.load(event.detail.id);
+			});						
+
+			dom.on(document, "playItem", function(event) {
+				controlsVisible = false;
+				firstEvent = true;
+				player.load(event.detail);
+			});	
+
+			window.addEventListener("popstate", function(event) {
+//				event.stopPropagation();
+//				event.preventDefault();
+				if (dom.exists("#player"))
+					if (firstEvent)
+					{
+						firstEvent = false
+						return
+					}
+					else
+				    {	
+					    player.close()
+					    return;				
+				    }
+	            if (event.state) {
+//					collection.close();
+					switch(event.state.action) {
+						case "home":
+							homeState = true;
+							playerpopup.show({
+								duration: 1000,
+								text: "homePop"
+							});	
+							home.load();
+							break;
+							
+						case "summary":
+							summaryState = true;
+							playerpopup.show({
+								duration: 1000,
+								text: "summaryPop"
+							});	
+							summary.load(summaryState.state);
+							break;	
+							
+						case "all":				
+							allItemState = true;
+							playerpopup.show({
+								duration: 1000,
+								text: "allItemPop"
+							});	
+							collection.load(allItemState.state);
+							break;
+							
+						case "item":
+							itemState = true;
+							playerpopup.show({
+								duration: 1000,
+								text: "itemPop"
+							});	
+							item.load(itemState.state.id);					
+							break;																
+					}
+					homeState = null;
+					summaryState = null;
+					allItemState = null;
+					itemState = null;
+
+				}
+				
+			});	
+			
+			dom.on("#homeLink a", "click", function(event) {	
+				history.pushState({
+					action: "home"
+				}, "home");							
+				collection.close();			
+				home.load();
+			});
+
+			dom.on("#logo", "click", function(event) {			
+				location.reload(true);
+			});
+
+			dom.on("#server", "click", function(event) {
+				server.add();
+			});
+			
+			dom.on("#user", "click", function(event) {
+				user.login();
+			});
+			
+			document.addEventListener("keydown", function(event) 
+			{
+			    if (dom.exists("#screenplaySettings"))
+					return;
+
+				if (dom.exists("#player")) {
+					switch (event.which) {
+				        case keys.KEY_GREEN:
+				        	if (controlsVisible)
+				        	{
+				        	   player.hideControls();
+				        	   controlsVisible = false;
+				        	}
+				        	else
+				        	{
+				        		player.showControls({persist: true});
+				        		controlsVisible = true;
+				        	}
+					        return;
+					    case keys.KEY_RIGHT:
+						    player.skip();
+						    return;
+					    case keys.KEY_LEFT:
+						    player.backskip();
+						    return;
+					    case keys.KEY_PAUSE:
+						    player.pause();
+						    return;
+					    case keys.KEY_PLAY:
+						    player.play();
+						    return;
+					    case keys.KEY_STOP:
+						    player.close();
+						    return;
+					    case keys.KEY_FAST_FWD:
+						    player.fastforward();
+						    return;
+					    case keys.KEY_REWIND:
+						    player.rewind();
+						    return;
+					    case keys.KEY_ESC || keys.KEY.BACK:
+					    	player.close()
+					    	return;
+					    default:
+						    return;
+					}
+				}
+			});
+			
+			dom.on("#view", "mousewheel", function(event) {
+				if (event.deltaY) {
+					this.scrollLeft += event.deltaY;
+				} else {
+					this.scrollLeft -= event.wheelDeltaY;
+				}
+			});	
+								
+			prefs.load();
+			splash.show({
+				duration: 3000,
+				end: function() {
+					server.load();	
+				}
+			});
+
+			function setHistoryState(event)
+			{
+				if (homeState)
+				{
+					history.replaceState({
+						action: "home"
+					}, "home");
+				}
+				else
+				if (summaryState)
+				{
+					playerpopup.show({
+						duration: 1000,
+						text: "summaryState"
+					});	
+					history.pushState({
+						action: "home"
+					}, "home");
+				}
+				else
+				if (allItemState)
+				{
+					playerpopup.show({
+						duration: 1000,
+						text: "allItemState"
+					});	
+					history.pushState({
+						action: "home"
+					}, "home");
+//					event = summaryState
+
+					history.pushState({
+						action: "summary"
+//						id: event.detail.id,
+//						name: event.detail.name,
+//						collectionType: event.detail.collectionType
+					}, "summary");
+
+				}
+				else
+				if (itemState)
+				{
+					playerpopup.show({
+						duration: 1000,
+						text: "itemState"
+					});	
+					history.replaceState({
+						action: "item",					
+						id: event.detail.id		
+					}, "item");
+				}
+				homeState = null;
+				summaryState = null;
+				allItemState = null;
+				itemState = null
+			}
+		});	
+	</script>
+	
+	<link type="text/css" rel="stylesheet" href="./styles/application.css">
+	<link type="text/css" rel="stylesheet" href="./styles/glyphicons.css">	
+</head>
+<body>
+	<div id="poster"></div>
+	<div id="header">
+		<div id="logo">
+			<img src="./images/screenplay-logo-full-small.png"/>
+		</div>
+		<div id="server"></div>
+		<div id="user"></div>
+		<div id="homeLink" style="display: none;"><a href="#" class="home-link"><span class="glyphicon home"></span></a></div>
+	</div>
+	<div id="view"></div>
+	<div id="details"></div>
+</body>
+</html>

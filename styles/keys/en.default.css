@@ -1,0 +1,102 @@
+.key-view {
+	width: 400px;
+	padding: 5px 40px 5px 50px;
+	border-right: 2px solid #555;
+	min-height: 580px;
+}
+
+.key {
+	display: inline-block;
+	padding: 5px;
+	border: 2px solid transparent;
+	color: #fff;
+	margin: 5px;
+	cursor: default;
+	text-decoration: none;	
+	border-radius: 5px;		 	
+}
+
+.key:hover {
+	border: 2px solid rgba(82, 181, 75, 0.5);
+	background: #444;	
+	/*background: linear-gradient(#888, #000);*/
+	box-shadow: 0 0 20px rgba(82, 181, 75, 0.3);	
+}
+
+.key:focus {
+	outline: none;
+	border: 2px solid rgba(82, 181, 75, 0.9);
+	background: #444;			
+	/*background: linear-gradient(#888, #000);*/
+	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);	
+}
+
+.key-set-select, .key-set, .key-actions {
+	text-align: center;	
+}
+
+.key-set {
+	min-height: 384px;	
+}
+
+.key-set .key {
+	width: 40px;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+	font-size: 24px;	
+	overflow: hidden;	
+}
+
+.key-set .key-item-word {
+	font-size: 14px;
+}
+
+.key-set-select {	
+	border: 2px solid #555;	
+	border-radius: 5px;		
+	background: #333;		
+	/*background: linear-gradient(#333, #000);*/	
+}
+
+.key-set-select-item {
+	width: 100px;
+	height: 30px;	
+	text-align: center;
+	line-height: 30px;	
+	font-size: 20px;	
+	margin: 0px 5px;
+	border: none;
+	border-radius: 0px;		
+}
+
+.key-set-select-item:hover {
+	background: #333;			
+	background: linear-gradient(#888, #000);
+	/*box-shadow: 0 0 20px rgba(82, 181, 75, 0.3);*/
+	border: none;
+}
+
+.key-set-select-item:focus {
+	outline: none;
+	background: #333;		
+	/*background: linear-gradient(#888, #000);*/
+	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);
+	border: none;	
+}
+
+.key-set-active {
+	background: #444;		
+	/*background: linear-gradient(#888, #000);*/
+}
+
+.key-action-item {
+	height: 30px;	
+	text-align: center;
+	line-height: 30px;	
+	font-size: 20px;	
+	padding: 5px 10px;
+}
+
+
+

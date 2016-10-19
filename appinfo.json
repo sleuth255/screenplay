@@ -1,0 +1,13 @@
+{
+    "bgColor": "black",
+    "vendor": "The Paradigm Grid",
+    "iconColor": "black",
+    "largeIcon": "images/screenplay icon 440x440.png",
+    "icon": "images/screenplay icon 80x80.png",
+    "main": "index.html",
+    "bgImage": "images/screenplay-logo-full-stacked.png",
+    "id": "theparadigmgrid.screenplay",
+    "title": "screenplay",
+    "type": "web",
+    "version": "1.0.5"
+}
