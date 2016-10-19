@@ -127,6 +127,7 @@ Player.prototype.load = function(data, settings) {
 		});
 	
 //		video.addEventListener("loadedmetadata", function(event) {
+//
 //		});
 
 		video.addEventListener("timeupdate", function(event) {
