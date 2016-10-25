@@ -1,2 +1,2 @@
-# playz-emby
-HTML5 Emby Client for Smart TV's
+# screenplay
+HTML5 Emby Client for WebOS2 & WebOS3 TV's
