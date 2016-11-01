@@ -49,9 +49,6 @@
 			});
 			
 			dom.on(document, "userAuthenticated", function(event) {
-				history.pushState({
-					action: "home"
-				}, "home");
 				user.close();
 				dom.remove("#home")
 				home.load();
@@ -143,7 +140,8 @@
 							break;																
 					}
 				}
-				
+				else
+					home.load()				
 			});	
 			
 			dom.on("#homeLink a", "click", function(event) {	

@@ -503,6 +503,8 @@ Collection.prototype.load = function(data, settings) {
 	}
 	
 	function scrollToIndex(event) {
+		event.stopPropagation()
+		event.preventDefault()
 		var index = event.currentTarget.dataset.index;
 		dom.data("#collectionIndex", "lastFocus", "#collectionIndex a[data-index='" + index + "']");
 		 
