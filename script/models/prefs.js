@@ -27,8 +27,13 @@ function Prefs() {
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.resumeTicks = 0;
-	this.durationTicks = 0;
 	this.prefsVersion = 2;
+	this.interval;
+	this.restartInterval;
+	this.skipTime = 0;
+	this.currentTime = 0;
+	this.firstSkip = true;
+	this.playerRestarting = false;
 };
 
 

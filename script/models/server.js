@@ -99,7 +99,7 @@ Server.prototype.add = function() {
 							nodeName: "div",
 							id: "keyInstructions",
 							className: "key-instructions",
-							text: "Enter your Emby server's IP address below:"
+							text: "Enter your Emby server address and press <Enter>"
 						}, {
 							nodeName: "label",
 							className: "key-label",
@@ -111,8 +111,7 @@ Server.prototype.add = function() {
 							id: "serverUrl",
 							"type": "text",
 							"required": "required",
-//							"value": "your default server IP goes here",
-							"placeholder": "                              (press <Enter> to submit)"
+					        "placeholder": "                    Format: <ip address or FQDN>[:port]",
 						}
 					]	
 				}]					

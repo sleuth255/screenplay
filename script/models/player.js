@@ -11,7 +11,6 @@ Player.prototype.load = function(data, settings) {
 	var self = this;
 	var item = data;
 	var time = 0;
-	var videoStarting = true;
 
 	
 	if (item.VideoType && item.VideoType == "VideoFile") {				
@@ -81,31 +80,6 @@ Player.prototype.load = function(data, settings) {
 
 		
 		video.addEventListener("playing", function(event) {
-			if (prefs.resumeTicks > 0)
-			{
-				//get seconds from ticks
-				var ts = prefs.resumeTicks / 10000000;
-				prefs.resumeTicks = 0;
-
-				//conversion based on seconds
-				var hh = Math.floor( ts / 3600);
-				var mm = Math.floor( (ts % 3600) / 60);
-				var ss = Math.floor(  (ts % 3600) % 60);
-
-				//prepend '0' when needed
-				hh = hh < 10 ? '0' + hh : hh;
-				mm = mm < 10 ? '0' + mm : mm;
-				ss = ss < 10 ? '0' + ss : ss;
-
-				//use it
-				var str = hh + ":" + mm + ":" + ss;
-				playerpopup.show({
-					duration: 2000,
-					text: "Resuming Playback at " + str
-				});	
-//				video.currentTime = Math.floor(ts)
-			}
-			
 			time = Math.floor(event.target.currentTime);	
 			var ticks = time * 10000000;
 
@@ -126,12 +100,10 @@ Player.prototype.load = function(data, settings) {
 			self.close();
 		});
 	
-//		video.addEventListener("loadedmetadata", function(event) {
-//
-//		});
-
 		video.addEventListener("timeupdate", function(event) {
 			// update the time/duration and slider values
+			if (video.currentTime == 0)
+				return;
 			var durhr = Math.floor(video.duration / 3600);
 		    var durmin = Math.floor((video.duration % 3600) / 60);
 			durmin = durmin < 10 ? '0' + durmin : durmin;
@@ -208,19 +180,37 @@ Player.prototype.load = function(data, settings) {
 			var time = video.duration * (seekBar.value / 100);
 
 			// Update the video time
-			video.currentTime = time;
+			prefs.currentTime = time
+			var durhr = Math.floor(video.duration / 3600);
+		    var durmin = Math.floor((video.duration % 3600) / 60);
+			durmin = durmin < 10 ? '0' + durmin : durmin;
+				
+			var curhr = Math.floor(prefs.currentTime / 3600);
+		    var curmin = Math.floor((prefs.currentTime % 3600) / 60);
+			curmin = curmin < 10 ? '0' + curmin : curmin;
+			infoButton.innerHTML = curhr+":"+curmin+"/"+durhr+ ":"+durmin; 
 		});
 
 	
 		// Pause the video when the seek handle is being dragged
 		seekBar.addEventListener("mousedown", function() {
 			video.pause();
+			emby.postActiveEncodingStop()
 			playButton.innerHTML = "Play";
 		});
 
 		// Play the video when the seek handle is dropped
 		seekBar.addEventListener("mouseup", function() {
-			video.play();
+		    var options = {};
+		    options.option = {};
+		    options.option.transmission = {};
+		    options.option.transmission.playTime = {};
+		    options.option.transmission.playTime.start = prefs.currentTime*1000;
+
+		    var node = dom.querySelector("source");
+		    node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+		    video.load();
+		    video.play();
 			playButton.innerHTML = "Pause";
 		});
 
@@ -228,6 +218,37 @@ Player.prototype.load = function(data, settings) {
 			self.showControls({duration: 6000});
 		});
 		
+		if (prefs.resumeTicks > 0)
+		{
+			//get seconds from ticks
+			var ts = prefs.resumeTicks / 10000000;
+			prefs.resumeTicks = 0;
+
+			//conversion based on seconds
+			var hh = Math.floor( ts / 3600);
+			var mm = Math.floor( (ts % 3600) / 60);
+			var ss = Math.floor(  (ts % 3600) % 60);
+
+			//prepend '0' when needed
+			hh = hh < 10 ? '0' + hh : hh;
+			mm = mm < 10 ? '0' + mm : mm;
+			ss = ss < 10 ? '0' + ss : ss;
+
+			//use it
+			var str = hh + ":" + mm + ":" + ss;
+			playerpopup.show({
+				duration: 2000,
+				text: "Resuming Playback at " + str
+			});	
+	        var options = {};
+	        options.option = {};
+	        options.option.transmission = {};
+	        options.option.transmission.playTime = {};
+	        options.option.transmission.playTime.start = Math.floor(ts) * 1000;
+	 
+			var node = dom.querySelector("source");
+            node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+		}
 		video.load();
 		video.play();			
 	}
@@ -259,14 +280,108 @@ Player.prototype.close = function(event) {
 
 Player.prototype.skip = function() {
 	var video = document.getElementById("video");
-	video.currentTime += Math.floor(prefs.fwdSkip);
+	if (prefs.firstSkip)
+	{
+		prefs.firstSkip = false
+		prefs.currentTime = video.currentTime
+		prefs.skipTime = Math.floor(prefs.fwdSkip)
+		emby.postActiveEncodingStop()
+	}
+	else
+		prefs.skipTime += Math.floor(prefs.fwdSkip)
+		
+	//conversion based on seconds
+	var ts = 0;
+	if (prefs.skipTime < 0)
+		ts = prefs.skipTime * -1
+	else
+		ts = prefs.skipTime
+	var mm = Math.floor( (ts % 3600) / 60);
+	var ss = Math.floor(  (ts % 3600) % 60);
+
+	//prepend '0' when needed
+	mm = mm < 10 ? '0' + mm : mm;
+	ss = ss < 10 ? '0' + ss : ss;
+
+	//use it
+	var str = mm + ":" + ss;
+	prefs.skipTime < 0 ? str = "Back skipping " + str : str = "Skipping " + str
+	playerpopup.show({
+		duration: 8000,
+		text: str
+	});	
+
+	if (prefs.playerRestarting)
+		return
+	if (prefs.interval)
+  	    window.clearTimeout(prefs.interval);
+	prefs.interval = window.setTimeout(this.restartAt, 700);
 };
 
 Player.prototype.backskip = function() {
 	var video = document.getElementById("video");
-	video.currentTime -= Math.floor(prefs.backSkip);
+	if (prefs.firstSkip)
+	{
+		prefs.firstSkip = false
+		prefs.currentTime = video.currentTime
+		prefs.skipTime = Math.floor(prefs.backSkip * -1)
+		emby.postActiveEncodingStop()
+	}
+	else
+		prefs.skipTime -= Math.floor(prefs.backSkip)
+		
+	//conversion based on seconds
+	var ts = 0;
+	if (prefs.skipTime < 0)
+		ts = prefs.skipTime * -1
+	else
+		ts = prefs.skipTime
+	var mm = Math.floor( (ts % 3600) / 60);
+	var ss = Math.floor(  (ts % 3600) % 60);
+
+	//prepend '0' when needed
+	mm = mm < 10 ? '0' + mm : mm;
+	ss = ss < 10 ? '0' + ss : ss;
+
+	//use it
+	var str = mm + ":" + ss;
+	prefs.skipTime < 0 ? str = "Back skipping " + str : str = "Skipping " + str
+	playerpopup.show({
+		duration: 2000,
+		text: str
+	});	
+
+	if (prefs.playerRestarting)
+		return
+	if (prefs.interval)
+  	    window.clearTimeout(prefs.interval);
+	prefs.interval = window.setTimeout(this.restartAt, 700);
 };
 
+Player.prototype.restartAt = function(){
+
+	prefs.playerRestarting = true
+	var restartPoint = Math.floor(prefs.currentTime + prefs.skipTime) * 1000
+	if (restartPoint < 0)
+	   restartPoint = 0;
+	var video = document.getElementById("video");
+    var options = {};
+    options.option = {};
+    options.option.transmission = {};
+    options.option.transmission.playTime = {};
+    options.option.transmission.playTime.start = restartPoint;
+
+    var node = dom.querySelector("source");
+    node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+    video.load();
+    video.play();
+    if (prefs.restartInterval)
+    	window.clearTimeout(prefs.restartInterval)
+    prefs.restartInterval = window.setTimeout(function(){
+        prefs.firstSkip = true;
+    }, 1500)
+    prefs.playerRestarting = false
+}
 Player.prototype.play = function() {
 	var video = document.getElementById("video");
 	video.play();

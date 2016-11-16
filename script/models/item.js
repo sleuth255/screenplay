@@ -170,12 +170,10 @@ Item.prototype.load = function(id, settings) {
 
 
 		dom.on("#viewPlay", "click", function(event) {
-			prefs.durationTicks = data.MediaSources[0].RunTimeTicks;
 			prefs.resumeTicks = 0;
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
 		dom.on("#viewResume", "click", function(event) {
-			prefs.durationTicks = data.MediaSources[0].RunTimeTicks;
 			prefs.resumeTicks = data.UserData.PlaybackPositionTicks;
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});

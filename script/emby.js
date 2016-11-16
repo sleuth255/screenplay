@@ -278,14 +278,6 @@ EMBY.prototype.getVideoHlsStreamUrl = function(settings) {
 	var videoCodec = settings.videoCodec || "h264";
 	var audioCodec = settings.audioCodec || "aac";
 
-	var t = ""
-	var startTimeSecs = 0;
-	if (prefs.resumeTicks > 0)
-	{
-		startTimeSecs = Math.floor(prefs.resumeTicks / 10000000);
-		t = "#t=" + startTimeSecs
-	}
-
 	var direct = false;
 	var audioStreamIndex = settings.audioStreamIndex || 1;
 	var videoBitrate = Math.floor(prefs.videoBitrate) ;
@@ -312,7 +304,7 @@ EMBY.prototype.getVideoHlsStreamUrl = function(settings) {
 	return this.settings.ServerUrl + "/videos/" + itemId + "/master.m3u8?static =" + direct + "&deviceId=" + deviceId + "&mediaSourceId=" + itemId +
 	"&videoCodec=" + videoCodec + "&audioCodec=" + audioCodec + "&audioStreamIndex=" + audioStreamIndex + "&videoBitrate=" + videoBitrate + 
 	"&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&maxHeight=" + maxHeight + "&level=" + level +
-	"&clientTime=" + clientTime + "&profile=" + profile + "&api_key=" + this.settings.AccessToken + t;
+	"&clientTime=" + clientTime + "&profile=" + profile + "&api_key=" + this.settings.AccessToken;
 
 };
 
