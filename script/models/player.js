@@ -307,7 +307,7 @@ Player.prototype.skip = function() {
 	var str = mm + ":" + ss;
 	prefs.skipTime < 0 ? str = "Back skipping " + str : str = "Skipping " + str
 	playerpopup.show({
-		duration: 8000,
+		duration: 2000,
 		text: str
 	});	
 
