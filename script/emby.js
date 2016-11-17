@@ -18,7 +18,7 @@ EMBY.prototype.getPublicUsers = function(settings) {
 	ajax.request(settings.server + "/users/public" , {
 		method: "GET",
 		headers: this.headers(),	
-		timeout: device.timout,		 
+		timeout: device.timeout,		 
 		success: function(data) {
 			settings.success(data);
 		},

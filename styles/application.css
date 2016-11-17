@@ -420,7 +420,7 @@ input:hover {
 	opacity: 0.9; 
 }
 
-.playerpopup {
+.playerpopup, .message {
 	position: absolute;
 	right: 200px;
 	top: 100px;
@@ -435,36 +435,22 @@ input:hover {
 	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);		
 }
 
-.message {
-	position: absolute;
-	left: 500px;
-	right: 500px;
-	top: 200px;
-	display: block;
-	font-size: 40px;
-	color: #fff;
-	padding: 20px 10px; 
-	border-radius: 5px;	
-	background: #000;	
-	text-align: center;		
-}
-
 .message-success {
 	border: 2px solid #0f0;
 	/*background: linear-gradient(#000, #030);*/	
-	box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);	
+	box-shadow: 0 0 20px rgba(0, 255, 0, 1.9);	
 }
 
 .message-error {
 	border: 2px solid #f00;
 	/*background: linear-gradient(#000, #300);*/	
-	box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);	
+	box-shadow: 0 0 20px rgba(255, 0, 0, 1.9);	
 }
 
 .message-notice {
 	border: 2px solid #00f;
 	/*background: linear-gradient(#000, #300);*/	
-	box-shadow: 0 0 20px rgba(0, 0, 255, 0.3);	
+	box-shadow: 0 0 20px rgba(0, 0, 255, 1.9);	
 }
 
 .home-view, .collection-view {

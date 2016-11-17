@@ -157,7 +157,7 @@ Server.prototype.add = function() {
 			if (!message.visible()) {
 				message.show({
 					messageType: message.notice,				
-					text: "Attempting to locate server ...",
+					text: "Contacting "+ self.formatServerUrl(value) +"...",
 					persist: true
 				});					
 				self.open(self.formatServerUrl(value), true);
@@ -228,5 +228,7 @@ Server.prototype.formatServerUrl = function(url) {
 		url = url + ":8096";
 	}
 	
+	url = url.replace(/\s+/g,'') // remove whitespace
+	url = url.replace(/[^a-zA-Z0-9/:-]/g,'.') // change any specials to a dot
 	return url;
 };
