@@ -93,6 +93,7 @@
 			});					
 
 			dom.on(document, "mediaItemSelected", function(event) {
+				collection.close()
 				history.pushState({
 					action: "item",					
 					id: event.detail.id		
