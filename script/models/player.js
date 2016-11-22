@@ -53,24 +53,30 @@ Player.prototype.load = function(data, settings) {
 		var node = dom.querySelector("#video");
 		node.setAttribute("crossorigin", "anonymous")
 		node.setAttribute("webkit-playsinline","")
-/*
-		dom.append("#video", {
-			nodeName: "source",
-			src: emby.getVideoStreamUrl({
-				itemId: item.Id,					
-				extension: item.MediaSources[0].Container
-			}),
-			"type": mime.lookup(item.MediaSources[0].Container)
-		});
-*/	
-		dom.append("#video", {
-			nodeName: "source",
-			src: emby.getVideoHlsStreamUrl({
-				itemId: item.Id
-			}),
-			"type": mime.lookup("m3u8")
-		});	
-
+        if (prefs.directPlay == true)
+        {	
+        	var type = item.MediaSources[0].Container
+        	if (type == "mkv")
+        		type = "webm"
+        	dom.append("#video", {
+			    nodeName: "source",
+			    src: emby.getVideoStreamUrl({
+				    itemId: item.Id,					
+				    extension: item.MediaSources[0].Container
+			    }),
+//			    "type": mime.lookup(type)
+		    });
+	    }
+        else
+        {
+		    dom.append("#video", {
+			    nodeName: "source",
+			    src: emby.getVideoHlsStreamUrl({
+				    itemId: item.Id
+			    }),
+			    "type": mime.lookup("m3u8")
+		    });
+        }
 		var video = document.getElementById("video");		
 		var playerRegion = document.getElementById("player");		
 		var playButton = document.getElementById("play-pause");
@@ -100,6 +106,35 @@ Player.prototype.load = function(data, settings) {
 			self.close();
 		});
 	
+		video.addEventListener("loadeddata", function(event) {
+
+			if (prefs.resumeTicks > 0  && prefs.directPlay == true)
+			{
+				//get seconds from ticks
+				ts = prefs.resumeTicks / 10000000;
+				prefs.resumeTicks = 0;
+
+				//conversion based on seconds
+				var hh = Math.floor( ts / 3600);
+				var mm = Math.floor( (ts % 3600) / 60);
+				var ss = Math.floor(  (ts % 3600) % 60);
+
+				//prepend '0' when needed
+				hh = hh < 10 ? '0' + hh : hh;
+				mm = mm < 10 ? '0' + mm : mm;
+				ss = ss < 10 ? '0' + ss : ss;
+
+				//use it
+				var str = hh + ":" + mm + ":" + ss;
+				playerpopup.show({
+					duration: 2000,
+					text: "Resuming Playback at " + str
+				});
+//				video.currentTime = ts
+			}
+			
+		})
+		
 		video.addEventListener("timeupdate", function(event) {
 			// update the time/duration and slider values
 			if (video.currentTime == 0)
@@ -201,16 +236,21 @@ Player.prototype.load = function(data, settings) {
 
 		// Play the video when the seek handle is dropped
 		seekBar.addEventListener("mouseup", function() {
-		    var options = {};
-		    options.option = {};
-		    options.option.transmission = {};
-		    options.option.transmission.playTime = {};
-		    options.option.transmission.playTime.start = prefs.currentTime*1000;
+			if (prefs.directPlay == true)
+				video.currentTime = prefs.currentTime
+			else
+			{	
+		        var options = {};
+		        options.option = {};
+		        options.option.transmission = {};
+		        options.option.transmission.playTime = {};
+		        options.option.transmission.playTime.start = prefs.currentTime*1000;
 
-		    var node = dom.querySelector("source");
-		    node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
-		    video.load();
-		    video.play();
+		        var node = dom.querySelector("source");
+		        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+		        video.load();
+			}
+	        video.play();
 			playButton.innerHTML = "Pause";
 		});
 
@@ -218,7 +258,7 @@ Player.prototype.load = function(data, settings) {
 			self.showControls({duration: 6000});
 		});
 		
-		if (prefs.resumeTicks > 0)
+		if (prefs.resumeTicks > 0  && prefs.directPlay == false)
 		{
 			//get seconds from ticks
 			var ts = prefs.resumeTicks / 10000000;
@@ -250,7 +290,7 @@ Player.prototype.load = function(data, settings) {
             node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
 		}
 		video.load();
-		video.play();			
+		video.play();
 	}
 };
 
@@ -365,16 +405,23 @@ Player.prototype.restartAt = function(){
 	if (restartPoint < 0)
 	   restartPoint = 0;
 	var video = document.getElementById("video");
-    var options = {};
-    options.option = {};
-    options.option.transmission = {};
-    options.option.transmission.playTime = {};
-    options.option.transmission.playTime.start = restartPoint;
+    if (prefs.directPlay == true)
+    {
+    	video.currentTime = Math.floor(prefs.currentTime + prefs.skipTime)
+    }	
+    else
+    {    	
+	    var options = {};
+        options.option = {};
+        options.option.transmission = {};
+        options.option.transmission.playTime = {};
+        options.option.transmission.playTime.start = restartPoint;
 
-    var node = dom.querySelector("source");
-    node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
-    video.load();
-    video.play();
+        var node = dom.querySelector("source");
+        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+        video.load();
+        video.play();
+    }
     if (prefs.restartInterval)
     	window.clearTimeout(prefs.restartInterval)
     prefs.restartInterval = window.setTimeout(function(){
@@ -382,6 +429,7 @@ Player.prototype.restartAt = function(){
     }, 1500)
     prefs.playerRestarting = false
 }
+
 Player.prototype.play = function() {
 	var video = document.getElementById("video");
 	video.play();

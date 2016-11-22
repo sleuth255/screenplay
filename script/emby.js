@@ -252,22 +252,24 @@ EMBY.prototype.getVideoStreamUrl = function(settings) {
 		
 	var itemId = settings.itemId;
 	var deviceId = settings.deviceId || this.settings.SessionInfo.DeviceId;
-	var startTimeTicks = Math.floor(prefs.resumeTicks);
+	var t = ""
+	var startTimeTicks = prefs.resumeTicks / 10000000;
+	if (startTimeTicks)
+		t= "#t=" + startTimeTicks
 	var videoCodec = settings.videoCodec || "h264";
 	var audioCodec = settings.audioCodec || "aac";
 	var videoBitrate = Math.floor(prefs.videoBitrate) || 10000000;
 	var audioBitrate = Math.floor(prefs.audioBitrate) || 128000;
 	var maxAudioChannels = settings.maxAudioChannels || 5;
-	var direct = settings.direct || "false";
-//	var direct = settings.direct || "true";
+	var direct = settings.direct || "true";
 	var extension = settings.extension || "";
 	extension = extension.length > 0 ? "." + extension : extension;
 	
-//	return this.settings.ServerUrl + "/Videos/" + itemId + "/stream" + extension + "?static=" + direct + "&mediaSourceId=" + itemId + "&startTimeTicks=" + startTimeTicks + "&videoBitrate=" + videoBitrate + 
-//	"&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&api_key=" + this.settings.AccessToken;
+	return this.settings.ServerUrl + "/Videos/" + itemId + "/stream" + "?static=" + direct + "&mediaSourceId=" + itemId + "&videoBitrate=" + videoBitrate + 
+	"&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&api_key=" + this.settings.AccessToken + t;
 
-	return this.settings.ServerUrl + "/Videos/" + itemId + "/stream" + extension + "?mediaSourceId=" + itemId + "&videoBitrate=" + videoBitrate + 
-	"&videoCodec=" + videoCodec + "&audioCodec=" + audioCodec + "&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&api_key=" + this.settings.AccessToken;
+//	return this.settings.ServerUrl + "/Videos/" + itemId + "/stream" + extension + "?mediaSourceId=" + itemId + "&videoBitrate=" + videoBitrate + 
+//	"&videoCodec=" + videoCodec + "&audioCodec=" + audioCodec + "&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&api_key=" + this.settings.AccessToken;
 };
 
 EMBY.prototype.getVideoHlsStreamUrl = function(settings) {

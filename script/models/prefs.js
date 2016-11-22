@@ -13,13 +13,15 @@ function Prefs() {
 	this.doViewItem_1_1_click;	
 	this.doViewItem_1_2_click;	
 	this.doViewItem_1_3_click;	
+	this.doViewItem_1_4_click;
 	this.doViewItem_2_0_click;	
 	this.doViewItem_2_1_click;	
 	this.doViewItem_2_2_click;	
 	this.doViewItem_2_3_click;	
 	this.settings = "emby.settings.prefs";
-	this.backSkip = 30;
-	this.fwdSkip = 60;
+	this.backSkip = 15;
+	this.fwdSkip = 30;
+	this.directPlay = false;
 	this.redButton = 1;
 	this.greenButton = 2;
 	this.yellowButton = 0;
@@ -27,7 +29,7 @@ function Prefs() {
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.resumeTicks = 0;
-	this.prefsVersion = 2;
+	this.prefsVersion = 3;
 	this.interval;
 	this.restartInterval;
 	this.skipTime = 0;
@@ -52,7 +54,8 @@ Prefs.prototype.load = function() {
 		this.yellowButton = prefs[6];
 		this.blueButton = prefs[7];
 		this.prefsVersion = prefs[8];
-		if (this.prefsVersion != 2)
+		this.directPlay = prefs[9];
+		if (this.prefsVersion != 3)
 		{
 			playerpopup.show({
 				duration: 4000,
@@ -68,21 +71,22 @@ Prefs.prototype.save = function(){
 	var self = this;
 	var prefs = new Array;
 	
-	prefs.push(this.fwdSkip,this.backSkip, this.videoBitrate, this.audioBitrate, this.redButton, this.greenButton, this.yellowButton, this.blueButton, this.prefsVersion);
+	prefs.push(this.fwdSkip,this.backSkip, this.videoBitrate, this.audioBitrate, this.redButton, this.greenButton, this.yellowButton, this.blueButton, this.prefsVersion, this.directPlay);
 	storage.set(self.settings,prefs);
 };
 
 Prefs.prototype.reset = function(){
 	storage.remove(this.settings);
-	this.backSkip = 30;
-	this.fwdSkip = 60;
+	this.backSkip = 15;
+	this.fwdSkip = 30;
+	this.directPlay = false;
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.redButton = 1;
 	this.greenButton = 2;
 	this.yellowButton = 0;
 	this.blueButton = 0;
-	this.prefsVersion = 2;
+	this.prefsVersion = 3;
 }
 
 Prefs.prototype.clientSettingsClose = function(){
@@ -93,6 +97,7 @@ Prefs.prototype.clientSettingsClose = function(){
 	dom.off("#viewItem_1_1", "click", this.doViewItem_1_1_click);
 	dom.off("#viewItem_1_2", "click", this.doViewItem_1_2_click);
 	dom.off("#viewItem_1_3", "click", this.doViewItem_1_3_click);
+	dom.off("#viewItem_1_4", "click", this.doViewItem_1_4_click);
 	dom.off("#viewItem_2_0", "click", this.doViewItem_2_0_click);
 	dom.off("#viewItem_2_1", "click", this.doViewItem_2_1_click);
 	dom.off("#viewItem_2_2", "click", this.doViewItem_2_2_click);
@@ -127,7 +132,7 @@ Prefs.prototype.clientSettings = function(){
 
 	
 	var limit = 5;
-	var rowCount = 3;
+	var rowCount = 4;
 	var columnCount = 2;		
 	var currentColumn = 0;
 	var currentRow = 0;
@@ -227,6 +232,13 @@ Prefs.prototype.clientSettings = function(){
 	    td.innerHTML = '<input style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" id ="viewItem_1_3" class="viewItem" size="4" type="text" name="audiorate" value="'+ self.audioBitrate + '"/>';
 	    td = tr.insertCell(-1);
         td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+	    tr = tbl.insertRow(-1);
+	    td = tr.insertCell(-1);
+	    td.appendChild(document.createTextNode('Direct Play:'));
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '<input style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" id ="viewItem_1_4" class="viewItem" size=1 type="text" name="directPlay"/>';
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);
 
 	    tbl  = document.createElement('table');
@@ -242,7 +254,7 @@ Prefs.prototype.clientSettings = function(){
 	    tbl.style.padding = '25px';
 	    tr = tbl.insertRow();
 	    td = tr.insertCell();
-	    td.innerHTML = '<button id ="viewItem_1_4" class="settings-submit">Update</button>';
+	    td.innerHTML = '<button id ="viewItem_1_5" class="settings-submit">Update</button>';
 	    body.appendChild(tbl);
 	    
 	    // Create Column 2 Settings
@@ -285,6 +297,10 @@ Prefs.prototype.clientSettings = function(){
 	    body.appendChild(tbl);
 	    
     
+	    if (this.directPlay)
+	        dom.querySelector("#viewItem_1_4").value = 'On'
+	    else    	
+	        dom.querySelector("#viewItem_1_4").value = 'Off'
 	    dom.querySelector("#viewItem_2_0").selectedIndex = this.redButton;
 	    dom.querySelector("#viewItem_2_1").selectedIndex = this.greenButton
 	    dom.querySelector("#viewItem_2_2").selectedIndex = this.yellowButton
@@ -296,6 +312,7 @@ Prefs.prototype.clientSettings = function(){
 		this.doViewItem_1_1_click = dom.on("#viewItem_1_1", "click", doViewItem_1_1_click)
 		this.doViewItem_1_2_click = dom.on("#viewItem_1_2", "click", doViewItem_1_2_click)
 		this.doViewItem_1_3_click = dom.on("#viewItem_1_3", "click", doViewItem_1_3_click)
+		this.doViewItem_1_4_click = dom.on("#viewItem_1_4", "click", doViewItem_1_4_click)
 		this.doViewItem_2_0_click = dom.on("#viewItem_2_0", "click", doViewItem_2_0_click)
 		this.doViewItem_2_1_click = dom.on("#viewItem_2_1", "click", doViewItem_2_1_click)
 		this.doViewItem_2_2_click = dom.on("#viewItem_2_2", "click", doViewItem_2_2_click)
@@ -313,16 +330,22 @@ Prefs.prototype.clientSettings = function(){
 		self.backSkip = dom.querySelector("#viewItem_1_1").value;
 		self.videoBitrate = dom.querySelector("#viewItem_1_2").value;
 		self.audioBitrate = dom.querySelector("#viewItem_1_3").value;
+		var str = dom.querySelector("#viewItem_1_4").value;
+		str = str.replace(/\s+/g,'')
+		if (str == 'On')
+			self.directPlay = true;
+		else
+			self.directPlay = false;
 		self.redButton = dom.querySelector("#viewItem_2_0").selectedIndex;
 		self.greenButton = dom.querySelector("#viewItem_2_1").selectedIndex;
 		self.yellowButton = dom.querySelector("#viewItem_2_2").selectedIndex;
 		self.blueButton = dom.querySelector("#viewItem_2_3").selectedIndex;
 		playerpopup.show({
 			duration: 1000,
-			text: "Settings changed"
+			text: "Settings changed" 
 		});	
 		self.save();
-		dom.querySelector("#viewItem_1_4").focus();
+		dom.querySelector("#viewItem_1_5").focus();
 		currentColumn = 1;
 		currentRow = 4;
 	}
@@ -353,6 +376,21 @@ Prefs.prototype.clientSettings = function(){
 		highlight("#viewItem_1_3")
 		settingsItemfocus = true;
 	}
+	
+	function doViewItem_1_4_click (event){
+		var node = dom.querySelector("#viewItem_1_4")
+		node.blur()
+		currentColumn = 1
+		currentRow = 4
+		highlight("#viewItem_1_4")
+		settingsItemfocus = true;
+		var str = node.value;
+		str = str.replace(/\s+/g,'')
+		if (str == "On")
+			node.value = "Off"
+		else
+			node.value = "On"
+    }
 	
 	function doViewItem_2_0_click (event){
 		currentColumn = 2
@@ -412,7 +450,7 @@ function navigation(event) {
 /*	    	playerpopup.show({
 	    		duration: 1000,
 	    		text: event.which
-	    	});*/	
+	    	});	*/
 	    switch (event.which) {
 			case keys.KEY_LEFT: 
 			    currentRow = 0;
@@ -450,6 +488,16 @@ function navigation(event) {
 					currentRow = 0;
 				break;		
 			default:
+			    if (currentHighlight == "#viewItem_1_4")
+			    {
+					var node = dom.querySelector("#viewItem_1_4")
+					var str = node.value;
+					str = str.replace(/\s+/g,'')
+					if (str == 'On')
+						node.value = "Off"
+					else
+						node.value = "On"
+			    }
 				return;
 		}
 		highlight("#viewItem_"+currentColumn+"_"+currentRow)
@@ -477,9 +525,9 @@ function navigation(event) {
 	    }
 		if (updateFocus)
 		{
-			dom.querySelector("#viewItem_1_4").focus()
-			currentHighlight = "#viewItem_1_4"
-			dom.addClass("#viewItem_1_4","viewItem_highlight");
+			dom.querySelector("#viewItem_1_5").focus()
+			currentHighlight = "#viewItem_1_5"
+			dom.addClass("#viewItem_1_5","viewItem_highlight");
 			updateFocus = false;
 			return;
 		}
@@ -489,17 +537,17 @@ function navigation(event) {
 		else
 			dom.querySelector("#viewItem_0_0").blur();
 
-		if (query == "#viewItem_1_4")
-			dom.querySelector("#viewItem_1_4").focus();
+		if (query == "#viewItem_1_5")
+			dom.querySelector("#viewItem_1_5").focus();
 		else
-			dom.querySelector("#viewItem_1_4").blur();
+			dom.querySelector("#viewItem_1_5").blur();
 		
 		dom.addClass(query,"viewItem_highlight");
 		currentHighlight = query;
 	}
 
 	function focusHandler(){
-		if (currentHighlight == "#viewItem_1_4" || currentHighlight == "#viewItem_0_0" || currentHighlight == ".home-link")
+		if (currentHighlight == "#viewItem_1_4" || currentHighlight == "#viewItem_1_5" || currentHighlight == "#viewItem_0_0" || currentHighlight == ".home-link")
 		{
 			dom.querySelector(currentHighlight).click();
 			return;
