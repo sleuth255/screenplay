@@ -14,6 +14,7 @@ function Prefs() {
 	this.doViewItem_1_2_click;	
 	this.doViewItem_1_3_click;	
 	this.doViewItem_1_4_click;
+	this.doViewItem_1_5_click;
 	this.doViewItem_2_0_click;	
 	this.doViewItem_2_1_click;	
 	this.doViewItem_2_2_click;	
@@ -98,6 +99,7 @@ Prefs.prototype.clientSettingsClose = function(){
 	dom.off("#viewItem_1_2", "click", this.doViewItem_1_2_click);
 	dom.off("#viewItem_1_3", "click", this.doViewItem_1_3_click);
 	dom.off("#viewItem_1_4", "click", this.doViewItem_1_4_click);
+	dom.off("#viewItem_1_5", "click", this.doViewItem_1_5_click);
 	dom.off("#viewItem_2_0", "click", this.doViewItem_2_0_click);
 	dom.off("#viewItem_2_1", "click", this.doViewItem_2_1_click);
 	dom.off("#viewItem_2_2", "click", this.doViewItem_2_2_click);
@@ -313,6 +315,7 @@ Prefs.prototype.clientSettings = function(){
 		this.doViewItem_1_2_click = dom.on("#viewItem_1_2", "click", doViewItem_1_2_click)
 		this.doViewItem_1_3_click = dom.on("#viewItem_1_3", "click", doViewItem_1_3_click)
 		this.doViewItem_1_4_click = dom.on("#viewItem_1_4", "click", doViewItem_1_4_click)
+		this.doViewItem_1_5_click = dom.on("#viewItem_1_5", "click", doViewItem_1_5_click)
 		this.doViewItem_2_0_click = dom.on("#viewItem_2_0", "click", doViewItem_2_0_click)
 		this.doViewItem_2_1_click = dom.on("#viewItem_2_1", "click", doViewItem_2_1_click)
 		this.doViewItem_2_2_click = dom.on("#viewItem_2_2", "click", doViewItem_2_2_click)
@@ -391,6 +394,12 @@ Prefs.prototype.clientSettings = function(){
 		else
 			node.value = "On"
     }
+	
+	function doViewItem_1_5_click (event){
+		currentColumn = 1
+		currentRow = 5
+		highlight("#viewItem_1_5")
+	}
 	
 	function doViewItem_2_0_click (event){
 		currentColumn = 2
