@@ -69,7 +69,7 @@ Home.prototype.load = function() {
 		
 	function displayUserViews(data) {
 		var limit = 5;
-		var rowCount = 6;
+		var rowCount = 12;
 		var columnCount = 1;		
 		var currentColumn = 0;
 		
@@ -80,6 +80,9 @@ Home.prototype.load = function() {
 				(item.CollectionType == "tvshows") ||
 				(item.CollectionType == null)
 		});
+		
+		if (data.Items.length > 11)
+			data.Items.length = 11;
 		
 		self.total += data.Items.length;
 		columnCount =  Math.ceil(data.Items.length / rowCount);
@@ -158,7 +161,7 @@ Home.prototype.load = function() {
 
 // Settings logic
 		limit = 5;
-		rowCount = 6;
+		rowCount = 12;
 		columnCount = 1;		
 		currentColumn = 0;
 		var column = Math.floor(idx/rowCount);
