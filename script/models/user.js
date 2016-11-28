@@ -194,7 +194,7 @@ User.prototype.login = function() {
 							id: "password",
 							"type": "password",
 //							"value": "put your default password here",
-							"required": "required",
+//							"required": "required",
 							"placeholder": "                              (press <Enter> to submit)"
 						}]	
 				}]					
