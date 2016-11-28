@@ -81,8 +81,8 @@ Home.prototype.load = function() {
 				(item.CollectionType == null)
 		});
 		
-		if (data.Items.length > 11)
-			data.Items.length = 11;
+		if (data.Items.length > (rowCount-1))
+			data.Items.length = (rowCount-1);
 		
 		self.total += data.Items.length;
 		columnCount =  Math.ceil(data.Items.length / rowCount);
@@ -161,7 +161,6 @@ Home.prototype.load = function() {
 
 // Settings logic
 		limit = 5;
-		rowCount = 12;
 		columnCount = 1;		
 		currentColumn = 0;
 		var column = Math.floor(idx/rowCount);
