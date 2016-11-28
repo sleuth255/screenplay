@@ -170,6 +170,8 @@
 			});
 			
 			dom.on("#user", "click", function(event) {
+				event.stopPropagation()
+				event.preventDefault()
 				user.login();
 			});
 			
