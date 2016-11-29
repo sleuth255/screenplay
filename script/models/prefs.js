@@ -459,7 +459,7 @@ function navigation(event) {
 /*	    	playerpopup.show({
 	    		duration: 1000,
 	    		text: event.which
-	    	});	*/
+	    	});*/	
 	    switch (event.which) {
 			case keys.KEY_LEFT: 
 			    currentRow = 0;

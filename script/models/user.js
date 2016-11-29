@@ -138,6 +138,8 @@ User.prototype.authenticate = function(data) {
 
 User.prototype.login = function() {
 	var self = this;
+	var lastFocus = "#keyUser0"
+	dom.remove("#home")
 	
 	dom.append("body", {
 		nodeName: "div",
@@ -241,27 +243,33 @@ User.prototype.login = function() {
 		dom.addClass(this, "key-user-selected");
 	});
 	dom.on("#keyForm", "submit", enterPress, false);
-	this.lostfocus = dom.on("body", "keydown", lostFocus);	
 	dom.on(".key-user", "keydown", function(event) {
 		switch (event.which) {
 		case keys.KEY_LEFT: 
 			if (idx  == 0){idx = lastidx} else idx--;
 			document.getElementById("keyUser" + idx).focus();
+			lastFocus = "#keyUser" + idx
 			dom.dispatchCustonEvent(document, "keySelected");
 			break;
 		case keys.KEY_RIGHT: 
 			if(idx == lastidx){idx = 0} else idx++;
 			document.getElementById("keyUser" + idx).focus();
+			lastFocus = "#keyUser" + idx
 			dom.dispatchCustonEvent(document, "keySelected");
 			break;
 		case keys.KEY_DOWN: 
 			dom.removeClass(".key-user", "key-user-selected");
 			dom.addClass(this, "key-user-selected");
 			document.getElementById("password").focus();
+			lastFocus = "#password"
 			break;
 	}
 		});	
+	this.lostfocus = dom.on("body", "keydown", lostFocus);	
 	dom.on(".key-user", "click", function(event) {
+		event.stopPropagation()
+		event.preventDefault()
+		idx = this.id.substring(this.id.length-1)
 		dom.removeClass(".key-user", "key-user-selected");
 		dom.addClass(this, "key-user-selected");
 	});							
@@ -271,9 +279,7 @@ User.prototype.login = function() {
 	function lostFocus(event) {
 		if (dom.exists("#screenplaySettings") || dom.exists("#player"))
 			return;
-		if (event.target.tagName != "A" && event.target.tagName != "INPUT") {
-			keys.focus("#" + dom.data("#" + keys.id, "lastFocus"));
-		}
+		dom.focus(lastFocus);
 	}	
 	
 	function fieldKeyEvent(event) {
@@ -289,8 +295,10 @@ User.prototype.login = function() {
 			case keys.KEY_UP:
 				if (dom.querySelector(".key-user-selected")) {
 					dom.focus(".key-user-selected");
+					lastFocus = ".key-user-selected"
 				} else {
 					dom.focus(".key-user");
+					lastFocus = ".key-user"
 				}	
 			}
 	}
