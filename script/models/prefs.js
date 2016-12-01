@@ -18,11 +18,13 @@ function Prefs() {
 	this.doViewItem_2_0_click;	
 	this.doViewItem_2_1_click;	
 	this.doViewItem_2_2_click;	
-	this.doViewItem_2_3_click;	
+	this.doViewItem_2_3_click;
+	this.doViewItem_2_4_click;
 	this.settings = "emby.settings.prefs";
 	this.backSkip = 15;
 	this.fwdSkip = 30;
 	this.directPlay = false;
+	this.autoLogin = true;
 	this.redButton = 1;
 	this.greenButton = 2;
 	this.yellowButton = 0;
@@ -56,6 +58,7 @@ Prefs.prototype.load = function() {
 		this.blueButton = prefs[7];
 		this.prefsVersion = prefs[8];
 		this.directPlay = prefs[9];
+		this.autoLogin = prefs[10];
 		if (this.prefsVersion != 3)
 		{
 			playerpopup.show({
@@ -72,7 +75,7 @@ Prefs.prototype.save = function(){
 	var self = this;
 	var prefs = new Array;
 	
-	prefs.push(this.fwdSkip,this.backSkip, this.videoBitrate, this.audioBitrate, this.redButton, this.greenButton, this.yellowButton, this.blueButton, this.prefsVersion, this.directPlay);
+	prefs.push(this.fwdSkip,this.backSkip, this.videoBitrate, this.audioBitrate, this.redButton, this.greenButton, this.yellowButton, this.blueButton, this.prefsVersion, this.directPlay, this.autoLogin);
 	storage.set(self.settings,prefs);
 };
 
@@ -81,6 +84,7 @@ Prefs.prototype.reset = function(){
 	this.backSkip = 15;
 	this.fwdSkip = 30;
 	this.directPlay = false;
+	this.autoLogin = true;
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.redButton = 1;
@@ -104,6 +108,7 @@ Prefs.prototype.clientSettingsClose = function(){
 	dom.off("#viewItem_2_1", "click", this.doViewItem_2_1_click);
 	dom.off("#viewItem_2_2", "click", this.doViewItem_2_2_click);
 	dom.off("#viewItem_2_3", "click", this.doViewItem_2_3_click);
+	dom.off("#viewItem_2_4", "click", this.doViewItem_2_4_click);
 	dom.remove("#screenplaySettings")
 }
 Prefs.prototype.clientSettings = function(){
@@ -297,17 +302,44 @@ Prefs.prototype.clientSettings = function(){
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);
+	    tr = tbl.insertRow(-1);
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+	    body.appendChild(tbl);
+	    
+	    tbl  = document.createElement('table');
+	    tbl.style.borderSpacing = '10px';
+	    caption = tbl.createCaption();
+	    caption.style.fontSize = '40px';
+	    caption.style.textAlign = 'left';
+	    caption.innerHTML = "<b>Client Settings</b>";
+	    tbl.style.borderSpacing = '10px';
+	    tr = tbl.insertRow(-1);
+	    td = tr.insertCell(-1);
+	    td.appendChild(document.createTextNode('Auto LogoIn:'));
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '<input style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" id ="viewItem_2_4" class="viewItem" size=1 type="text" name="autoLogin"/>';
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
+	    body.appendChild(tbl);
+	    
 	    
     
 	    if (this.directPlay)
 	        dom.querySelector("#viewItem_1_4").value = 'On'
 	    else    	
 	        dom.querySelector("#viewItem_1_4").value = 'Off'
+	        	
 	    dom.querySelector("#viewItem_2_0").selectedIndex = this.redButton;
 	    dom.querySelector("#viewItem_2_1").selectedIndex = this.greenButton
 	    dom.querySelector("#viewItem_2_2").selectedIndex = this.yellowButton
 	    dom.querySelector("#viewItem_2_3").selectedIndex = this.blueButton
 	    
+	    if (this.autoLogin)
+	        dom.querySelector("#viewItem_2_4").value = 'On'
+	    else    	
+	        dom.querySelector("#viewItem_2_4").value = 'Off'
+	        	
 	    this.settingsSubmit = dom.on(".settings-submit", "click", settingsSubmit);
 		this.userViewsItemSettings = dom.on(".user-views-item-settings", "click", userViewsItemSettings)
 		this.doViewItem_1_0_click = dom.on("#viewItem_1_0", "click", doViewItem_1_0_click)
@@ -320,6 +352,7 @@ Prefs.prototype.clientSettings = function(){
 		this.doViewItem_2_1_click = dom.on("#viewItem_2_1", "click", doViewItem_2_1_click)
 		this.doViewItem_2_2_click = dom.on("#viewItem_2_2", "click", doViewItem_2_2_click)
 		this.doViewItem_2_3_click = dom.on("#viewItem_2_3", "click", doViewItem_2_3_click)
+		this.doViewItem_2_4_click = dom.on("#viewItem_2_4", "click", doViewItem_2_4_click)
 		dom.focus("#viewItem_0_0");
 
 	function userViewsItemSettings (event){
@@ -343,6 +376,12 @@ Prefs.prototype.clientSettings = function(){
 		self.greenButton = dom.querySelector("#viewItem_2_1").selectedIndex;
 		self.yellowButton = dom.querySelector("#viewItem_2_2").selectedIndex;
 		self.blueButton = dom.querySelector("#viewItem_2_3").selectedIndex;
+		var str = dom.querySelector("#viewItem_2_4").value;
+		str = str.replace(/\s+/g,'')
+		if (str == 'On')
+			self.autoLogin = true;
+		else
+			self.autoLogin = false;
 		playerpopup.show({
 			duration: 1000,
 			text: "Settings changed" 
@@ -441,6 +480,20 @@ Prefs.prototype.clientSettings = function(){
 		settingsItemfocus = true;
 	}
 	
+	function doViewItem_2_4_click (event){
+		var node = dom.querySelector("#viewItem_2_4")
+		node.blur()
+		currentColumn = 1
+		currentRow = 4
+		highlight("#viewItem_2_4")
+		settingsItemfocus = true;
+		var str = node.value;
+		str = str.replace(/\s+/g,'')
+		if (str == "On")
+			node.value = "Off"
+		else
+			node.value = "On"
+    }
 function navigation(event) {
 		
 	    if (event.which == keys.KEY_OK)
@@ -507,6 +560,16 @@ function navigation(event) {
 					else
 						node.value = "On"
 			    }
+			    if (currentHighlight == "#viewItem_2_4")
+		        {
+			 	    var node = dom.querySelector("#viewItem_2_4")
+  				    var str = node.value;
+				    str = str.replace(/\s+/g,'')
+				    if (str == 'On')
+				 	    node.value = "Off"
+				    else
+					    node.value = "On"
+		        }
 				return;
 		}
 		highlight("#viewItem_"+currentColumn+"_"+currentRow)
@@ -556,7 +619,7 @@ function navigation(event) {
 	}
 
 	function focusHandler(){
-		if (currentHighlight == "#viewItem_1_4" || currentHighlight == "#viewItem_1_5" || currentHighlight == "#viewItem_0_0" || currentHighlight == ".home-link")
+		if (currentHighlight == "#viewItem_1_4" || currentHighlight == "#viewItem_1_5" || currentHighlight == "#viewItem_2_4" || currentHighlight == "#viewItem_0_0" || currentHighlight == ".home-link")
 		{
 			dom.querySelector(currentHighlight).click();
 			return;
