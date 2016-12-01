@@ -21,7 +21,7 @@ User.prototype.close = function(){
 User.prototype.load = function(data) {
 	this.users = data;
 			
-	if (storage.exists(this.current)) {
+	if (prefs.autoLogin == true && storage.exists(this.current)) {
 		this.authenticate(storage.get(this.current));
 	} else {		
 		this.login();
