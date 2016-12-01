@@ -316,7 +316,7 @@ Prefs.prototype.clientSettings = function(){
 	    tbl.style.borderSpacing = '10px';
 	    tr = tbl.insertRow(-1);
 	    td = tr.insertCell(-1);
-	    td.appendChild(document.createTextNode('Auto LogoIn:'));
+	    td.appendChild(document.createTextNode('Auto LogIn:'));
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '<input style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" id ="viewItem_2_4" class="viewItem" size=1 type="text" name="autoLogin"/>';
 	    td = tr.insertCell(-1);
