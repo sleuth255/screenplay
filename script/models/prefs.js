@@ -32,13 +32,14 @@ function Prefs() {
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.resumeTicks = 0;
-	this.prefsVersion = 3;
+	this.prefsVersion = 4;
 	this.interval;
 	this.restartInterval;
 	this.skipTime = 0;
 	this.currentTime = 0;
 	this.firstSkip = true;
 	this.playerRestarting = false;
+	this.mimeType = "";
 };
 
 
@@ -59,7 +60,7 @@ Prefs.prototype.load = function() {
 		this.prefsVersion = prefs[8];
 		this.directPlay = prefs[9];
 		this.autoLogin = prefs[10];
-		if (this.prefsVersion != 3)
+		if (this.prefsVersion != 4)
 		{
 			playerpopup.show({
 				duration: 4000,

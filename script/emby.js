@@ -255,7 +255,7 @@ EMBY.prototype.getVideoStreamUrl = function(settings) {
 	var t = ""
 	var startTimeTicks = prefs.resumeTicks / 10000000;
 	if (startTimeTicks)
-		t= "#t=" + startTimeTicks
+		t= "#t=" + startTimeTicks 
 	var videoCodec = settings.videoCodec || "h264";
 	var audioCodec = settings.audioCodec || "aac";
 	var videoBitrate = Math.floor(prefs.videoBitrate) || 10000000;
