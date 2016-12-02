@@ -92,7 +92,7 @@ Prefs.prototype.reset = function(){
 	this.greenButton = 2;
 	this.yellowButton = 0;
 	this.blueButton = 0;
-	this.prefsVersion = 3;
+	this.prefsVersion = 4;
 }
 
 Prefs.prototype.clientSettingsClose = function(){
