@@ -92,17 +92,24 @@ a {
 
 #homeLink {
 	position: absolute; 
-	right: 50px;
+	right: 105px;
 	top: 30px;	
 }
 
-#settings {
+
+#settingsLink {
 	position: absolute; 
-	right: 50px;
+	right: 55px;
 	top: 30px;	
 }
 
-.home-link, .settings-link, .server-link, .user-link {
+#powerLink {
+	position: absolute; 
+	right: 5px;
+	top: 30px;	
+}
+
+.home-link, .settings-link, .server-link, .user-link, .power-link {
 	display: inline-block;	
 	height: 60px;
 	padding: 2px 10px;	
@@ -137,7 +144,20 @@ a {
 	overflow: hidden;
 }
 
-.home-link:focus, .settings-link:focus, .server-link:focus, .user-link:focus {
+.power-link {
+    height: 30px;
+    width: 30px;
+    font-size: 22px;
+    line-height: 30px;
+    padding: 5px 6px 5px 5px;
+	border-radius: 22px;
+	background-color: #aaa;
+	color: #000;
+	text-align: center;
+	overflow: hidden;
+}
+
+.home-link:focus, .settings-link:focus, .server-link:focus, .user-link:focus, .power-link:focus {
 	outline: none;
 	border: 2px solid rgba(82, 181, 75, 0.5);	
 	background: #222;	
@@ -145,7 +165,7 @@ a {
 	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);		
 }
 
-.home-link:hover, .settings-link:hover, .server-link:hover, .user-link:hover {
+.home-link:hover, .settings-link:hover, .server-link:hover, .user-link:hover, .power-link:hover {
 	border: 2px solid rgba(82, 181, 75, 0.5);	
 	background: #111;
 	color: #fff;		
