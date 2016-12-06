@@ -159,6 +159,22 @@
 				home.close();
 				home.load();
 			});
+			
+			dom.on("#settingsLink a", "click", function(event) {	
+				event.stopPropagation()
+				event.preventDefault()
+				history.pushState({
+					action: "settings"
+				}, "settings");
+				prefs.clientSettings();
+			});
+			
+			dom.on("#powerLink a", "click", function(event) {
+				window.close();
+				app.destroy();
+				this.finish();
+			});
+			
 
 			dom.on("#logo", "click", function(event) {			
 				storage.remove("emby.settings.current.server");
@@ -308,7 +324,9 @@
 		</div>
 		<div id="server"></div>
 		<div id="user"></div>
+	<div id="settingsLink" style="display: block;"><a href="#" class="settings-link"><span class="glyphicon cogwheel"></span></a></div> 
  	<div id="homeLink" style="display: none;"><a href="#" class="home-link"><span class="glyphicon home"></span></a></div> 
+ 	<div id="powerLink" style="display: block;"><a href="#" class="power-link"><span class="glyphicon power"></span></a></div>
 	</div>
 	<div id="view"></div>
 	<div id="details"></div>
