@@ -56,8 +56,7 @@ Player.prototype.load = function(data, settings) {
         if (prefs.directPlay == true)
         {	
            	prefs.mimeType = item.MediaSources[0].Container
-           	if (prefs.mimeType == "mkv")
-           		prefs.mimeType = "mp4"
+          	prefs.mimeType = "mp4"
        	    dom.append("#video", {
 			    nodeName: "source",
 			    src: emby.getVideoStreamUrl({
@@ -111,6 +110,7 @@ Player.prototype.load = function(data, settings) {
 			// update the time/duration and slider values
 			if (video.currentTime == 0)
 				return;
+			prefs.videoDuration = video.duration;
 			var durhr = Math.floor(video.duration / 3600);
 		    var durmin = Math.floor((video.duration % 3600) / 60);
 			durmin = durmin < 10 ? '0' + durmin : durmin;
@@ -184,12 +184,12 @@ Player.prototype.load = function(data, settings) {
 		// Event listener for the seek bar
 		seekBar.addEventListener("change", function() {
 			// Calculate the new time
-			var time = video.duration * (seekBar.value / 100);
+			var time = prefs.videoDuration * (seekBar.value / 100);
 
 			// Update the video time
 			prefs.currentTime = time
-			var durhr = Math.floor(video.duration / 3600);
-		    var durmin = Math.floor((video.duration % 3600) / 60);
+			var durhr = Math.floor(prefs.videoDuration / 3600);
+		    var durmin = Math.floor((prefs.videoDuration % 3600) / 60);
 			durmin = durmin < 10 ? '0' + durmin : durmin;
 				
 			var curhr = Math.floor(prefs.currentTime / 3600);
