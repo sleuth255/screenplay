@@ -111,8 +111,8 @@ Player.prototype.load = function(data, settings) {
 			if (video.currentTime == 0)
 				return;
 			prefs.videoDuration = video.duration;
-			var durhr = Math.floor(video.duration / 3600);
-		    var durmin = Math.floor((video.duration % 3600) / 60);
+			var durhr = Math.floor(prefs.videoDuration / 3600);
+		    var durmin = Math.floor((prefs.videoDuration % 3600) / 60);
 			durmin = durmin < 10 ? '0' + durmin : durmin;
 				
 			var curhr = Math.floor(video.currentTime / 3600);
@@ -120,7 +120,7 @@ Player.prototype.load = function(data, settings) {
 			curmin = curmin < 10 ? '0' + curmin : curmin;
 
 			infoButton.innerHTML = curhr+":"+curmin+"/"+durhr+ ":"+durmin; 
-			seekBar.value = (100 / video.duration) * video.currentTime;
+			seekBar.value = (100 / prefs.videoDuration) * video.currentTime;
 
 			if (Math.floor(video.currentTime) > time + 4) {
 				time = Math.floor(event.target.currentTime);	
@@ -208,15 +208,20 @@ Player.prototype.load = function(data, settings) {
 
 		// Play the video when the seek handle is dropped
 		seekBar.addEventListener("mouseup", function() {
-		    var options = {};
-		    options.option = {};
-		    options.option.transmission = {};
-		    options.option.transmission.playTime = {};
-		    options.option.transmission.playTime.start = prefs.currentTime*1000;
+			if (prefs.directPlay == true)
+				video.currentTime = prefs.currentTime
+			else
+			{	
+		        var options = {};
+		        options.option = {};
+		        options.option.transmission = {};
+		        options.option.transmission.playTime = {};
+		        options.option.transmission.playTime.start = prefs.currentTime*1000;
 
-		    var node = dom.querySelector("source");
-		    node.setAttribute('type',mime.lookup(prefs.mimeType)+';mediaOption=' +  escape(JSON.stringify(options)));
-		    video.load();
+		        var node = dom.querySelector("source");
+		        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+		        video.load();
+			}
 	        video.play();
 			playButton.innerHTML = "Pause";
 		});
@@ -372,16 +377,23 @@ Player.prototype.restartAt = function(){
 	if (restartPoint < 0)
 	   restartPoint = 0;
 	var video = document.getElementById("video");
-	var options = {};
-    options.option = {};
-    options.option.transmission = {};
-    options.option.transmission.playTime = {};
-    options.option.transmission.playTime.start = restartPoint;
+    if (prefs.directPlay == true)
+    {
+    	video.currentTime = Math.floor(prefs.currentTime + prefs.skipTime)
+    }	
+    else
+    {    	
+	    var options = {};
+        options.option = {};
+        options.option.transmission = {};
+        options.option.transmission.playTime = {};
+        options.option.transmission.playTime.start = restartPoint;
 
-    var node = dom.querySelector("source");
-    node.setAttribute('type',mime.lookup(prefs.mimeType)+';mediaOption=' +  escape(JSON.stringify(options)));
-    video.load();
-    video.play();
+        var node = dom.querySelector("source");
+        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+        video.load();
+        video.play();
+    }
     if (prefs.restartInterval)
     	window.clearTimeout(prefs.restartInterval)
     prefs.restartInterval = window.setTimeout(function(){
