@@ -40,6 +40,7 @@ function Prefs() {
 	this.firstSkip = true;
 	this.playerRestarting = false;
 	this.mimeType = "";
+	this.videoDuration;
 };
 
 
