@@ -202,12 +202,15 @@ Player.prototype.load = function(data, settings) {
 		// Pause the video when the seek handle is being dragged
 		seekBar.addEventListener("mousedown", function() {
 			video.pause();
+			self.showControls({persist: true})
 			emby.postActiveEncodingStop()
 			playButton.innerHTML = "Play";
 		});
 
 		// Play the video when the seek handle is dropped
 		seekBar.addEventListener("mouseup", function() {
+			self.showControls({duration: 6000})
+			prefs.currentTime = prefs.videoDuration * (seekBar.value / 100);
 			if (prefs.directPlay == true)
 				video.currentTime = prefs.currentTime
 			else
