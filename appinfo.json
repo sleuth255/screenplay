@@ -6,7 +6,7 @@
     "icon": "images/screenplay icon 80x80.png",
     "main": "index.html",
     "bgImage": "images/screenplay-logo-full-stacked.png",
-    "id": "theparadigmgrid.screenplay.sdk2.0",
+    "id": "theparadigmgrid.screenplay",
     "title": "screenplay",
     "type": "web",
     "version": "1.1.3"
