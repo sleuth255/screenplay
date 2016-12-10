@@ -385,7 +385,7 @@ Collection.prototype.load = function(data, settings) {
 			var node = dom.querySelector(".latest-items");
 			menuWidth = dom.offset(node).left;						
 			columnWidth = dom.width(".latest-items-column-abs");
-			columnViewportCount = Math.floor(dom.width("body") / columnWidth);
+			columnViewportCount = Math.floor(dom.width("#view") / columnWidth);
 //			dom.dispatchCustonEvent(document, "collectionAllItemsInitialised");	
 		}
 		focus(".latest-item");
@@ -559,7 +559,7 @@ Collection.prototype.load = function(data, settings) {
 			}
 		}
 		
-		if (columnCurrent < columnLast && columnCurrent <= startColumn + columnViewportCount + 1) {
+	if (columnCurrent < columnLast && columnCurrent <= startColumn + columnViewportCount + 1) {
 			var limit = (self.limit/2);
 			limit =  limit % 2 ? limit - 1 : self.limit;
 			start = (columnCurrent * 2) - (limit/2);

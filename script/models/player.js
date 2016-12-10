@@ -209,7 +209,7 @@ Player.prototype.load = function(data, settings) {
 
 		// Play the video when the seek handle is dropped
 		seekBar.addEventListener("mouseup", function() {
-			self.showControls({duration: 6000})
+			self.showControls({duration: 1000})
 			prefs.currentTime = prefs.videoDuration * (seekBar.value / 100);
 			if (prefs.directPlay == true)
 				video.currentTime = prefs.currentTime
