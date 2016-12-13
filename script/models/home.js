@@ -92,7 +92,6 @@ Home.prototype.load = function() {
 			includeItemTypes: "movie,episode",		
 			sortBy: 'dateplayed',
 			sortOrder: 'descending',
-			limit: 2,
 			parent: {collectionType: data.collectionType, name: data.name, imageTag: data.imageTag},	
 			filters: 'IsResumable',
 			success: displayUserResumeItems,
@@ -211,6 +210,18 @@ Home.prototype.load = function() {
 	}
 
 	function displayUserResumeItems(data) {
+		var today = new Date()
+		var diff
+		var LastPlayedDate
+		var item
+		for (var index = 0; index < data.Items.length; index++){
+			item = data.Items[index]
+			LastPlayedDate = item.UserData.LastPlayedDate.substr(5,5)+'-'+item.UserData.LastPlayedDate.substr(0,4)+' '+item.UserData.LastPlayedDate.substr(11,8)
+			LastPlayedDate = new Date(LastPlayedDate)
+			diff = Math.abs(today - LastPlayedDate)
+			if (diff > 259200000  || item.UserData.PlaybackPositionTicks == 0 || index > 1) // only show 2 most recent valid items played < 3 days ago (milliseconds)
+				data.Items.splice(index--,1)
+		};
 		if (data.Items.length > 0) 
 		{					
 			data.Items.forEach(function(item, index) {						
