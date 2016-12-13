@@ -175,7 +175,7 @@ Item.prototype.load = function(id, settings) {
 			if (data.Video3DFormat == "FullSideBySide")
 				prefs.video3DFormat = "side_by_side_full_LR"
 			else
-				prefs.video3DFormat = ""
+				prefs.video3DFormat = "2D"
 		}
 
 

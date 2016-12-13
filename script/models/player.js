@@ -219,10 +219,13 @@ Player.prototype.load = function(data, settings) {
 		        options.option = {};
 		        options.option.transmission = {};
 		        options.option.transmission.playTime = {};
+		       	options.option.a3dMode = prefs.video3DFormat
 		        options.option.transmission.playTime.start = prefs.currentTime*1000;
 
+		        var str = escape(JSON.stringify(options))
+		        str = str.replace("a3dMode","3dMode")
 		        var node = dom.querySelector("source");
-		        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+		        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  str);
 		        video.load();
 			}
 	        video.play();
@@ -233,43 +236,39 @@ Player.prototype.load = function(data, settings) {
 			self.showControls({duration: 6000});
 		});
 		
-		if (prefs.resumeTicks > 0 || prefs.video3DFormat !="")
+        var options = {};
+        options.option = {};
+       	options.option.a3dMode = prefs.video3DFormat
+		if (prefs.resumeTicks > 0)
 		{
-	        var options = {};
-	        options.option = {};
-	        if (prefs.video3DFormat !="")
-	        	options.option.a3dMode = prefs.video3DFormat
-			if(prefs.resumeTicks > 0)
-			{				
-	           //get seconds from ticks
-			   var ts = prefs.resumeTicks / 10000000;
-			   prefs.resumeTicks = 0;
+           //get seconds from ticks
+		   var ts = prefs.resumeTicks / 10000000;
+		   prefs.resumeTicks = 0;
 
-			   //conversion based on seconds
-			   var hh = Math.floor( ts / 3600);
-			   var mm = Math.floor( (ts % 3600) / 60);
-			   var ss = Math.floor(  (ts % 3600) % 60);
+		   //conversion based on seconds
+		   var hh = Math.floor( ts / 3600);
+		   var mm = Math.floor( (ts % 3600) / 60);
+		   var ss = Math.floor(  (ts % 3600) % 60);
 
-			   //prepend '0' when needed
-			   hh = hh < 10 ? '0' + hh : hh;
-			   mm = mm < 10 ? '0' + mm : mm;
-			   ss = ss < 10 ? '0' + ss : ss;
+		   //prepend '0' when needed
+		   hh = hh < 10 ? '0' + hh : hh;
+		   mm = mm < 10 ? '0' + mm : mm;
+		   ss = ss < 10 ? '0' + ss : ss;
 
-   			   //use it
-			   var str = hh + ":" + mm + ":" + ss;
-			   playerpopup.show({
-				   duration: 2000,
-				   text: "Resuming Playback at " + str
-			   });	
-	           options.option.transmission = {};
-	           options.option.transmission.playTime = {};
-	           options.option.transmission.playTime.start = Math.floor(ts) * 1000;
-			}
-	        var str = escape(JSON.stringify(options))
-	        str = str.replace("a3dMode","3dMode")
-			var node = dom.querySelector("source");
-            node.setAttribute('type',mime.lookup(prefs.mimeType)+';mediaOption=' +  str);
+  			   //use it
+		   var str = hh + ":" + mm + ":" + ss;
+		   playerpopup.show({
+			   duration: 2000,
+			   text: "Resuming Playback at " + str
+		   });	
+           options.option.transmission = {};
+           options.option.transmission.playTime = {};
+           options.option.transmission.playTime.start = Math.floor(ts) * 1000;
 		}
+        var str = escape(JSON.stringify(options))
+        str = str.replace("a3dMode","3dMode")
+		var node = dom.querySelector("source");
+        node.setAttribute('type',mime.lookup(prefs.mimeType)+';mediaOption=' +  str);
 		video.load();
 		video.play();
 	}
@@ -396,10 +395,13 @@ Player.prototype.restartAt = function(){
         options.option = {};
         options.option.transmission = {};
         options.option.transmission.playTime = {};
+       	options.option.a3dMode = prefs.video3DFormat
         options.option.transmission.playTime.start = restartPoint;
 
+        var str = escape(JSON.stringify(options))
+        str = str.replace("a3dMode","3dMode")
         var node = dom.querySelector("source");
-        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  escape(JSON.stringify(options)));
+        node.setAttribute('type',mime.lookup("m3u8")+';mediaOption=' +  str);
         video.load();
         video.play();
     }
