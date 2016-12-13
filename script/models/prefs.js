@@ -41,6 +41,7 @@ function Prefs() {
 	this.playerRestarting = false;
 	this.mimeType = "";
 	this.videoDuration;
+	this.video3DFormat;
 };
 
 

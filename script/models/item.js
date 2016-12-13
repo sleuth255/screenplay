@@ -166,6 +166,13 @@ Item.prototype.load = function(id, settings) {
 		if (data.Type != "Series" && data.Type != "Season")
 		{
 			focus("#userViews a:first-child");
+			if (data.Video3DFormat == "HalfTopAndBottom")
+			   prefs.video3DFormat = "top_bottom"
+			else				   
+			if (data.Video3DFormat == "HalfSideBySide")
+			   prefs.video3DFormat = "side_by_side_LR"
+			else
+				prefs.video3DFormat = ""
 		}
 
 
