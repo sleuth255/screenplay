@@ -214,7 +214,8 @@ Home.prototype.load = function() {
 		var diff
 		var LastPlayedDate
 		var item
-		for (var index = 0; index < data.Items.length; index++){
+		for (var index = 0; index < data.Items.length; index++)
+		{
 			item = data.Items[index]
 			LastPlayedDate = item.UserData.LastPlayedDate.substr(5,5)+'-'+item.UserData.LastPlayedDate.substr(0,4)+' '+item.UserData.LastPlayedDate.substr(11,8)
 			LastPlayedDate = new Date(LastPlayedDate)

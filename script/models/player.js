@@ -55,7 +55,6 @@ Player.prototype.load = function(data, settings) {
 		node.setAttribute("webkit-playsinline","")
         if (prefs.directPlay == true)
         {	
-           	prefs.mimeType = item.MediaSources[0].Container
           	prefs.mimeType = "mp4"
        	    dom.append("#video", {
 			    nodeName: "source",
