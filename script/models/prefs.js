@@ -32,6 +32,7 @@ function Prefs() {
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.resumeTicks = 0;
+	this.continueWatchingDays = 2;
 	this.prefsVersion = 4;
 	this.interval;
 	this.restartInterval;
