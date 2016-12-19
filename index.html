@@ -116,7 +116,7 @@
 					}
 					else	
 			    	{	
-				    	player.close()
+						player.close()
 				    	return;				
 			    	}
 				if (event.state) {
@@ -262,7 +262,7 @@
 						    player.play();
 						    return;
 					    case keys.KEY_STOP:
-						    player.close();
+					    	history.back();
 						    return;
 					    case keys.KEY_FAST_FWD:
 						    player.fastforward();

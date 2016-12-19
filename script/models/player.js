@@ -102,7 +102,7 @@ Player.prototype.load = function(data, settings) {
 		});
 		
 		video.addEventListener("ended", function(event) {
-			self.close();
+			history.back();
 		});
 	
 		video.addEventListener("timeupdate", function(event) {
@@ -177,7 +177,7 @@ Player.prototype.load = function(data, settings) {
 
 		// Event listener for the stop button
 		stopButton.addEventListener("click", function() {
-			self.close();
+			history.back();
 		});
 
 		// Event listener for the seek bar
@@ -294,6 +294,7 @@ Player.prototype.close = function(event) {
  
     dom.remove("#player");	
 	dom.remove("#video-controls");
+	dom.focus("#viewPlay")
    	
 };
 
