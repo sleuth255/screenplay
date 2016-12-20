@@ -217,7 +217,7 @@ Home.prototype.load = function() {
 		{
 			item = data.Items[index]
 			diff = Math.abs(today - Date.parse(item.UserData.LastPlayedDate))
-			if (diff > 86400000*prefs.continueWatchingDays  || item.UserData.PlaybackPositionTicks == 0 || index > 1) // only show 2 most recent valid items played < 3 days ago (milliseconds)
+			if (diff > 86400000*prefs.continueWatchingDays  || item.UserData.PlaybackPositionTicks == 0 || index > 1) // only show 2 most recent valid items played < prefs.continueWatchingDays ago (milliseconds)
 				data.Items.splice(index--,1)
 		};
 		if (data.Items.length > 0) 
