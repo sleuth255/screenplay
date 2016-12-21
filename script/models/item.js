@@ -215,6 +215,7 @@ Item.prototype.load = function(id, settings) {
 		var self = event.delegateTarget;
 
 		if (event.which == keys.KEY_OK) {
+			event.stopPropagation()
 			self.click();
 			return;
 		}

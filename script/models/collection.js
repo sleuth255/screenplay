@@ -430,10 +430,10 @@ Collection.prototype.load = function(data, settings) {
 
 	function navigation(event) {
 		event.preventDefault();
-		//event.stopPropagation();
 		var self = event.delegateTarget;
 
 		if (event.which == keys.KEY_OK) {
+			event.stopPropagation();
 			self.click();
 			return;
 		}
