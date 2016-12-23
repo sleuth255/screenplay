@@ -115,8 +115,8 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 						className: imageClass,
 						style: {
 							backgroundImage: item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + ")" :
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, addPlayedIndicator: item.UserData.Played ? true : false}) + ")" 	
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" :
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" 	
 						},
 						childNodes: [{
 							nodeName: "div",
@@ -222,7 +222,7 @@ RENDERER.prototype.userSummaryItems = function(data, settings) {
 					imageType = data.forceThumb ? "thumb" : "primary";
 					break;
 			}
-									
+			
 			dom.append("#c_" + id + "_" + column, {
 				nodeName: "a",
 				href: "#",
@@ -245,8 +245,8 @@ RENDERER.prototype.userSummaryItems = function(data, settings) {
 					className: imageClass,
 					style: {
 						backgroundImage: item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + ")" :
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, addPlayedIndicator: item.UserData.Played ? true : false}) + ")" 	
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" :
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" 	
 					},
 					childNodes: [{
 						nodeName: "div",
@@ -356,8 +356,8 @@ RENDERER.prototype.userResumeItems = function(data, settings) {
 					className: "cover cover-thumb",
 					style: {
 						backgroundImage: item.ParentThumbImageTag ?
-							"url(" + emby.getImageUrl({'itemId': item.ParentBackdropItemId, tag: item.ParentThumbImageTag, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + ")" :
-							"url(" + emby.getImageUrl({'itemId': item.Id, tag: item.ImageTags.Thumb, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + ")"	
+							"url(" + emby.getImageUrl({'itemId': item.ParentBackdropItemId, tag: item.ParentThumbImageTag, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" :
+							"url(" + emby.getImageUrl({'itemId': item.Id, tag: item.ImageTags.Thumb, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')"	
 					},
 					childNodes: [{
 						nodeName: "div",
@@ -405,7 +405,7 @@ RENDERER.prototype.userItem = function(data, settings) {
 					className: imageClass,
 					style: 
 					{
-						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600, addPlayedIndicator: item.UserData.Played ? true : false}) + ")" 	
+						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600, addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" 	
 
 					}
 				}]
@@ -553,8 +553,8 @@ RENDERER.prototype.userItemChildren = function(data, settings) {
 					className: imageClass,
 					style: {
 						backgroundImage: item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + ")" :
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, addPlayedIndicator: item.UserData.Played ? true : false}) + ")" 	
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage), addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" :
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, addPlayedIndicator: item.UserData.Played ? true : false}) + "),url('./images/GenericImage.jpg')" 	
 					},
 					childNodes: [{
 						nodeName: "div",
