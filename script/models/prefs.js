@@ -43,6 +43,7 @@ function Prefs() {
 	this.mimeType = "";
 	this.videoDuration;
 	this.video3DFormat;
+	this.subtitleAvailable;
 };
 
 
@@ -281,28 +282,28 @@ Prefs.prototype.clientSettings = function(){
 	    td = tr.insertCell(-1);
 	    td.appendChild(document.createTextNode('Red Button:'));
 	    td = tr.insertCell(-1);
-	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id="viewItem_2_0" name="redButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option></select>';
+	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id="viewItem_2_0" name="redButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option><option>Toggle Subtitles</option></select>';
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    tr = tbl.insertRow(-1);
 	    td = tr.insertCell(-1);
 	    td.appendChild(document.createTextNode('Green Button:'));
 	    td = tr.insertCell(-1);
-	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id ="viewItem_2_1" name="greenButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option></select>';
+	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id ="viewItem_2_1" name="greenButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option><option>Toggle Subtitles</option></select>';
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    tr = tbl.insertRow(-1);
 	    td = tr.insertCell(-1);
 	    td.appendChild(document.createTextNode('Yellow Button:'));
 	    td = tr.insertCell(-1);
-	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id ="viewItem_2_2" name="yellowButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option></select>';
+	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id ="viewItem_2_2" name="yellowButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option><option>Toggle Subtitles</option></select>';
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    tr = tbl.insertRow(-1);
 	    td = tr.insertCell(-1);
 	    td.appendChild(document.createTextNode('Blue Button:'));
 	    td = tr.insertCell(-1);
-	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id ="viewItem_2_3" name="blueButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option></select>';
+	    td.innerHTML = '<select style="font-size:30px; text-align:right; padding:0px 10px 0px 0px" class="viewItem" id ="viewItem_2_3" name="blueButton"><option>Not Used</option><option>Reset screenplay</option><option>Toggle Controls</option><option>Toggle Subtitles</option></select>';
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);

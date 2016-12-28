@@ -247,6 +247,15 @@ EMBY.prototype.getShowsEpisodes = function(settings) {
 	});			
 };
 
+EMBY.prototype.getVideoSubtitleData = function(settings) {
+	settings = settings || {};
+	
+	var itemId = settings.itemId;
+	var mediaSourceId = settings.mediaSourceId;
+    var index = settings.mediaSourceIndex
+    return this.settings.ServerUrl + "/Videos/" + itemId + "/" + mediaSourceId + "/Subtitles/" + index + "/Stream.vtt"
+	
+}
 EMBY.prototype.getVideoStreamUrl = function(settings) {
 	settings = settings || {};
 		

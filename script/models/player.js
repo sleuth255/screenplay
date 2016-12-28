@@ -53,7 +53,7 @@ Player.prototype.load = function(data, settings) {
 		var node = dom.querySelector("#video");
 		node.setAttribute("crossorigin", "anonymous")
 		node.setAttribute("webkit-playsinline","")
-        if (prefs.directPlay == true)
+       if (prefs.directPlay == true)
         {	
           	prefs.mimeType = "mp4"
        	    dom.append("#video", {
@@ -70,12 +70,27 @@ Player.prototype.load = function(data, settings) {
         	prefs.mimeType = "m3u8"
         	dom.append("#video", {
 			    nodeName: "source",
-			    src: emby.getVideoHlsStreamUrl({
-				    itemId: item.Id
-			    }),
-			    "type": mime.lookup(prefs.mimeType)
+		        src: emby.getVideoHlsStreamUrl({
+			        itemId: item.Id
+		        }),
+		        "type": mime.lookup(prefs.mimeType)
 		    });
         }
+   	   if (item.MediaSources[0].DefaultSubtitleStreamIndex == null)
+   		   prefs.subtitleAvailable = false;
+   	   else
+   		   prefs.subtitleAvailable = true
+		    dom.append("#video", {
+	            nodeName: "track",
+		        "kind": "subtitles",
+//		        "label": "English",
+//		        "srclang": "en",
+		        src: emby.getVideoSubtitleData({
+			        itemId: item.Id,
+			        mediaSourceId: item.MediaSources[0].Id,
+			        mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
+		        })
+           });
 		var video = document.getElementById("video");		
 		var playerRegion = document.getElementById("player");		
 		var playButton = document.getElementById("play-pause");
@@ -83,7 +98,7 @@ Player.prototype.load = function(data, settings) {
 		var infoButton = document.getElementById("info-button");
 		var seekBar = document.getElementById("seek-bar");
 
-		
+		video.textTracks[0].mode = 'showing'
 		video.addEventListener("playing", function(event) {
 			time = Math.floor(event.target.currentTime);	
 			var ticks = time * 10000000;
@@ -458,3 +473,35 @@ Player.prototype.showControls = function(settings){
 Player.prototype.hideControls = function(){
 	dom.hide("#video-controls");
 };
+Player.prototype.showSubtitles = function(){
+ 	if (!prefs.subtitleAvailable)
+ 	{
+		playerpopup.show({
+			duration: 1000,
+			text: "Subtitles not available"
+		});	
+	   return
+ 	}
+ 	var video = document.getElementById("video");
+	video.textTracks[0].mode = 'showing'
+	playerpopup.show({
+		duration: 1000,
+		text: "Subtitles Enabled"
+	});	
+}
+Player.prototype.hideSubtitles = function(){
+ 	if (!prefs.subtitleAvailable)
+ 	{
+		playerpopup.show({
+			duration: 1000,
+			text: "Subtitles not available"
+		});	
+ 		return
+ 	}
+ 	var video = document.getElementById("video");
+	video.textTracks[0].mode = 'hidden'
+		playerpopup.show({
+			duration: 1000,
+			text: "Subtitles Disabled"
+		});	
+}

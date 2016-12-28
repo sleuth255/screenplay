@@ -73,11 +73,13 @@ Home.prototype.load = function() {
 		var columnCount = 1;		
 		var currentColumn = 0;
 		
+
 		data.Items = data.Items.filter(function(item) {
 			return item.CollectionType == "movies" ||
 				item.CollectionType == "photos" ||
 				item.CollectionType == "music" ||
 				(item.CollectionType == "tvshows") ||
+//				(item.CollectionType == "boxsets") ||
 				(item.CollectionType == null)
 		});
 		
@@ -158,6 +160,8 @@ Home.prototype.load = function() {
 			});				
 		});
 
+// Collections logic
+		
 // Settings logic
 		limit = 5;
 		columnCount = 1;		
