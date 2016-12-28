@@ -76,21 +76,23 @@ Player.prototype.load = function(data, settings) {
 		        "type": mime.lookup(prefs.mimeType)
 		    });
         }
+		
    	   if (item.MediaSources[0].DefaultSubtitleStreamIndex == null)
    		   prefs.subtitleAvailable = false;
    	   else
    		   prefs.subtitleAvailable = true
-		    dom.append("#video", {
-	            nodeName: "track",
-		        "kind": "subtitles",
-//		        "label": "English",
-//		        "srclang": "en",
-		        src: emby.getVideoSubtitleData({
-			        itemId: item.Id,
-			        mediaSourceId: item.MediaSources[0].Id,
-			        mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
-		        })
-           });
+   		   
+		dom.append("#video", {
+	        nodeName: "track",
+		    "kind": "subtitles",
+//		    "label": "English",
+//		    "srclang": "en",
+		    src: emby.getVideoSubtitleData({
+			    itemId: item.Id,
+			    mediaSourceId: item.MediaSources[0].Id,
+			    mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
+		    })
+        });
 		var video = document.getElementById("video");		
 		var playerRegion = document.getElementById("player");		
 		var playButton = document.getElementById("play-pause");
@@ -98,7 +100,7 @@ Player.prototype.load = function(data, settings) {
 		var infoButton = document.getElementById("info-button");
 		var seekBar = document.getElementById("seek-bar");
 
-		video.textTracks[0].mode = 'showing'
+		video.textTracks[0].mode = 'hidden'
 		video.addEventListener("playing", function(event) {
 			time = Math.floor(event.target.currentTime);	
 			var ticks = time * 10000000;
