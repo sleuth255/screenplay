@@ -100,7 +100,7 @@ Player.prototype.load = function(data, settings) {
 		var infoButton = document.getElementById("info-button");
 		var seekBar = document.getElementById("seek-bar");
 
-		video.textTracks[0].mode = 'hidden'
+		video.textTracks[0].mode = 'showing'
 		video.addEventListener("playing", function(event) {
 			time = Math.floor(event.target.currentTime);	
 			var ticks = time * 10000000;

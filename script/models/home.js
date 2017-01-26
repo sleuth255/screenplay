@@ -79,7 +79,6 @@ Home.prototype.load = function() {
 				item.CollectionType == "photos" ||
 				item.CollectionType == "music" ||
 				(item.CollectionType == "tvshows") ||
-//				(item.CollectionType == "boxsets") ||
 				(item.CollectionType == null)
 		});
 		
@@ -100,6 +99,7 @@ Home.prototype.load = function() {
 			error: error				
 		});
 							
+		
 		var idx = 0;
 		data.Items.forEach(function(item, index) {
 			var column = Math.floor(index/rowCount);
@@ -199,6 +199,7 @@ Home.prototype.load = function() {
 		});		
 		
 // End Settings Logic	
+		
 		dom.on(".user-views-item-settings", "click", function(event) {
 			event.stopPropagation()
 			event.preventDefault()
@@ -246,6 +247,10 @@ Home.prototype.load = function() {
 			    heading: "Continue Watching",
 			    headerLink: "#server a"
 		    });
+			var nodes = dom.querySelectorAll(".latest-items");
+			for (var i = 0; i < nodes.length; i++) {
+				nodes[i].id = "latestItemSet_" + i;
+			}
 	    }
 	}
 		
@@ -386,6 +391,7 @@ Home.prototype.load = function() {
 		message.show({
 			messageType: message.error,			
 			text: "Loading user views failed!"
-		});			
+		});		
+		prefs.waitForAsync = false;
 	}	
 };

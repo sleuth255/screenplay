@@ -188,7 +188,7 @@ Item.prototype.load = function(id, settings) {
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
 
-		dom.delegate("#view", "a", "keydown", navigation);
+		dom.delegate("#item", "a", "keydown", navigation);
 	}
 
 	function displayUserItemChildren(data) {

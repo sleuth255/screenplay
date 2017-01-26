@@ -236,6 +236,7 @@ EMBY.prototype.getShowsEpisodes = function(settings) {
 				
 	ajax.request(this.settings.ServerUrl + "/shows/" + settings.id  + "/episodes?" + 
 		"seasonId=" + settings.seasonId +
+		"&EnableUserData=true" +
 		"&userId=" + this.settings.User.Id +
 		(fields ? "&fields=" + fields : ""), {
 		method: "GET",

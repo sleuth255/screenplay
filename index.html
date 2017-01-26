@@ -36,7 +36,7 @@
 			var item = new Item();
 			var player = new Player();
 			var controlsVisible = false;
-			var subtitlesVisible = false;
+			var subtitlesVisible = true;
 			var firstEvent = true;
 									
 			dom.addClass("body", device.bodyClass);
@@ -103,7 +103,8 @@
 			});						
 
 			dom.on(document, "playItem", function(event) {
-				controlsVisible = subtitlesVisible = false;
+				controlsVisible =false;
+				 subtitlesVisible = true;
 				firstEvent = true;
 				player.load(event.detail);
 			});	
