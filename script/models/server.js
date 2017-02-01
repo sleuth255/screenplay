@@ -219,6 +219,8 @@ Server.prototype.close = function(index) {
 
 Server.prototype.formatServerUrl = function(url) {
 	url = url.trim();
+	url = url.replace(/\s+/g,'') // remove whitespace
+	url = url.replace(/[^a-zA-Z0-9/:-]/g,'.') // change any specials to a dot
 	
 	if ((!url.includes("http://")) && (!url.includes("https://"))) 
 		url = "http://" + url;
@@ -232,7 +234,5 @@ Server.prototype.formatServerUrl = function(url) {
 			url = url + ":8920";
 	
 	
-	url = url.replace(/\s+/g,'') // remove whitespace
-	url = url.replace(/[^a-zA-Z0-9/:-]/g,'.') // change any specials to a dot
 	return url;
 };
