@@ -226,7 +226,7 @@ Server.prototype.formatServerUrl = function(url) {
 		url = "http://" + url;
 	
 	
-	if (!url.substr(6).includes(":"))
+	if (!url.substr(8).includes(":"))
 		if (url.includes("http://"))			
 			url = url + ":8096";
 		else
