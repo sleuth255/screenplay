@@ -46,6 +46,7 @@ Item.prototype.load = function(id, settings) {
 		}
 		else
 		{
+		   var idx = 0
 		   dom.html("#view", {
 			   nodeName: "div",
 			   className: "item-view",
@@ -60,12 +61,12 @@ Item.prototype.load = function(id, settings) {
 					   id: "userViews_0",
 					   childNodes: [{
 						   nodeName: "a",
-						   className: "user-views-item",
+						   className: "user-views-item user-views-item_0",
 						   href: "#",
 						   id: "viewPlay",
 						   dataset: {
 							   keyUp: "#homeLink a",
-							   keyDown: "#userViews a:last-child",
+							   keyDown: ".user-views-item_"+ (idx+1),
 							   keyRight: "a.latest-item"	
 						   },
 						   childNodes: [{
@@ -86,11 +87,11 @@ Item.prototype.load = function(id, settings) {
    		      dom.append("#userViews_0", {
 			      nodeName: "a",
 			      href: "#",
-			      className: "user-views-item",
+			      className: "user-views-item user-views-item_" + ++idx,
 			      id: "viewResume",
 			      dataset: {
-				      keyUp: "#userViews a:first-child",
-				      keyDown: "#userViews a:last-child",
+				      keyUp: ".user-views-item_"+ (idx-1),
+				      keyDown: ".user-views-item_"+ (idx+1),
 				      keyRight: "a.latest-item"	
 			      },
 			      childNodes: [{
@@ -99,6 +100,25 @@ Item.prototype.load = function(id, settings) {
 				      text: ""				
 			      }]
 		      });		
+		   }
+		   if (data.CanDelete == true)
+		   {	   
+		      dom.append("#userViews_0", {
+			      nodeName: "a",
+			      href: "#",
+			      className: "user-views-item user-views-item_" + ++idx,
+			      id: "viewDelete",
+			      dataset: {
+				      keyUp: ".user-views-item_"+ (idx-1),
+				      keyDown: ".user-views-item_"+ (idx+1),
+				     keyRight: "a.latest-item"	
+			      },
+			      childNodes: [{
+				      nodeName: "span",
+				      className: "user-views-item-name glyphicon trash",	
+				      text: ""				
+			      }]
+		      });
 		   }
 		}
 		
@@ -187,6 +207,23 @@ Item.prototype.load = function(id, settings) {
 			prefs.resumeTicks = data.UserData.PlaybackPositionTicks;
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
+		dom.on("#viewDelete", "click", function(event) {
+			event.preventDefault()
+			validaterequest.showPopup({
+				eventHandler: "#viewDelete",
+				text: "Delete Item?"
+			});	
+			
+		});
+		dom.on("#viewDelete","validate-yes", function(event){
+			emby.deleteItem({
+				id: data.Id				
+			})	
+			dom.dispatchCustonEvent(document, "itemDeleted", self.data);
+		})
+		dom.on("#viewDelete","validate-no", function(event){
+			focus("#viewDelete");
+		})
 
 		dom.delegate("#item", "a", "keydown", navigation);
 	}

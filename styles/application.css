@@ -420,6 +420,21 @@ input:hover {
 	opacity: 0.9; 
 }
 
+#validaterequest {
+	position: absolute;
+	right: 200px;
+	top: 100px;
+	display: block;
+	font-size: 40px;
+	color: #fff;
+	padding: 20px 10px; 
+	border-radius: 12px;	
+    background-color: rgba(0,0,0,0.7);
+	text-align: center;		
+	border: 2px solid rgb(82,181,75);
+	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);		
+}
+
 .playerpopup, .message {
 	position: absolute;
 	right: 200px;

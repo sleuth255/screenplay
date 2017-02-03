@@ -12,6 +12,7 @@
 	<script type="text/javascript" src="./script/caret.js"></script>
 	<script type="text/javascript" src="./script/message.js"></script>	
 	<script type="text/javascript" src="./script/playerpopup.js"></script>	
+	<script type="text/javascript" src="./script/validaterequest.js"></script>	
 	<script type="text/javascript" src="./script/device.js"></script>
 
 	<script type="text/javascript" src="./script/models/renderer.js"></script>	
@@ -108,7 +109,18 @@
 				firstEvent = true;
 				player.load(event.detail);
 			});	
+			dom.on(document, "itemDeleted", function(event) {
+				playerpopup.show({
+					duration: 1000,
+					text: "Item Deleted"
+				});	
+				item.close();
+				collection.close();
+				summary.close();
+				home.load()
+			});	
 
+			
 			window.addEventListener("popstate", function(event) {
 				if (dom.exists("#player"))
 					if (firstEvent)

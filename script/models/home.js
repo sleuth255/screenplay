@@ -297,7 +297,7 @@ Home.prototype.load = function() {
 	}
 
 	function lostFocus(event) {
-		if (dom.exists("#screenplaySettings") || dom.exists("#player"))
+		if (dom.exists("#screenplaySettings") || dom.exists("#player") || dom.exists("#validaterequest"))
 			return;
 		if (event.target.tagName != "A") {
 			focus(dom.data("#view", "lastFocus"));

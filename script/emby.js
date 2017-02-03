@@ -199,6 +199,15 @@ EMBY.prototype.getUserItems = function(settings) {
 	});			
 };
 
+EMBY.prototype.deleteItem = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/items/" + settings.id, {
+		method: "DELETE",
+		headers: this.headers()
+	});			
+};
+
 EMBY.prototype.getUserItem = function(settings) {
 	settings = settings || {};
 	

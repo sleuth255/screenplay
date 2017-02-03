@@ -277,7 +277,7 @@ User.prototype.login = function() {
 	
 	
 	function lostFocus(event) {
-		if (dom.exists("#screenplaySettings") || dom.exists("#player"))
+		if (dom.exists("#screenplaySettings") || dom.exists("#player") || dom.exists("#validaterequest"))
 			return;
 		dom.focus(lastFocus);
 	}	

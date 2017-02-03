@@ -1,4 +1,4 @@
-﻿@font-face {
+@font-face {
 	font-family: 'Glyphicons Regular'; 
 	src: url('./glyphicons-regular.ttf');
 }
@@ -554,6 +554,9 @@
 }
 .glyphicon.forward:before {
 	content: "\E177";
+}
+.glyphicon.trash:before {
+	content: "\E017";
 }
 .glyphicon.fast-forward:before {
 	content: "\E178";
