@@ -1015,3 +1015,7 @@ button:hover {
 	text-align: center;
     text-shadow: 0px 0px 0px #fff;
 }
+button:focus {
+	background-color: blue;
+	color: white;
+}

@@ -20,12 +20,12 @@ VALIDATEREQUEST.prototype.showPopup = function(settings) {
 	    text: settings.text,
 		childNodes: [{
 		    nodeName: "button",
-		    className: "validaterequest",
+		    className: "validaterequest validaterequest-button",
 		    id: "validaterequest-yes",
 		    text: "Yes"
 	    }, {
 			nodeName: "button",
-			className: "validaterequest",
+			className: "validaterequest validaterequest-button",
 			id: "validaterequest-no",
 			text: "No"
 	    }]
