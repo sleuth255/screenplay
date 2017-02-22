@@ -46,8 +46,12 @@ AJAX.prototype.request = function(url, settings) {
 				settings.success({success: true})
 			else	
 			if (settings.error) 
-				if (xhr.response) 
-					settings.error(JSON.parse(xhr.response));
+				settings.error({error: true});
+//				if (xhr.response) 
+//					settings.error(JSON.parse(xhr.response));
+//				else
+//					settings.error({error: true});
+
 	}
 	
 	if (settings.data) {
