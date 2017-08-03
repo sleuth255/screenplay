@@ -44,6 +44,7 @@ function Prefs() {
 	this.videoDuration;
 	this.video3DFormat;
 	this.subtitleAvailable;
+	this.playedStatus;
 };
 
 

@@ -5,6 +5,8 @@
 
 function Item() {
 	this.data = {};
+	this.iteration;
+	this.playedStatus;
 };
 
 Item.prototype.close = function(){
@@ -101,6 +103,22 @@ Item.prototype.load = function(id, settings) {
 			      }]
 		      });		
 		   }
+		   dom.append("#userViews_0", {
+			   nodeName: "a",
+			   href: "#",
+			   className: "user-views-item user-views-item_" + ++idx,
+			   id: "viewTogglePlayed",
+			   dataset: {
+				   keyUp: ".user-views-item_"+ (idx-1),
+				   keyDown: ".user-views-item_"+ (idx+1),
+				   keyRight: "a.latest-item"	
+			   },
+			   childNodes: [{
+				   nodeName: "span",
+				   className: "user-views-item-name glyphicon played",	
+			       text: ""				
+			   }]
+		   });		
 		   if (data.CanDelete == true)
 		   {	   
 		      dom.append("#userViews_0", {
@@ -207,6 +225,20 @@ Item.prototype.load = function(id, settings) {
 			prefs.resumeTicks = data.UserData.PlaybackPositionTicks;
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
+		dom.on("#viewTogglePlayed", "click", function(event) {
+			event.preventDefault()
+			if (data.UserData.Played == false)
+				data.UserData.Played = true
+			else
+				data.UserData.Played = false
+			prefs.playedStatus = data.UserData.Played
+			emby.updatePlayedStatus(self.data)
+			emby.getUserItem({
+				id: id,
+				success: loadData,
+				error: error					
+			})	
+	    });
 		dom.on("#viewDelete", "click", function(event) {
 			event.preventDefault()
 			validaterequest.showPopup({
@@ -227,7 +259,18 @@ Item.prototype.load = function(id, settings) {
 
 		dom.delegate("#item", "a", "keydown", navigation);
 	}
-
+	function loadData(data){
+		if (data.UserData.Played == prefs.playedStatus)
+		{
+			dom.dispatchCustonEvent(document, "reloadItem", data)
+	        return
+		}    
+		emby.getUserItem({
+			id: id,
+			success: loadData,
+			error: error					
+		})	
+	}
 	function displayUserItemChildren(data) {
 		renderer.userItemChildren(data, {
 			id: "ci_" + guid.create(),

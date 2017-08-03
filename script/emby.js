@@ -421,6 +421,21 @@ EMBY.prototype.postActiveEncodingStop = function(settings) {
 	});			
 };	
 
+EMBY.prototype.updatePlayedStatus = function(settings) {
+	settings = settings || {};
+	if (settings.UserData.Played == true)
+		posttype = "POST";
+	else		
+		posttype = "DELETE";
+
+	data = storage.get("emby.settings.current.user");
+	ajax.request(this.settings.ServerUrl + "/users/" + data.userId + "/playeditems/" + settings.Id , {
+		method: posttype,
+		headers: this.headers(), 
+		data: settings
+	});			
+};
+
 EMBY.prototype.socketOpen = function(settings) {
 
 	var server = "ws" + this.settings.ServerUrl.substr(4); 	

@@ -645,7 +645,7 @@
 .glyphicon.electricity:before {
 	content: "\E206";
 }
-.glyphicon.ok-2:before {
+.glyphicon.played:before {
 	content: "\E207";
 }
 .glyphicon.remove-2:before {
