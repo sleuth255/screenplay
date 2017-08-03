@@ -109,6 +109,10 @@
 				firstEvent = true;
 				player.load(event.detail);
 			});	
+			dom.on(document, "reloadItem", function(event) {
+				item.close()
+				item.load(event.detail.Id);
+			});	
 			dom.on(document, "itemDeleted", function(event) {
 				playerpopup.show({
 					duration: 1000,
