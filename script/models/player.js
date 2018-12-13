@@ -12,8 +12,13 @@ Player.prototype.load = function(data, settings) {
 	var item = data;
 	var time = 0;
 
+	   playerpopup.show({
+		   duration: 2000,
+		   text: "Container: " + item.Container
+	   });	
 	
-	if (item.VideoType && item.VideoType == "VideoFile") {				
+//	if (item.VideoType && item.VideoType == "VideoFile") {				
+	if (true) {				
 		dom.append("body", {
 			nodeName: "div",
 			className: "player",
@@ -60,6 +65,7 @@ Player.prototype.load = function(data, settings) {
 			    nodeName: "source",
 			    src: emby.getVideoStreamUrl({
 				    itemId: item.Id,					
+			        mediaSourceId: item.MediaSources[0].Id,
 				    extension: item.MediaSources[0].Container
 			    }),
 			    "type": mime.lookup(prefs.mimeType)
@@ -71,7 +77,8 @@ Player.prototype.load = function(data, settings) {
         	dom.append("#video", {
 			    nodeName: "source",
 		        src: emby.getVideoHlsStreamUrl({
-			        itemId: item.Id
+			        itemId: item.Id,
+			        mediaSourceId: item.MediaSources[0].Id
 		        }),
 		        "type": mime.lookup(prefs.mimeType)
 		    });
@@ -81,26 +88,31 @@ Player.prototype.load = function(data, settings) {
    		   prefs.subtitleAvailable = false;
    	   else
    		   prefs.subtitleAvailable = true
-   		   
-		dom.append("#video", {
-	        nodeName: "track",
-		    "kind": "subtitles",
-//		    "label": "English",
-//		    "srclang": "en",
-		    src: emby.getVideoSubtitleData({
-			    itemId: item.Id,
-			    mediaSourceId: item.MediaSources[0].Id,
-			    mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
-		    })
-        });
-		var video = document.getElementById("video");		
+   	   if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
+   	   {	   
+  		   
+	      dom.append("#video", {
+	         nodeName: "track",
+ 	         "kind": "subtitles",
+//		     "label": "English",
+//		     "srclang": "en",
+	         src: emby.getVideoSubtitleData({
+		         itemId: item.Id,
+		         mediaSourceId: item.MediaSources[0].Id,
+		         mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
+	         })
+          });
+   	   }
+
+   	    var video = document.getElementById("video");		
+   	    if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
+    		  video.textTracks[0].mode = 'showing'
 		var playerRegion = document.getElementById("player");		
 		var playButton = document.getElementById("play-pause");
 		var stopButton = document.getElementById("stop-exit");
 		var infoButton = document.getElementById("info-button");
 		var seekBar = document.getElementById("seek-bar");
 
-		video.textTracks[0].mode = 'showing'
 		video.addEventListener("playing", function(event) {
 			time = Math.floor(event.target.currentTime);	
 			var ticks = time * 10000000;

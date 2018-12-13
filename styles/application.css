@@ -21,7 +21,36 @@ a {
 	left: 0;
 	background: #000 url("../images/screenplay-logo-full-stacked.png") no-repeat center center;
 }
-
+.indicator {
+    -webkit-border-radius: 50em;
+    border-radius: 50em;
+    display: -webkit-flex;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    font-weight: 500;
+    width: 1.5em;
+    height: 1.5em;
+    background:url(../images/checkmark.png);
+    background-size: contain;
+}
+.cardIndicators {
+    right: .225em;
+    top: .225em;
+    position: absolute;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    contain: layout style;
+}
 .splash-author {
 	position: absolute;
 	color: #aaa;
