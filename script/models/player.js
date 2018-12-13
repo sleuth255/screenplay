@@ -82,30 +82,26 @@ Player.prototype.load = function(data, settings) {
 		        "type": mime.lookup(prefs.mimeType)
 		    });
         }
-		
-   	   if (item.MediaSources[0].DefaultSubtitleStreamIndex == null)
-   		   prefs.subtitleAvailable = false;
-   	   else
-   		   prefs.subtitleAvailable = true
-   	   if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
-   	   {	   
-  		   
-	      dom.append("#video", {
-	         nodeName: "track",
- 	         "kind": "subtitles",
-//		     "label": "English",
-//		     "srclang": "en",
-	         src: emby.getVideoSubtitleData({
-		         itemId: item.Id,
-		         mediaSourceId: item.MediaSources[0].Id,
-		         mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
-	         })
-          });
-   	   }
-
    	    var video = document.getElementById("video");		
-   	    if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
-    		  video.textTracks[0].mode = 'showing'
+		
+// set up subtitles if they are available
+		
+		prefs.subtitleAvailable = false;
+ 		if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
+   	    {	   
+ 	       prefs.subtitleAvailable = true;
+  		   video.textTracks[0].mode = 'showing'
+	       dom.append("#video", {
+	          nodeName: "track",
+ 	          "kind": "subtitles",
+	          src: emby.getVideoSubtitleData({
+		          itemId: item.Id,
+		          mediaSourceId: item.MediaSources[0].Id,
+		          mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
+	          })
+           });
+   	    }
+
 		var playerRegion = document.getElementById("player");		
 		var playButton = document.getElementById("play-pause");
 		var stopButton = document.getElementById("stop-exit");
