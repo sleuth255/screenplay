@@ -17,8 +17,7 @@ Player.prototype.load = function(data, settings) {
 		   text: "Container: " + item.Container
 	   });	
 	
-//	if (item.VideoType && item.VideoType == "VideoFile") {				
-	if (true) {				
+	if (true) {  //for now, just assume its a video item				
 		dom.append("body", {
 			nodeName: "div",
 			className: "player",
