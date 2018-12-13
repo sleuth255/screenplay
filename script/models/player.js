@@ -11,12 +11,6 @@ Player.prototype.load = function(data, settings) {
 	var self = this;
 	var item = data;
 	var time = 0;
-
-	   playerpopup.show({
-		   duration: 2000,
-		   text: "Container: " + item.Container
-	   });	
-	
 	if (true) {  //for now, just assume its a video item				
 		dom.append("body", {
 			nodeName: "div",
@@ -82,25 +76,25 @@ Player.prototype.load = function(data, settings) {
 		        "type": mime.lookup(prefs.mimeType)
 		    });
         }
-   	    var video = document.getElementById("video");		
-		
-// set up subtitles if they are available
-		
-		prefs.subtitleAvailable = false;
- 		if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
-   	    {	   
- 	       prefs.subtitleAvailable = true;
-  		   video.textTracks[0].mode = 'showing'
-	       dom.append("#video", {
-	          nodeName: "track",
- 	          "kind": "subtitles",
-	          src: emby.getVideoSubtitleData({
-		          itemId: item.Id,
-		          mediaSourceId: item.MediaSources[0].Id,
-		          mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
-	          })
+       	var video = document.getElementById("video");		
+
+// check subtitle availability
+
+       	prefs.subtitleAvailable = false;
+       	if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
+       	{	   
+          prefs.subtitleAvailable = true
+    	   dom.append("#video", {
+    	      nodeName: "track",
+     	      "kind": "subtitles",
+    	      src: emby.getVideoSubtitleData({
+    		      itemId: item.Id,
+    		      mediaSourceId: item.MediaSources[0].Id,
+    	          mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
+    	      })
            });
-   	    }
+    	  video.textTracks[0].mode = 'showing'
+       	}
 
 		var playerRegion = document.getElementById("player");		
 		var playButton = document.getElementById("play-pause");

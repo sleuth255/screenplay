@@ -700,7 +700,7 @@ Collection.prototype.load = function(data, settings) {
 		{
 			playerpopup.show({
 				duration: 2000,
-				text: "There is no item in your collection beginning with this letter"
+				text: "There is no top row item in your collection beginning with this letter"
 			});	
 		}
 
