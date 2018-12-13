@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 <head>
@@ -376,4 +377,384 @@
 	<div id="view"></div>
 	<div id="details"></div>
 </body>
+=======
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="./script/emby.js"></script>
+	<script type="text/javascript" src="./script/ajax.js"></script>
+	<script type="text/javascript" src="./script/keys.js"></script>	
+	<script type="text/javascript" src="./script/dom.js"></script>	
+	<script type="text/javascript" src="./script/sha1.js"></script>
+	<script type="text/javascript" src="./script/mime.js"></script>
+	<script type="text/javascript" src="./script/guid.js"></script>
+	<script type="text/javascript" src="./script/storage.js"></script>
+	<script type="text/javascript" src="./script/caret.js"></script>
+	<script type="text/javascript" src="./script/message.js"></script>	
+	<script type="text/javascript" src="./script/playerpopup.js"></script>	
+	<script type="text/javascript" src="./script/validaterequest.js"></script>	
+	<script type="text/javascript" src="./script/device.js"></script>
+
+	<script type="text/javascript" src="./script/models/renderer.js"></script>	
+	<script type="text/javascript" src="./script/models/prefs.js"></script>		
+	<script type="text/javascript" src="./script/models/splash.js"></script>		
+	<script type="text/javascript" src="./script/models/server.js"></script>
+	<script type="text/javascript" src="./script/models/user.js"></script>
+	<script type="text/javascript" src="./script/models/home.js"></script>
+	<script type="text/javascript" src="./script/models/collection.js"></script>
+	<script type="text/javascript" src="./script/models/collection.summary.js"></script>
+	<script type="text/javascript" src="./script/models/item.js"></script>
+	<script type="text/javascript" src="./script/models/player.js"></script>
+										
+	<script type="text/javascript">
+		dom.on(document, "DOMContentLoaded", function() {
+			var splash = new Splash();
+			var server = new Server();
+			var user = new User();
+			var home = new Home();						
+			var collection = new Collection();	
+			var summary = new CollectionSummary();	
+			var item = new Item();
+			var player = new Player();
+			var controlsVisible = false;
+			var subtitlesVisible = true;
+			var firstEvent = true;
+									
+			dom.addClass("body", device.bodyClass);
+			
+			dom.on(document, "serverOpenFailed", function(event) {
+				server.add(); 
+			});
+			
+			dom.on(document, "serverOpened", function(event) {
+				user.load(event.detail); 
+			});
+			
+			dom.on(document, "userAuthenticated", function(event) {
+				user.close();
+				dom.remove("#home")
+				home.load();
+			});
+
+			dom.on(document, "userPrefsSelected", function(event) {
+				history.pushState({
+					action: "settings"
+				}, "settings");
+				prefs.clientSettings();
+			});
+
+			dom.on(document, "userViewSelected", function(event) {
+				history.pushState({
+					action: "summary",
+					id: event.detail.id,
+					name: event.detail.name,
+					collectionType: event.detail.collectionType
+				}, "summary");
+				summary.load(event.detail);
+			});
+
+			dom.on(document, "userViewMoreSelected", function(event) {	
+				history.pushState({
+					action: "summary",					
+					id: event.detail.id,
+					name: event.detail.name,
+					collectionType: event.detail.collectionType
+				}, "summary");							
+				summary.load(event.detail);
+			});				
+				
+			dom.on(document, "allCollectionSelected", function(event) {	
+				history.pushState({
+					action: "all",					
+					id: event.detail.id,
+					name: event.detail.name,
+					collectionType: event.detail.collectionType,
+					imageTag: event.detail.imageTag
+				}, "all");							
+				collection.load(event.detail);
+			});					
+
+			dom.on(document, "mediaItemSelected", function(event) {
+				collection.close()
+				history.pushState({
+					action: "item",					
+					id: event.detail.id		
+				}, "item");
+				item.load(event.detail.id);
+			});						
+
+			dom.on(document, "playItem", function(event) {
+				controlsVisible =false;
+				 subtitlesVisible = true;
+				firstEvent = true;
+				player.load(event.detail);
+			});	
+			dom.on(document, "reloadItem", function(event) {
+				item.close()
+				item.load(event.detail.Id);
+			});	
+			dom.on(document, "itemDeleted", function(event) {
+				playerpopup.show({
+					duration: 1000,
+					text: "Item Deleted"
+				});	
+				item.close();
+				collection.close();
+				summary.close();
+				home.load()
+			});	
+
+			
+			window.addEventListener("popstate", function(event) {
+				if (dom.exists("#player"))
+					if (firstEvent)
+					{
+						firstEvent = false;
+						return;
+					}
+					else	
+			    	{	
+						player.close()
+				    	return;				
+			    	}
+				if (event.state) {
+					collection.close();
+					summary.close();
+					home.close();
+					switch(event.state.action) {
+						case "home":
+							home.load();
+							break;
+							
+						case "summary":
+							summary.load(event.state);
+							break;	
+							
+						case "all":				
+							collection.load(event.state);
+							break;
+							
+						case "item":
+							item.load(event.state.id);					
+							break;	
+						case "settings":
+							prefs.clientSettings(event.state.id);
+							break;
+					}
+				}
+				else
+					home.load()				
+			});	
+			
+			dom.on("#homeLink a", "click", function(event) {	
+				event.stopPropagation()
+				event.preventDefault()
+				history.pushState({
+					action: "home"
+				}, "home");							
+				collection.close();	
+				summary.close();
+				home.close();
+				home.load();
+			});
+
+			dom.on("#logo", "click", function(event) {			
+				storage.remove("emby.settings.current.server");
+				storage.remove("emby.settings.current.user");
+				storage.remove("emby.settings.servers");	
+				storage.remove("emby.settings.prefs");	
+				location.reload(true);
+			});
+
+			dom.on("#server", "click", function(event) {
+				server.add();
+			});
+			
+			dom.on("#user", "click", function(event) {
+				event.stopPropagation()
+				event.preventDefault()
+				user.login();
+			});
+			
+			document.addEventListener("keydown", function(event) 
+			{
+				if (dom.exists("#screenplaySettings"))
+					return;
+
+				if ((event.which == keys.KEY_RED && Math.floor(prefs.redButton) == 1)
+			    || (event.which == keys.KEY_GREEN && Math.floor(prefs.greenButton) == 1)
+			    || (event.which == keys.KEY_YELLOW && Math.floor(prefs.yellowButton) == 1)
+			    || (event.which == keys.KEY_BLUE && Math.floor(prefs.blueButton) == 1))
+			    {
+					storage.remove("emby.settings.current.server");
+					storage.remove("emby.settings.current.user");
+					storage.remove("emby.settings.servers");	
+					storage.remove("emby.settings.prefs");	
+					location.reload(true);
+				}
+
+				if (dom.exists("#player")) {
+					switch (event.which) {
+			           case keys.KEY_RED:
+			        	   if (Math.floor(prefs.redButton) == 2)
+			        	       if (controlsVisible)
+			        	       {
+			        	          player.hideControls();
+			        	          controlsVisible = false;
+			        	       }
+			        	       else
+			        	       {
+			        	 	      player.showControls({persist: true});
+			        	 	      controlsVisible = true;
+			        	       }
+			        	   else
+			        	   if (Math.floor(prefs.redButton) == 3)
+			        	       if (subtitlesVisible)
+			        	       {
+			        	          player.hideSubtitles();
+			        	          subtitlesVisible = false;
+			        	       }
+			        	       else
+			        	       {
+			        	 	      player.showSubtitles();
+			        	 	      subtitlesVisible = true;
+			        	       }
+				           return;
+				        case keys.KEY_GREEN:
+				        	if (Math.floor(prefs.greenButton) == 2)
+				        	    if (controlsVisible)
+				        	    {
+				        	       player.hideControls();
+				        	       controlsVisible = false;
+				        	    }
+				        	    else
+				        	    {
+				        	 	   player.showControls({persist: true});
+				        	 	   controlsVisible = true;
+				        	    }
+				        	   if (Math.floor(prefs.greenButton) == 3)
+				        	       if (subtitlesVisible)
+				        	       {
+				        	          player.hideSubtitles();
+				        	          subtitlesVisible = false;
+				        	       }
+				        	       else
+				        	       {
+				        	 	      player.showSubtitles();
+				        	 	      subtitlesVisible = true;
+				        	       }
+					        return;
+				        case keys.KEY_YELLOW:
+				        	if (Math.floor(prefs.yellowButton) == 2)
+				        	    if (controlsVisible)
+				        	    {
+				        	       player.hideControls();
+				        	       controlsVisible = false;
+				        	    }
+				        	    else
+				        	    {
+				        	 	   player.showControls({persist: true});
+				        	 	   controlsVisible = true;
+				        	    }
+				        	   if (Math.floor(prefs.yellowButton) == 3)
+				        	       if (subtitlesVisible)
+				        	       {
+				        	          player.hideSubtitles();
+				        	          subtitlesVisible = false;
+				        	       }
+				        	       else
+				        	       {
+				        	 	      player.showSubtitles();
+				        	 	      subtitlesVisible = true;
+				        	       }
+					        return;
+				        case keys.KEY_BLUE:
+				        	if (Math.floor(prefs.blueButton) == 2)
+				        	    if (controlsVisible)
+				        	    {
+				        	       player.hideControls();
+				        	       controlsVisible = false;
+				        	    }
+				        	    else
+				        	    {
+				        	 	   player.showControls({persist: true});
+				        	 	   controlsVisible = true;
+				        	    }
+				        	   if (Math.floor(prefs.blueButton) == 3)
+				        	       if (subtitlesVisible)
+				        	       {
+				        	          player.hideSubtitles();
+				        	          subtitlesVisible = false;
+				        	       }
+				        	       else
+				        	       {
+				        	 	      player.showSubtitles();
+				        	 	      subtitlesVisible = true;
+				        	       }
+					        return;
+					    case keys.KEY_RIGHT:
+						    player.skip();
+						    return;
+					    case keys.KEY_LEFT:
+						    player.backskip();
+						    return;
+					    case keys.KEY_PAUSE:
+						    player.pause();
+						    return;
+					    case keys.KEY_PLAY:
+						    player.play();
+						    return;
+					    case keys.KEY_STOP:
+					    	history.back();
+						    return;
+					    case keys.KEY_FAST_FWD:
+						    player.fastforward();
+						    return;
+					    case keys.KEY_REWIND:
+						    player.rewind();
+						    return;
+					    case keys.KEY_ESC || keys.KEY.BACK:
+					    	player.close()
+					    	return;
+					    default:
+						    return;
+					}
+				}
+			});
+			
+			dom.on("#view", "mousewheel", function(event) {
+				if (event.deltaY) {
+					this.scrollLeft += event.deltaY;
+				} else {
+					this.scrollLeft -= event.wheelDeltaY;
+				}
+			});	
+								
+			splash.show({
+				duration: 3000,
+				end: function() {
+					prefs.load();
+					server.load();	
+				}
+			});
+		});		
+	</script>
+	
+	<link type="text/css" rel="stylesheet" href="./styles/application.css">
+	<link type="text/css" rel="stylesheet" href="./styles/glyphicons.css">	
+</head>
+<body>
+	<div id="poster"></div>
+	<div id="header">
+		<div id="logo">
+			<img src="./images/screenplay-logo-full-small.png"/>
+		</div>
+		<div id="server"></div>
+		<div id="user"></div>
+ 	<div id="homeLink" style="display: none;"><a href="#" class="home-link"><span class="glyphicon home"></span></a></div> 
+	</div>
+	<div id="view"></div>
+	<div id="details"></div>
+</body>
+>>>>>>> a693c5d0c80e6497e4ce20b0e65356beeccd6324
 </html>
