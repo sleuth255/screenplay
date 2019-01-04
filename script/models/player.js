@@ -433,11 +433,15 @@ Player.prototype.restartAt = function(){
 
 Player.prototype.play = function() {
 	var video = document.getElementById("video");
+	var playButton = document.getElementById("play-pause");
+	playButton.innerHTML = "Pause";
 	video.play();
 	if (video.playbackRate != 1)
 	    video.playbackRate = 1;
 };
 Player.prototype.pause = function() {
+	var playButton = document.getElementById("play-pause");
+	playButton.innerHTML = "Play";
 	var video = document.getElementById("video");
 	video.pause();
 };
