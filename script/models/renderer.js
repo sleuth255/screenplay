@@ -61,7 +61,7 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 		}
 					
 		
-		data.Items.forEach(function(item, index) {	
+		data.Items.forEach(function(item, index) {
 			var column = Math.floor((startIndex + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;

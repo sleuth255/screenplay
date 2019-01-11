@@ -342,7 +342,7 @@ Collection.prototype.load = function(data, settings) {
 		
 	emby.getUserItems({
 		enableImageTypes: "Primary,Thumb,Backdrop",	
-		includeItemTypes: "movie,photoalbum,musicartist,series",	
+		includeItemTypes: "movie,photoalbum,series",	
 		sortBy: 'sortname',
 		sortOrder: 'ascending',	
 		startIndex: this.startIndex,		
