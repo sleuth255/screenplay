@@ -25,7 +25,7 @@ Collection.prototype.close = function() {
 	dom.off("body","keydown", this.lostfocus);
 };
 
-Collection.prototype.load = function(data, settings) {
+Collection.prototype.load = function(data, backstate, settings) {
 	data = data || {};	
 	settings = settings || {};
 	
@@ -33,8 +33,9 @@ Collection.prototype.load = function(data, settings) {
 	this.backdrops = new Array();
 	this.limit = settings.limit || 50;
 	this.startIndex = 0;
-	
-	var scrollLeft = 0;	
+    if (backstate && parseInt(prefs.lastItemIndex,10) > 15)
+        self.startIndex = prefs.lastItemIndex - 16;
+    var scrollLeft = 0;	
 	var columnLast = 0;
 	var columnWidth = 0;
 	var columnLimit = Math.floor(this.limit / 2);
@@ -323,6 +324,7 @@ Collection.prototype.load = function(data, settings) {
 	dom.delegate("#collection", "a.latest-item", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
+		prefs.lastItemIndex = event.delegateTarget.dataset.index;
 		dom.dispatchCustonEvent(document, "mediaItemSelected", event.delegateTarget.dataset);
 	});	
 
@@ -339,7 +341,7 @@ Collection.prototype.load = function(data, settings) {
 	dom.on("#collectionIndex a", "keyup", scrollToIndex);
 	
 	dom.on("#collectionIndex a", "keydown", indexNavigation);
-		
+			
 	emby.getUserItems({
 		enableImageTypes: "Primary,Thumb,Backdrop",	
 		includeItemTypes: "movie,photoalbum,series",	
@@ -386,9 +388,11 @@ Collection.prototype.load = function(data, settings) {
 			menuWidth = dom.offset(node).left;						
 			columnWidth = dom.width(".latest-items-column-abs");
 			columnViewportCount = Math.floor(dom.width("#view") / columnWidth);
-//			dom.dispatchCustonEvent(document, "collectionAllItemsInitialised");	
 		}
-		focus(".latest-item");
+		if (backstate == false || prefs.lastItemIndex == null)
+            focus(".latest-item");
+		else
+			restoreCollectionFocus();
 	}
 
 	function displayAllUserItemsNext(data) {
@@ -506,8 +510,10 @@ Collection.prototype.load = function(data, settings) {
 		event.stopPropagation()
 		event.preventDefault()
 		var index = event.currentTarget.dataset.index;
+		if (index == ' ')
+			index = 'sym';
 		dom.data("#collectionIndex", "lastFocus", "#collectionIndex a[data-index='" + index + "']");
-		 
+
 		emby.getUserItems({
 			enableImageTypes: "Primary,Thumb,Backdrop",	
 			includeItemTypes: "movie,photoalbum,musicartist,series",	
@@ -525,6 +531,7 @@ Collection.prototype.load = function(data, settings) {
 			},
 			error: error				
 		});
+
 	}
 	
 	function scrolling(event) {	
@@ -538,14 +545,14 @@ Collection.prototype.load = function(data, settings) {
 			start = start >= self.totalRecordCount - self.limit ? self.totalRecordCount - self.limit : start;
 			
 			if (start < self.totalRecordCount && start != self.startIndex) {
-				self.startIndex = start;
+				self.startIndex = start - 16;
 				emby.getUserItems({
 					enableImageTypes: "Primary,Thumb,Backdrop",	
 					includeItemTypes: "movie,photoalbum,musicartist,series",	
 					sortBy: 'sortname',
 					sortOrder: 'ascending',	
 					startIndex: self.startIndex,		
-					limit: self.limit,
+					limit: self.limit + 16,
 					initialise: false,
 					parentId: self.parentId,
 					parent: self.parent,	
@@ -602,6 +609,17 @@ Collection.prototype.load = function(data, settings) {
 		}		
 	}
 
+	function restoreCollectionFocus(){
+		var elmnts = dom.querySelectorAll(".latest-item")
+		for(var idx = 0;idx<elmnts.length;idx++)
+			if (elmnts[idx].dataset.index == prefs.lastItemIndex)
+			{	
+				highlightIndex(elmnts[idx].dataset.name.substring(0,1))
+				dom.focus(elmnts[idx]);
+				break;
+			}
+		prefs.lastItemIndex = null;
+	}
 	function focus(query) {
 		var node = dom.focus(query);
 		if (node && node.id) {
@@ -640,6 +658,8 @@ Collection.prototype.load = function(data, settings) {
 
 	function highlightIndex(index) {
 		dom.removeClass(".index-item", "index-current");
+		if (index == ' ')
+			index = 'sym';
 		if (index == "sym") {
 			dom.addClass("#index-1", "index-current");
 			dom.data("#collectionIndex", "lastFocus", "#index-1");
@@ -681,26 +701,57 @@ Collection.prototype.load = function(data, settings) {
 	}
 					
 	function collectionFocus() {
-		var index = self.currentIndex;
-		if (index != "sym")
+		// sort it
+		var elmnts = Array.prototype.slice.call(dom.querySelectorAll(".latest-items-column-abs"),0);
+        for(var a=0;a<elmnts.length;a++)
+        	if (elmnts[a].dataset.index == 'sym')
+        		elmnts[a].dataset.index = ' ';
+		var length = elmnts.length;
+	    var temp;
+	    for (var j = 0; j < length; j++)
+	        for (var i=0; i < (length - j - 1); i++)
+	            if (parseInt(elmnts[i].dataset.location,10) > parseInt(elmnts[i+1].dataset.location,10))
+	            {
+	               temp = elmnts[i];
+	               elmnts[i] = elmnts[i+1];
+	               elmnts[i+1] = temp;
+	            }
+	    	
+	    // find match
+	    var index = self.currentIndex;
+	    var node,idx,lastidx;
+		if (index == "sym")
+			index = ' ';
+	    for(idx = 0; idx < elmnts.length && elmnts[idx].dataset.index < index; idx++)
+	        lastidx = idx;
+	    if (lastidx == null)
+		    node = dom.querySelector("#"+elmnts[0].id.substring(2)+"_0")
+	    else	    
+		if (idx < elmnts.length && elmnts[idx].dataset.index == index)
 		{
-		   var child = "a:first-child";
-		   var idx = index.charCodeAt(0);
-		   for(var node; idx > 64 && !(node = dom.querySelector(".column-" + String.fromCharCode(idx)  + " " + child)) ;idx--)
-		   {
-			   	   child = "a:last-child";
-		   };
+			if (idx > 0)
+			{
+		        node = dom.querySelector("#"+elmnts[idx-1].id.substring(2)+"_1")
+		        if (node.dataset.name.substring(0,1) != index)
+			        node = dom.querySelector("#"+elmnts[idx].id.substring(2)+"_0")
+			}
+			else
+		        node = dom.querySelector("#"+elmnts[idx].id.substring(2)+"_0")
 		}
 		else
-			node = dom.querySelector(".column-sym a:first-child");
-
+		{
+	        node = dom.querySelector("#"+elmnts[lastidx].id.substring(2)+"_1")
+		    if (!node || node.dataset.name.substring(0,1) > index)
+		        node = dom.querySelector("#"+elmnts[lastidx].id.substring(2)+"_0")
+		}
+		   
 		if (node)
 		    node.focus();
 		else
 		{
 			playerpopup.show({
 				duration: 2000,
-				text: "There is no top row item in your collection beginning with this letter"
+				text: "There are no items in this collection"
 			});	
 		}
 

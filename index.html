@@ -91,7 +91,7 @@
 					collectionType: event.detail.collectionType,
 					imageTag: event.detail.imageTag
 				}, "all");							
-				collection.load(event.detail);
+				collection.load(event.detail,false);
 			});					
 
 			dom.on(document, "mediaItemSelected", function(event) {
@@ -100,7 +100,7 @@
 					action: "item",					
 					id: event.detail.id		
 				}, "item");
-				item.load(event.detail.id);
+				item.load(event.detail.id,false);
 			});						
 
 			dom.on(document, "playItem", function(event) {
@@ -111,7 +111,7 @@
 			});	
 			dom.on(document, "reloadItem", function(event) {
 				item.close()
-				item.load(event.detail.Id);
+				item.load(event.detail.Id,false);
 			});	
 			dom.on(document, "itemDeleted", function(event) {
 				playerpopup.show({
@@ -151,11 +151,11 @@
 							break;	
 							
 						case "all":				
-							collection.load(event.state);
+							collection.load(event.state,true);
 							break;
 							
 						case "item":
-							item.load(event.state.id);					
+							item.load(event.state.id,true);					
 							break;	
 						case "settings":
 							prefs.clientSettings(event.state.id);

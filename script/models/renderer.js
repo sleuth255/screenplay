@@ -73,7 +73,8 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 							" column-" + character + " " + addClass,
 					id: cid,
 					dataset: {
-						index: character
+						index: character,
+						location: (column * width)
 					},
 					style: {
 						left: (column * width) + "px"

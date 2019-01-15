@@ -12,7 +12,7 @@ function Item() {
 Item.prototype.close = function(){
 	dom.remove("#item")
 }
-Item.prototype.load = function(id, settings) {
+Item.prototype.load = function(id, backstate, settings) {
 	settings = settings || {};
 	var self = this;
 	
@@ -282,9 +282,13 @@ Item.prototype.load = function(id, settings) {
 		dom.delegate("#item", "a.latest-item", "click", function(event) {
 			event.stopPropagation()
 			event.preventDefault()
+			prefs.lastEpisodeFocus = event.delegateTarget.dataset.index;
 			dom.dispatchCustonEvent(document, "mediaItemSelected", event.delegateTarget.dataset);
 		});	
-        focus(".latest-item");
+		if (backstate == false || prefs.lastEpisodeFocus == null)
+            focus(".latest-item");
+		else
+			episodefocus();
 //		dom.delegate("#item", "a.latest-item", "keydown", navigation);
 	}
 
@@ -345,6 +349,12 @@ Item.prototype.load = function(id, settings) {
 		}				
 	}
 
+	function episodefocus(){
+		var elmnts = document.getElementsByClassName("latest-item")
+		var focusid = "#"+elmnts[prefs.lastEpisodeFocus].id
+		prefs.lastEpisodeFocus = null;
+        focus(focusid);
+	}
 	function focus(query) {
 		var node = dom.focus(query);
 		if (node && node.id) {

@@ -45,6 +45,8 @@ function Prefs() {
 	this.video3DFormat;
 	this.subtitleAvailable;
 	this.playedStatus;
+	this.lastEpisodeFocus = null;
+	this.lastItemIndex = null;
 };
 
 
