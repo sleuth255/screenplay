@@ -34,7 +34,8 @@ EMBY.prototype.authenticate = function(settings) {
 		method: "POST",
 		headers: this.headers(),			
 		data: {
-				password: CryptoJS.SHA1(settings.credentials.password).toString()
+			    Pw: settings.credentials.password,
+				Password: CryptoJS.SHA1(settings.credentials.password).toString()
 		}, 
 		success: function(data) {
 			data.ServerUrl = settings.server; 
@@ -367,7 +368,7 @@ EMBY.prototype.headers = function() {
 	
 	headers['Content-Type'] = 'application/json';
 	headers['Accept'] = 'application/json, text/javascript, */*; q=0.01';
-	headers['Authorization'] = 'MediaBrowser Client="' + device.client + '", Device="' + device.name + 
+	headers['Authorization'] = 'Emby Client="' + device.client + '", Device="' + device.name + 
 		'", DeviceId="' + device.id + '", Version="' + device.version + '"';
 	
 	if (this.settings.User) {
@@ -375,11 +376,12 @@ EMBY.prototype.headers = function() {
 	}
 	
 	if (this.settings.AccessToken) {
-		headers['X-MediaBrowser-Token'] = this.settings.AccessToken;
+		headers['X-Mediabrowser-Token'] = this.settings.AccessToken; //legacy: change to X-Emby-Token to remove v3.x server support
 	}
 	
 	return headers;			
 };
+
 
 EMBY.prototype.postSessionPlayingStarted = function(settings) {
 	settings = settings || {};

@@ -47,6 +47,7 @@ function Prefs() {
 	this.playedStatus;
 	this.lastEpisodeFocus = null;
 	this.lastItemIndex = null;
+	this.lastItemPosition = null;
 };
 
 

@@ -819,7 +819,7 @@ input:hover {
 	text-overflow: ellipsis;	
  	overflow: hidden;
  	white-space: nowrap;	
-	font-size: 16px;
+	font-size: 22px;
 }
 
 .cover-musicartist-large .cover-title, .cover-musicartist .cover-title, .cover-thumb-large .cover-title, .cover-thumb .cover-title, 

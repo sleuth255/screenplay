@@ -33,8 +33,8 @@ Collection.prototype.load = function(data, backstate, settings) {
 	this.backdrops = new Array();
 	this.limit = settings.limit || 50;
 	this.startIndex = 0;
-    if (backstate && parseInt(prefs.lastItemIndex,10) > 15)
-        self.startIndex = prefs.lastItemIndex - 16;
+    if (backstate && parseInt(prefs.lastItemIndex,10) > 25)
+        self.startIndex = prefs.lastItemIndex - 26;
     var scrollLeft = 0;	
 	var columnLast = 0;
 	var columnWidth = 0;
@@ -325,6 +325,7 @@ Collection.prototype.load = function(data, backstate, settings) {
 		event.stopPropagation()
 		event.preventDefault()
 		prefs.lastItemIndex = event.delegateTarget.dataset.index;
+		prefs.lastItemPosition = document.getElementById("view").scrollLeft;
 		dom.dispatchCustonEvent(document, "mediaItemSelected", event.delegateTarget.dataset);
 	});	
 
@@ -618,7 +619,8 @@ Collection.prototype.load = function(data, backstate, settings) {
 				dom.focus(elmnts[idx]);
 				break;
 			}
-		prefs.lastItemIndex = null;
+		document.getElementById("view").scrollLeft = prefs.lastItemPosition;
+		prefs.lastItemIndex = prefs.lastItemPosition = null;
 	}
 	function focus(query) {
 		var node = dom.focus(query);
