@@ -1,10 +1,11 @@
-// Author: Simon J. Hogan
-// Modifed: 24/04/2016
-// Sith'ari Consulting Australia
+// Author: Kevin Wilcox
+// Modifed: 02/06/2019
+// The Paradigm Grid
 // --------------------------------------------
 
-function Collection() {
-	this.backdrops;
+function LiveTv() {
+	this.total = 0;
+	this.count = 0;
 	
 	this.startIndex;
 	this.currentIndex;
@@ -13,28 +14,28 @@ function Collection() {
 	this.totalRecordCount;
 	
 	this.id;
-	this.parentId;
-	this.parent;
-	this.data;
 	this.lostfocus;
 };
 
-Collection.prototype.close = function() {
-	dom.remove("#collectionIndex");
-	dom.off("#view", "scroll", this.scroll);
-	dom.off("body","keydown", this.lostfocus);
+LiveTv.prototype.close = function() {
+
 };
 
-Collection.prototype.load = function(data, backstate, settings) {
-	data = data || {};	
+LiveTv.prototype.close = function() {
+	dom.remove("#collectionIndex");
+	dom.remove("playerBackdrop")
+	dom.off("#view", "scroll", this.scroll);
+	dom.off("body","keydown", this.lostfocus);
+}
+LiveTv.prototype.load = function(backstate, settings) {
 	settings = settings || {};
 	
 	var self = this;
-	this.backdrops = new Array();
+	this.total = 5;
+	this.count = 0;
+
 	this.limit = settings.limit || 50;
 	this.startIndex = 0;
-    if (backstate && parseInt(prefs.lastItemIndex,10) > 25)
-        self.startIndex = prefs.lastItemIndex - 26;
     var scrollLeft = 0;	
 	var columnLast = 0;
 	var columnWidth = 0;
@@ -45,17 +46,20 @@ Collection.prototype.load = function(data, backstate, settings) {
 	
 	this.id = guid.create();
 	var token = guid.create();	
-	this.parentId = data.id;
-	this.parent = {collectionType: data.collectionType, name: data.name, imageTag: data.imageTag};
-	this.data = data;	
-		
+
+	
+	
 	dom.hide("#server");
 	dom.hide("#user");
 	dom.show("#details")
 	dom.show("#homeLink");
-	
-	self.close();
 
+	self.close()
+	
+	dom.css("#poster", {
+		backgroundImage: "url(./images/generic-backdrop.png)"
+	});
+	
 	dom.html("#view", {
 		nodeName: "div",
 		className: "collection-view",
@@ -66,7 +70,7 @@ Collection.prototype.load = function(data, backstate, settings) {
 			id: "userViews_0"
 		}]
 	});	
-	
+
 	dom.append("body", {
 		nodeName: "div",
 		id: "collectionIndex",
@@ -317,16 +321,14 @@ Collection.prototype.load = function(data, backstate, settings) {
 			}
 		}]
 	})
-	
+
 	this.lostfocus = dom.on("body", "keydown", lostFocus);
-	this.scroll = dom.on("#view", "scroll", scrolling);
 			
 	dom.delegate("#collection", "a.latest-item", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
 		prefs.lastItemIndex = event.delegateTarget.dataset.index;
 		prefs.lastItemPosition = document.getElementById("view").scrollLeft;
-		prefs.isLiveTvItem = false;
 		dom.dispatchCustonEvent(document, "mediaItemSelected", event.delegateTarget.dataset);
 	});	
 
@@ -343,94 +345,84 @@ Collection.prototype.load = function(data, backstate, settings) {
 	dom.on("#collectionIndex a", "keyup", scrollToIndex);
 	
 	dom.on("#collectionIndex a", "keydown", indexNavigation);
-			
-	emby.getUserItems({
-		enableImageTypes: "Primary,Thumb,Backdrop",	
-		includeItemTypes: "movie,photoalbum,series",	
-		sortBy: 'sortname',
-		sortOrder: 'ascending',	
-		startIndex: this.startIndex,		
-		limit: this.limit,
-		parentId: this.parentId,
-		parent: this.parent,	
-		label: this.data.name,	
-		success: displayAllUserItems,
+
+	var today = new Date().toISOString()
+	emby.getLiveTvPrograms({
+		limit: 500,
+		HasAired: 'false',
+		MaxStartDate: today,
+		success: displayUserItems,
 		error: error				
 	});
-				
-	function displayAllUserItems(data) {	
-		self.totalRecordCount = data.TotalRecordCount;
-						
-		if (data.Items.length > 0) {					
-			data.Items.forEach(function(item, index) {						
-				if (item.BackdropImageTags[0]) {
-					self.backdrops.push(item.Id + ":" + item.BackdropImageTags[0]);
-				}	
-			});
-	
-			if (self.backdrops.length > 0) {
-				var index = Math.floor((Math.random() * self.backdrops.length))
-				var backdrop = self.backdrops[index].split(":");
-				
-				dom.css("#poster", {
-					backgroundImage: "url(" + emby.getImageUrl({'itemId': backdrop[0], tag: backdrop[1], imageType: 'Backdrop', height: 1080}) + ")"
-				});
-			}
-			
-			renderer.userAllItems(data, {
-				container: "#collection",
-				id: self.id,
-				token: token,
-				heading: data.label,
-				headerLink: "#homeLink a",
-				initialise: true
-			});		
-	
-			var node = dom.querySelector(".latest-items");
-			menuWidth = dom.offset(node).left;						
-			columnWidth = dom.width(".latest-items-column-abs");
-			columnViewportCount = Math.floor(dom.width("#view") / columnWidth);
+
+	function displayUserItems(data) {
+		// get in-progress shows and remove duplicates.
+		var today = new Date().toISOString()
+		var newdata = {
+			Items:[],
+			TotalRecordCount:0
 		}
+		for (var x = 0; x < data.Items.length-1;x++)
+			if (data.Items[x].StartDate < today && data.Items.length && data.Items[x].Name != data.Items[x+1].Name)
+				newdata.Items.push(data.Items[x])
+        newdata.TotalRecordCount = newdata.Items.length;
+
+		//sort by first char of name
+		var length = newdata.Items.length;
+	    var temp;
+	    for (var j = 0; j < length; j++)
+	        for (var i=0; i < (length - j - 1); i++)
+	            if (newdata.Items[i].Name[0] > newdata.Items[i+1].Name[0])
+	            {
+	               temp = newdata.Items[i];
+	               newdata.Items[i] = newdata.Items[i+1];
+	               newdata.Items[i+1] = temp;
+	            }
+	    	
+		
+/*
+		playerpopup.show({
+			duration: 2000,
+			text: newdata.Items.length+" "+newdata.Items[0].Name
+		});	
+*/		
+		
+		var id = guid.create();	
+									
+		if (newdata.Items.length > 0) {					
+			renderer.userAllTvItems(newdata, {
+				container: "#collection",
+				id: id,
+				heading: "On Now",
+				headerLink: "#homeLink a",
+				more: false
+			});
+		}	
+			
 		if (backstate == false || prefs.lastItemIndex == null)
             focus(".latest-item");
 		else
 			restoreCollectionFocus();
 	}
 
-	function displayAllUserItemsNext(data) {
-		self.backdrops.length = 0;
-								
-		if (data.Items.length > 0) {
-			data.Items.forEach(function(item, index) {						
-				if (item.BackdropImageTags[0]) {
-					self.backdrops.push(item.Id + ":" + item.BackdropImageTags[0]);
-				}	
-			});
-	
-			if (self.backdrops.length > 0) {
-				var index = Math.floor((Math.random() * self.backdrops.length))
-				var backdrop = self.backdrops[index].split(":");
-				
-				dom.css("#poster", {
-					backgroundImage: "url(" + emby.getImageUrl({'itemId': backdrop[0], tag: backdrop[1], imageType: 'Backdrop', height: 1080}) + ")"
-				});
+	function restoreCollectionFocus(){
+		var elmnts = dom.querySelectorAll(".latest-item")
+		for(var idx = 0;idx<elmnts.length;idx++)
+			if (elmnts[idx].dataset.index == prefs.lastItemIndex)
+			{	
+				highlightIndex(elmnts[idx].dataset.name.substring(0,1))
+				dom.focus(elmnts[idx]);
+				break;
 			}
-			
-			renderer.userAllItems(data, {
-				container: "#collection",
-				id: self.id,
-				heading: data.label,
-				headerLink: "#homeLink a",
-				initialise: false
-			});		
-		}
+		document.getElementById("view").scrollLeft = prefs.lastItemPosition;
+		prefs.lastItemIndex = prefs.lastItemPosition = null;
 	}
-	
+
 	function lostFocus(event) {
 		if (dom.exists("#screenplaySettings") || dom.exists("#player") || dom.exists("#validaterequest"))
 			return;
 		if (event.target.tagName != "A") {
-			dom.focus(dom.data("#view", "lastFocus"));
+			focus(dom.data("#view", "lastFocus"));
 		}
 	}
 
@@ -512,117 +504,23 @@ Collection.prototype.load = function(data, backstate, settings) {
 		event.stopPropagation()
 		event.preventDefault()
 		var index = event.currentTarget.dataset.index;
-		if (index == ' ')
-			index = 'sym';
+		if (index == 'sym')
+			index = ' ';
+		self.currentIndex = index;
+		var scrollpos = 0;
 		dom.data("#collectionIndex", "lastFocus", "#collectionIndex a[data-index='" + index + "']");
 
-		emby.getUserItems({
-			enableImageTypes: "Primary,Thumb,Backdrop",	
-			includeItemTypes: "movie,photoalbum,musicartist,series",	
-			sortBy: 'sortname',
-			sortOrder: 'ascending',	
-			nameStartsWithOrGreater: index == "sym" ? "%29" : index,	
-			limit: 1,
-			parentId: self.parentId,
-			success: function(data) {
-				var count = self.totalRecordCount - data.TotalRecordCount;
-				var view = dom.querySelector("#view");
-				view.scrollLeft = Math.floor((count/2) * columnWidth);
-				dom.removeClass(".index-item", "index-current");
-				highlightIndex(index);	
-			},
-			error: error				
-		});
-
+		var elmnts = Array.prototype.slice.call(dom.querySelectorAll(".latest-items-column-abs"),0);
+        for(var a=0;a<elmnts.length;a++)
+        	if (elmnts[a].dataset.index == 'sym')
+        		elmnts[a].dataset.index = ' ';
+		for (var x=0;x<elmnts.length && elmnts[x].dataset.index < index;x++)
+			scrollpos = elmnts[x].dataset.location;
+		var view = dom.querySelector("#view");
+        view.scrollLeft = scrollpos;			
+		
 	}
 	
-	function scrolling(event) {	
-		var start = 0;
-		var columnCurrent = Math.floor((event.currentTarget.scrollLeft - menuWidth) / columnWidth);
-		var startColumn = Math.floor(self.startIndex / 2);
-		var endColumn = Math.floor((self.startIndex + self.limit) / 2);
-		
-		if (columnCurrent > columnLast && columnCurrent >= endColumn - columnViewportCount - 1) {
-			start = (columnCurrent * 2);
-			start = start >= self.totalRecordCount - self.limit ? self.totalRecordCount - self.limit : start;
-			
-			if (start < self.totalRecordCount && start != self.startIndex) {
-				self.startIndex = start - 16;
-				emby.getUserItems({
-					enableImageTypes: "Primary,Thumb,Backdrop",	
-					includeItemTypes: "movie,photoalbum,musicartist,series",	
-					sortBy: 'sortname',
-					sortOrder: 'ascending',	
-					startIndex: self.startIndex,		
-					limit: self.limit + 16,
-					initialise: false,
-					parentId: self.parentId,
-					parent: self.parent,	
-					success: function(data) {
-						data.startIndex = self.startIndex;
-						displayAllUserItemsNext(data);
-						clear(0, startColumn - columnViewportCount);
-					},
-					error: error				
-				});								
-			}
-		}
-		
-	if (columnCurrent < columnLast && columnCurrent <= startColumn + columnViewportCount + 1) {
-			var limit = (self.limit/2);
-			limit =  limit % 2 ? limit - 1 : self.limit;
-			start = (columnCurrent * 2) - (limit/2);
-			start = start <= 10 ? 0 : start;
-			
-			if (start >= 0 && start != self.startIndex) {
-				self.startIndex = start;	
-				emby.getUserItems({
-					enableImageTypes: "Primary,Thumb,Backdrop",	
-					includeItemTypes: "movie,photoalbum,musicartist,series",	
-					sortBy: 'sortname',
-					sortOrder: 'ascending',	
-					startIndex: self.startIndex,		
-					limit: self.limit,
-					initialise: false,					
-					parentId: self.parentId,
-					parent: self.parent,	
-					success: function(data) {
-						data.startIndex = self.startIndex;
-						displayAllUserItemsNext(data);
-						clear(endColumn + columnViewportCount, self.totalRecordCount/2);
-					},
-					error: error				
-				});					
-			}		
-		}
-		
-		var node = dom.querySelector(dom.data("#view", "lastFocus"));
-//		if (node && (node.parentNode.offsetLeft < event.currentTarget.scrollLeft || node.parentNode.offsetLeft + node.parentNode.clientWidth > event.currentTarget.scrollLeft + dom.width("#view"))) {
-//			focus(".column-" + (columnCurrent+2) + " a");
-//		}
-		
-		scrollLeft = event.currentTarget.scrollLeft;				
-		columnLast = columnCurrent;
-}
-
-	function clear(start, end) {
-		for(var i = start; i <= end; i++) {
-			dom.remove("#c_" + self.id + "_" + i);
-		}		
-	}
-
-	function restoreCollectionFocus(){
-		var elmnts = dom.querySelectorAll(".latest-item")
-		for(var idx = 0;idx<elmnts.length;idx++)
-			if (elmnts[idx].dataset.index == prefs.lastItemIndex)
-			{	
-				highlightIndex(elmnts[idx].dataset.name.substring(0,1))
-				dom.focus(elmnts[idx]);
-				break;
-			}
-		document.getElementById("view").scrollLeft = prefs.lastItemPosition;
-		prefs.lastItemIndex = prefs.lastItemPosition = null;
-	}
 	function focus(query) {
 		var node = dom.focus(query);
 		if (node && node.id) {
@@ -659,6 +557,13 @@ Collection.prototype.load = function(data, backstate, settings) {
 		}
 	}
 
+	function error(data) {
+		complete();
+		message.show({
+			messageType: message.error,			
+			text: "Loading user livetv summary failed!"
+		});			
+	}			
 	function highlightIndex(index) {
 		dom.removeClass(".index-item", "index-current");
 		if (index == ' ')
@@ -727,8 +632,9 @@ Collection.prototype.load = function(data, backstate, settings) {
 			index = ' ';
 	    for(idx = 0; idx < elmnts.length && elmnts[idx].dataset.index < index; idx++)
 	        lastidx = idx;
-	    if (lastidx == null)
+	    if (lastidx == null){
 		    node = dom.querySelector("#"+elmnts[0].id.substring(2)+"_0")
+	    }
 	    else	    
 		if (idx < elmnts.length && elmnts[idx].dataset.index == index)
 		{
@@ -748,8 +654,9 @@ Collection.prototype.load = function(data, backstate, settings) {
 		        node = dom.querySelector("#"+elmnts[lastidx].id.substring(2)+"_0")
 		}
 		   
-		if (node)
+		if (node){
 		    node.focus();
+		}
 		else
 		{
 			playerpopup.show({
@@ -785,11 +692,4 @@ Collection.prototype.load = function(data, backstate, settings) {
 			}			
 		}
 	}
-					
-	function error(data) {
-		message.show({
-			messageType: message.error,			
-			text: "Loading user collection all items failed!"
-		});			
-	}				
 };

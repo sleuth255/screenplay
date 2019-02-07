@@ -9,6 +9,121 @@ function RENDERER() {
 	
 };
 
+RENDERER.prototype.userAllTvItems = function(data, settings) {
+	settings = settings || {};
+
+	var lastColumn = Math.ceil(data.TotalRecordCount / 2);
+	
+	var heading = settings.heading;
+	var container = settings.container;
+	var headerLink = settings.headerLink || "";	
+	var id = settings.id;
+	var initialise = settings.initialise || true;
+	var startIndex = data.startIndex || 0;
+	var addClass = settings.addClass || "";
+											
+if (data.Items.length > 0) {
+		var width = device.columnWidth;
+		if (initialise) {
+			var totalRecords = data.TotalRecordCount % 2 ? data.TotalRecordCount + 1 : data.TotalRecordCount;
+			
+			dom.append(container, {
+				nodeName: "div",
+				className: "latest-items latest-items-livetv",
+				id: id,
+				style: {
+					width: width * totalRecords / 2 + "px"
+				},
+				dataset: {
+					collectionType: "livetv",
+					limit: data.limit,
+					lastColumn: lastColumn
+				},
+				childNodes: [{
+					nodeName: "div",
+					className: "latest-items-header",
+					text: heading	
+				}]
+			});
+			
+			dom.data("#" + id, "count", data.Items.length);
+		}
+					
+		
+		data.Items.forEach(function(item, index) {
+			var end = Math.abs(new Date(item.EndDate) - new Date(item.StartDate))
+			var now = Math.abs(new Date() - new Date(item.StartDate))
+			var PlayedPercentage = now * 100 / end;
+			var column = Math.floor((startIndex + index) / 2);
+			var row = (startIndex + index) % 2;
+			var cid = "c_" + id + "_" + column;
+			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
+			if (!dom.exists("#" + cid)) {
+				dom.append("#" + id, {
+					nodeName: "div",
+					className: "latest-items-column-abs column-" + column + 
+							" column-" + character + " " + addClass,
+					id: cid,
+					dataset: {
+						index: character,
+						location: (column * width)
+					},
+					style: {
+						left: (column * width) + "px"
+					}						
+				});
+			}
+									
+			var up = (row == 0) ? headerLink : "#" + id + "_" + column + "_" + (row - 1) ;
+			var down = (row == 1) ? "%index%" : "#" + id + "_" + column + "_" + (row + 1);
+			var left = (column == 0) ? "%previous%" : "#" + id + "_" + (column - 1) + "_" + row;
+			var right = (column < lastColumn) ? "#" + id + "_" + (column + 1) + "_" + row : "%next%";	
+			
+			var imageId = item.ImageTags.Primary ? item.Id: data.parentId;
+			var imageTag = item.ImageTags.Primary ? item.ImageTags.Primary : "";	
+			var imageType = "primary";
+			var imageClass =  "cover cover-" + item.Type.toLowerCase();
+			
+			if (!dom.exists("#" + id + "_" + column + "_" + row)) {
+				dom.append("#c_" + id + "_" + column, {
+					nodeName: "a",
+					href: "#",
+					className: "latest-item latest-item-" + item.Type.toLowerCase(),
+					id: id + "_" + column + "_" + row,
+					dataset: {
+						backdrop: item.BackdropImageTags[0],
+						name: item.Name,
+						year: item.ProductionYear ? item.ProductionYear : "",
+						runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
+						id: item.Id,
+						index: startIndex + index,
+						keyUp: up,
+						keyRight: right,
+						keyLeft: left,
+						keyDown: down
+					},
+					childNodes: [{
+						nodeName: "div",
+						className: imageClass,
+						style: {
+							backgroundImage: PlayedPercentage > 0 ? 
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
+							//backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
+						},
+						childNodes: [{
+							nodeName: "div",
+							className: "cover-title",
+							text: item.Name
+						}]					
+					}]
+				});	
+			}
+		});	
+	}						
+};
+
+
 RENDERER.prototype.userAllItems = function(data, settings) {
 	settings = settings || {};
 

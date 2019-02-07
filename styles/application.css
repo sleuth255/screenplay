@@ -249,6 +249,15 @@ a {
 	background: #000 url("../images/screenplay-logo-full-stacked.png") no-repeat center center;
 }
 
+#playerBackdrop {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: #000;
+}
+
 .screenplayCol1 {
 	position: absolute;
 	top: +200px;
@@ -561,7 +570,7 @@ input:hover {
 	
 }
 
-.user-views-item, .user-views-item-settings {
+.user-views-item, .user-views-item-settings, .user-views-item-livetv {
 	display: block;
 	width: 200px;
 	height: 40px;
@@ -574,14 +583,14 @@ input:hover {
 	font-size: 30px;
 }
 
-.user-views-item:focus, .user-views-item-settings:focus {
+.user-views-item:focus, .user-views-item-settings:focus, .user-views-item-livetv:focus {
 	outline: none;
 	background-color: rgba(82, 181, 75, 0.3);	
 	border: 2px solid rgba(82, 181, 75, 1);	
 	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);	
 }
 
-.user-views-item:hover, .user-views-item-settings:hover {
+.user-views-item:hover, .user-views-item-settings:hover, .user-views-item-livetv:hover {
 	outline: none;
 	border: 2px solid rgba(82, 181, 75, 0.5);	
 	box-shadow: 0 0 20px rgba(82, 181, 75, 0.3);	
@@ -728,12 +737,12 @@ input:hover {
 	background-color: #333;
 }
 
-.cover-series-large, .cover-movie-large, .cover-season-large {
+.cover-series-large, .cover-movie-large, .cover-season-large, .cover-program-large {
 	width: 272px;
 	height: 400px;
 }
 
-.cover-series, .cover-movie, .cover-season {
+.cover-series, .cover-movie, .cover-season, .cover-program {
 	width: 129px;
 	height: 195px;
 }
@@ -771,12 +780,12 @@ input:hover {
 
 
 
-.view-1080 .cover-series-large, .view-1080 .cover-movie-large, .view-1080 .cover-season-large {
+.view-1080 .cover-series-large, .view-1080 .cover-movie-large, .view-1080 .cover-season-large, .view-1080 .cover-program-large {
 	width: 490px;
 	height: 720px;
 }
 
-.view-1080 .cover-series, .view-1080 .cover-movie, .view-1080 .cover-season {
+.view-1080 .cover-series, .view-1080 .cover-movie, .view-1080 .cover-season, .view-1080 .cover-program {
 	width: 233px;
 	height: 351px;
 }

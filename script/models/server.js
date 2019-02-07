@@ -64,6 +64,7 @@ Server.prototype.remove = function(index) {
 
 Server.prototype.add = function() {
 	var self = this;
+	dom.remove('#home');
 	
 	dom.append("body", {
 		nodeName: "div",

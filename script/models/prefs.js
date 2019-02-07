@@ -48,6 +48,9 @@ function Prefs() {
 	this.lastEpisodeFocus = null;
 	this.lastItemIndex = null;
 	this.lastItemPosition = null;
+	this.liveTvEnabled = false;
+	this.isLiveTvItem = false;
+	this.liveStreamId = null;
 };
 
 

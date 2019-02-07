@@ -93,6 +93,55 @@ EMBY.prototype.getUser = function(settings) {
 	});			
 };
 
+EMBY.prototype.getLiveTV = function(settings){
+	settings = settings || {};
+	
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTV/Info", {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.getLiveTvChannel = function(settings){
+	settings = settings || {};
+	var id = settings.id  || 0;
+	
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTV/Channels/"+id, {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.getLiveTvPrograms = function(settings){
+	settings = settings || {};
+	var limit = settings.limit || this.limit;
+	var MaxStartDate = settings.MaxStartDate || this.MaxStartDate;
+	var HasAired = settings.HasAired || this.HasAired
+	
+	
+	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending'+
+		(limit ? "&limit=" + limit : "")+
+		(HasAired ? "&HasAired=" + HasAired : "")+
+		(MaxStartDate ? "&MaxStartDate=" + MaxStartDate : "") , {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
 EMBY.prototype.getUserViews = function(settings) {
 	settings = settings || {};
 	
@@ -284,9 +333,7 @@ EMBY.prototype.getVideoStreamUrl = function(settings) {
 	var audioBitrate = Math.floor(prefs.audioBitrate) || 128000;
 	var maxAudioChannels = settings.maxAudioChannels || 5;
 	var direct = settings.direct || "true";
-	var extension = settings.extension || "";
 	var playSessionId = settings.playSessionId || "1c7fddb7712646f9ba6352f8d9afc79e"; // not using mediasource api so using random string per api doc;
-	extension = extension.length > 0 ? "." + extension : extension;
 
 	return this.settings.ServerUrl + "/Videos/" + itemId + "/stream" + "?static=" + direct + "&videoBitrate=" + videoBitrate + "&mediaSourceId=" + mediaSourceId +"&playSessionId =" + playSessionId +
 	"&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&api_key=" + this.settings.AccessToken + t;
@@ -330,6 +377,16 @@ EMBY.prototype.getVideoHlsStreamUrl = function(settings) {
 	"&videoCodec=" + videoCodec + "&audioCodec=" + audioCodec + "&audioStreamIndex=" + audioStreamIndex + "&videoBitrate=" + videoBitrate + 
 	"&audioBitrate=" + audioBitrate + "&maxAudioChannels=" + maxAudioChannels + "&maxHeight=" + maxHeight + "&level=" + level +
 	"&clientTime=" + clientTime + "&profile=" + profile + "&api_key=" + this.settings.AccessToken;
+	
+};
+
+
+EMBY.prototype.getLiveTvHlsStreamUrl = function(settings) {
+	settings = settings || {};
+		
+	var itemId = settings.itemid;
+	var container = settings.container;
+	return this.settings.ServerUrl + "/videos/" + itemId + "/live.m3u8?id=" + itemId + "&container=" + container;
 	
 };
 
@@ -407,6 +464,35 @@ EMBY.prototype.postSessionPlayingStopped = function(settings) {
 	settings = settings || {};
 
 	ajax.request(this.settings.ServerUrl + "/sessions/playing/stopped" , {
+		method: "POST",
+		headers: this.headers(), 
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+
+};
+
+EMBY.prototype.postLiveStreamClose = function(settings) {
+	settings = settings || {};
+	ajax.request(this.settings.ServerUrl + "/liveStreams/Close" , {
+		method: "POST",
+		headers: this.headers(), 
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+
+};
+
+EMBY.prototype.postPlaybackInfo = function(settings) {
+	settings = settings || {};
+
+	ajax.request(this.settings.ServerUrl + "/Items/"+settings.id+"/PlaybackInfo?UserId="+settings.userid+"&StartTimeTicks=0&IsPlayback=true&AutoOpenLiveStream=true&MaxStreamingBitrate=140000000&EnableDirectStream=true" , {
 		method: "POST",
 		headers: this.headers(), 
 		data: settings.data,

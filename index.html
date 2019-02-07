@@ -24,7 +24,9 @@
 	<script type="text/javascript" src="./script/models/collection.js"></script>
 	<script type="text/javascript" src="./script/models/collection.summary.js"></script>
 	<script type="text/javascript" src="./script/models/item.js"></script>
+	<script type="text/javascript" src="./script/models/playerloader.js"></script>
 	<script type="text/javascript" src="./script/models/player.js"></script>
+	<script type="text/javascript" src="./script/models/livetv.js"></script>
 										
 	<script type="text/javascript">
 		dom.on(document, "DOMContentLoaded", function() {
@@ -32,9 +34,11 @@
 			var server = new Server();
 			var user = new User();
 			var home = new Home();						
-			var collection = new Collection();	
+			var collection = new Collection();
+			var livetv = new LiveTv();
 			var summary = new CollectionSummary();	
 			var item = new Item();
+			var playerloader = new PlayerLoader();
 			var player = new Player();
 			var controlsVisible = false;
 			var subtitlesVisible = true;
@@ -52,7 +56,6 @@
 			
 			dom.on(document, "userAuthenticated", function(event) {
 				user.close();
-				dom.remove("#home")
 				home.load();
 			});
 
@@ -61,6 +64,13 @@
 					action: "settings"
 				}, "settings");
 				prefs.clientSettings();
+			});
+
+			dom.on(document, "userLiveTvSelected", function(event) {
+				history.pushState({
+					action: "livetv"
+				}, "livetv");
+				livetv.load(false);
 			});
 
 			dom.on(document, "userViewSelected", function(event) {
@@ -96,6 +106,8 @@
 
 			dom.on(document, "mediaItemSelected", function(event) {
 				collection.close()
+				home.close();
+				livetv.close()
 				history.pushState({
 					action: "item",					
 					id: event.detail.id		
@@ -104,10 +116,20 @@
 			});						
 
 			dom.on(document, "playItem", function(event) {
+				history.pushState({
+					action: "item",					
+					id: event.detail.id		
+				}, "item");
 				controlsVisible =false;
 				subtitlesVisible = true;
 				firstEvent = true;
-				player.load(event.detail);
+				playerloader.load(event.detail)
+			});	
+			dom.on(document, "launchPlayer", function(event) {
+				controlsVisible =false;
+				subtitlesVisible = true;
+				firstEvent = true;
+			    player.load(event.detail);
 			});	
 			dom.on(document, "reloadItem", function(event) {
 				item.close()
@@ -120,6 +142,8 @@
 				});	
 				item.close();
 				collection.close();
+				home.close();
+				livetv.close();
 				summary.close();
 				home.load()
 			});	
@@ -127,20 +151,16 @@
 			
 			window.addEventListener("popstate", function(event) {
 				if (dom.exists("#player"))
-					if (firstEvent)
-					{
-						firstEvent = false;
-						return;
-					}
-					else	
-			    	{	
-						player.close()
-				    	return;				
-			    	}
+				{
+					player.close()
+					return;
+				}
 				if (event.state) {
 					collection.close();
+					livetv.close();
 					summary.close();
 					home.close();
+					item.close();
 					switch(event.state.action) {
 						case "home":
 							home.load();
@@ -154,16 +174,32 @@
 							collection.load(event.state,true);
 							break;
 							
+						case "livetv":
+							livetv.load(true);					
+							break;	
+							
 						case "item":
 							item.load(event.state.id,true);					
 							break;	
+
 						case "settings":
 							prefs.clientSettings(event.state.id);
 							break;
 					}
 				}
 				else
-					home.load()				
+				{
+					if (dom.exists('#home'))
+					    playerpopup.show({
+						    duration: 2000,
+						    text: "Press MENU to exit"
+					    });
+					
+					history.pushState({
+						action: "home"
+					}, "home");
+					
+				}
 			});	
 			
 			dom.on("#homeLink a", "click", function(event) {	
@@ -173,6 +209,8 @@
 					action: "home"
 				}, "home");							
 				collection.close();	
+				home.close();
+				livetv.close();
 				summary.close();
 				home.close();
 				home.load();
@@ -187,21 +225,25 @@
 			});
 
 			dom.on("#server", "click", function(event) {
+				event.preventDefault()
+				event.stopPropagation();
+				home.close();
 				server.add();
 			});
 			
 			dom.on("#user", "click", function(event) {
-				event.stopPropagation()
 				event.preventDefault()
+				event.stopPropagation()
+				home.close()
 				user.login();
 			});
 			
 			document.addEventListener("keydown", function(event) 
 			{
-				if (dom.exists("#screenplaySettings"))
+                if (dom.exists("#screenplaySettings"))
 					return;
-
-				if ((event.which == keys.KEY_RED && Math.floor(prefs.redButton) == 1)
+				
+                if ((event.which == keys.KEY_RED && Math.floor(prefs.redButton) == 1)
 			    || (event.which == keys.KEY_GREEN && Math.floor(prefs.greenButton) == 1)
 			    || (event.which == keys.KEY_YELLOW && Math.floor(prefs.yellowButton) == 1)
 			    || (event.which == keys.KEY_BLUE && Math.floor(prefs.blueButton) == 1))
@@ -357,7 +399,13 @@
 					server.load();	
 				}
 			});
-		});		
+			function error(){
+				playerpopup.show({
+				      duration: 2000,
+				      text: 'Player not loaded'
+			       })		
+			};		
+		});
 	</script>
 	
 	<link type="text/css" rel="stylesheet" href="./styles/application.css">

@@ -16,14 +16,22 @@ Item.prototype.load = function(id, backstate, settings) {
 	settings = settings || {};
 	var self = this;
 	
+	dom.remove('#playerBackdrop');
 	dom.hide("#server");
 	dom.hide("#user");
 	dom.hide("#details")
 	dom.show("#homeLink");
 	
+
 	if (dom.exists("#item"))
 		dom.remove("#item")
 
+	dom.append("body", {
+		nodeName: "div",
+		className: "backdrop",
+		id: "playerBackdrop"
+	});
+	dom.hide('#playerBackdrop')
 	emby.getUserItem({
 		id: id,
 		success: displayItem,
@@ -32,6 +40,7 @@ Item.prototype.load = function(id, backstate, settings) {
 
 	function displayItem(data) {
 		self.data = data;
+
 		
 		if (data.Type == "Series" || data.Type == "Season")
 		{
@@ -103,54 +112,62 @@ Item.prototype.load = function(id, backstate, settings) {
 			      }]
 		      });		
 		   }
-		   dom.append("#userViews_0", {
-			   nodeName: "a",
-			   href: "#",
-			   className: "user-views-item user-views-item_" + ++idx,
-			   id: "viewTogglePlayed",
-			   dataset: {
-				   keyUp: ".user-views-item_"+ (idx-1),
-				   keyDown: ".user-views-item_"+ (idx+1),
-				   keyRight: "a.latest-item"	
-			   },
-			   childNodes: [{
-				   nodeName: "span",
-				   className: "user-views-item-name glyphicon played",	
-			       text: ""				
-			   }]
-		   });		
-		   if (data.CanDelete == true)
-		   {	   
+		   if (typeof data.ChannelId == 'undefined') // not a liveTv item
+		   {
 		      dom.append("#userViews_0", {
 			      nodeName: "a",
 			      href: "#",
 			      className: "user-views-item user-views-item_" + ++idx,
-			      id: "viewDelete",
+			      id: "viewTogglePlayed",
 			      dataset: {
 				      keyUp: ".user-views-item_"+ (idx-1),
 				      keyDown: ".user-views-item_"+ (idx+1),
-				     keyRight: "a.latest-item"	
+				      keyRight: "a.latest-item"	
 			      },
 			      childNodes: [{
 				      nodeName: "span",
-				      className: "user-views-item-name glyphicon trash",	
-				      text: ""				
+				      className: "user-views-item-name glyphicon played",	
+			          text: ""				
 			      }]
-		      });
+		      });		
+		      if (data.CanDelete == true)
+		      {	   
+		         dom.append("#userViews_0", {
+			         nodeName: "a",
+			         href: "#",
+			         className: "user-views-item user-views-item_" + ++idx,
+			         id: "viewDelete",
+			         dataset: {
+				         keyUp: ".user-views-item_"+ (idx-1),
+				         keyDown: ".user-views-item_"+ (idx+1),
+				        keyRight: "a.latest-item"	
+			         },
+			         childNodes: [{
+				         nodeName: "span",
+ 				         className: "user-views-item-name glyphicon trash",	
+				         text: ""				
+			         }]
+		         });
+		      }
 		   }
 		}
 		
 
 		
-		if (data.BackdropImageTags && data.BackdropImageTags[0]) {
+ 	    if (typeof data.ChannelId != 'undefined') // liveTv item
+ 	   	   dom.css("#poster", {
+ 			   backgroundImage: "url(./images/generic-backdrop.png)"
+ 		   });
+ 	    else
+		if (data.BackdropImageTags && data.BackdropImageTags[0])
 			dom.css("#poster", {
 				backgroundImage: "url(" + emby.getImageUrl({'itemId': data.Id, tag: data.BackdropImageTags[0], imageType: 'Backdrop', height: 1080}) + ")"
 			});	
-		} else if (data.ParentBackdropImageTags && data.ParentBackdropImageTags[0]) {
+		else 
+		if (data.ParentBackdropImageTags && data.ParentBackdropImageTags[0]) 
 			dom.css("#poster", {
 				backgroundImage: "url(" + emby.getImageUrl({'itemId': data.ParentBackdropItemId, tag: data.ParentBackdropImageTags[0], imageType: 'Backdrop', height: 1080}) + ")"
 			});				
-		}	
 		
 		dom.addClass("#item", "item-view-" + data.Type.toLowerCase());
 		
@@ -218,10 +235,12 @@ Item.prototype.load = function(id, backstate, settings) {
 
 
 		dom.on("#viewPlay", "click", function(event) {
+			event.preventDefault();
 			prefs.resumeTicks = 0;
-			dom.dispatchCustonEvent(document, "playItem", self.data);
+		    dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
 		dom.on("#viewResume", "click", function(event) {
+			event.preventDefault();
 			prefs.resumeTicks = data.UserData.PlaybackPositionTicks;
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
@@ -305,12 +324,6 @@ Item.prototype.load = function(id, backstate, settings) {
 		}
 		
 		if (dom.hasClass(self, "user-views-item")) {	
-/*
-			playerpopup.show({
-				duration: 5000,
-				text: "Up " + dom.data(self, "keyUp") + " Down: " + dom.data(self, "keyDown")
-			});
-*/
 			switch (event.which) {
 				case keys.KEY_LEFT: 
 					focus(dom.data(self, "keyLeft"));

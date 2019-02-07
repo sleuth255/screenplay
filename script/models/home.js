@@ -16,6 +16,11 @@ Home.prototype.close = function(){
 	
 }
 Home.prototype.load = function() {
+    if (dom.exists('#home'))
+    {
+		dom.focus('#viewItem_0_0');
+    	return;
+    }
 	var self = this;
 
 	this.backdrops = new Array();
@@ -62,16 +67,30 @@ Home.prototype.load = function() {
 
 	dom.delegate("#home", "a", "keydown", navigation);
 
-	emby.getUserViews({
-		success: displayUserViews,
+	
+	emby.getLiveTV({
+		success: getAllUserViews,
 		error: error			
 	});	
-		
+	
+	
+	function getAllUserViews(data){
+		   prefs.liveTvEnabled = false;
+		   for (var x = 0; x < data.EnabledUsers.length; x++)
+			   if (data.EnabledUsers[x] == emby.settings.User.Id)
+				   prefs.liveTvEnabled = true;
+			emby.getUserViews({
+				success: displayUserViews,
+				error: error			
+			});	
+	}
+	
 	function displayUserViews(data) {
 		var limit = 5;
 		var rowCount = 12;
 		var columnCount = 1;		
 		var currentColumn = 0;
+		var idx = 0;
 		
 
 		data.Items = data.Items.filter(function(item) {
@@ -100,7 +119,6 @@ Home.prototype.load = function() {
 		});
 							
 		
-		var idx = 0;
 		data.Items.forEach(function(item, index) {
 			var column = Math.floor(index/rowCount);
 			var row = index - (column*rowCount);
@@ -160,7 +178,44 @@ Home.prototype.load = function() {
 			});				
 		});
 
-// Collections logic
+		// LiveTV logic
+		
+
+		if (prefs.liveTvEnabled){
+			var column = Math.floor(idx/rowCount);
+			var row = idx - (column*rowCount);
+			currentColumn = column;
+			dom.append("#userViews", {
+				nodeName: "div",
+				className: "user-views-column",
+				id: "userViews_" + currentColumn
+			});
+				
+			dom.append("#userViews_" + currentColumn, {
+				nodeName: "a",
+				href: "#",
+				className: "user-views-item-livetv",
+				id: "viewItem_" + currentColumn + "_" + row,
+				dataset: {
+					id: "viewItem_livetv",
+					collectionType: "livetv",
+					name: "Live TV",
+					limit: limit,	
+					keyUp: row == 0 ? ".server-link" : "#viewItem_" + currentColumn + "_" + (row - 1),
+					keyRight: currentColumn ==  columnCount ? "#latestItemSet_0 a" : "#viewItem_" + (currentColumn + 1) + "_" + row + ", #latestItemSet_0 a",
+					keyDown: row == rowCount - 1 ? "#viewItem_" + currentColumn + "_" + row : "#viewItem_" + currentColumn + "_" + (row + 1),
+					keyLeft: currentColumn == 0 ? "#viewItem_" + currentColumn + "_" + row : "#viewItem_" + (currentColumn - 1) + "_" + row					
+				},
+				childNodes: [{
+					nodeName: "span",
+					className: "user-views-item-name",	
+					text: "Live TV"				
+					//text: item.CollectionType			
+				}]
+			});	
+			idx++;
+		}
+
 		
 // Settings logic
 		limit = 5;
@@ -168,13 +223,6 @@ Home.prototype.load = function() {
 		currentColumn = 0;
 		var column = Math.floor(idx/rowCount);
 		var row = idx - (column*rowCount);
-			currentColumn = column;
-			dom.append("#userViews", {
-				nodeName: "div",
-				className: "user-views-column",
-				id: "userViews_" + currentColumn
-			});
-			
 		dom.append("#userViews_" + currentColumn, {
 			nodeName: "a",
 			href: "#",
@@ -206,12 +254,19 @@ Home.prototype.load = function() {
 			self.close()
 			dom.dispatchCustonEvent(document, "userPrefsSelected", this.dataset);
 		});
+		dom.on(".user-views-item-livetv", "click", function(event) {
+			event.stopPropagation()
+			event.preventDefault()
+			self.close()
+			dom.dispatchCustonEvent(document, "userLiveTvSelected", this.dataset);
+		});
 		dom.on(".user-views-item", "click", function(event) {
 			event.stopPropagation()
 			event.preventDefault()
 			self.close()
 			dom.dispatchCustonEvent(document, "userViewSelected", this.dataset);
-		});		
+		});	
+		dom.focus('#viewItem_0_0');
 	}
 
 	function displayUserResumeItems(data) {
@@ -310,11 +365,11 @@ Home.prototype.load = function() {
 		var self = event.delegateTarget;
 
 		if (event.which == keys.KEY_OK) {
-			self.click();
+		    self.click();
 			return;
 		}
 					
-		if (dom.hasClass(self, "user-views-item") || dom.hasClass(self, "user-views-item-settings")) {	
+		if (dom.hasClass(self, "user-views-item") || dom.hasClass(self, "user-views-item-settings") || dom.hasClass(self, "user-views-item-livetv")) {	
 			switch (event.which) {
 				case keys.KEY_LEFT: 
 					focus(dom.data(self, "keyLeft"));

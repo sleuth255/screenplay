@@ -4,12 +4,14 @@
 // --------------------------------------------
 
 function Player() {
+	var item;
+	var playStopped;
 };
-
 Player.prototype.load = function(data, settings) {
 	settings = settings || {};
 	var self = this;
-	var item = data;
+	self.playStopped = false;
+	item = data;
 	var time = 0;
 	if (true) {  //for now, just assume its a video item				
 		dom.append("body", {
@@ -51,18 +53,22 @@ Player.prototype.load = function(data, settings) {
 		var node = dom.querySelector("#video");
 		node.setAttribute("crossorigin", "anonymous")
 		node.setAttribute("webkit-playsinline","")
-       if (prefs.directPlay == true)
+		node.setAttribute("playsinline","")
+		node.setAttribute("autoplay","autoplay")
+		node.setAttribute("preload","metadata")
+        if (prefs.directPlay == true || prefs.isLiveTvItem)
         {	
           	prefs.mimeType = "mp4"
+          	
        	    dom.append("#video", {
 			    nodeName: "source",
 			    src: emby.getVideoStreamUrl({
 				    itemId: item.Id,					
 			        mediaSourceId: item.MediaSources[0].Id,
-				    extension: item.MediaSources[0].Container
 			    }),
 			    "type": mime.lookup(prefs.mimeType)
 		    });
+		    
 	    }
         else
         {
@@ -76,7 +82,8 @@ Player.prototype.load = function(data, settings) {
 		        "type": mime.lookup(prefs.mimeType)
 		    });
         }
-       	var video = document.getElementById("video");		
+		var video = document.getElementById("video");
+		
 
 // check subtitle availability
 
@@ -84,15 +91,15 @@ Player.prototype.load = function(data, settings) {
        	if (typeof item.MediaSources[0].DefaultSubtitleStreamIndex != 'undefined')
        	{	   
           prefs.subtitleAvailable = true
-    	   dom.append("#video", {
-    	      nodeName: "track",
-     	      "kind": "subtitles",
-    	      src: emby.getVideoSubtitleData({
-    		      itemId: item.Id,
-    		      mediaSourceId: item.MediaSources[0].Id,
-    	          mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
-    	      })
-           });
+    	  dom.append("#video", {
+    	     nodeName: "track",
+     	     "kind": "subtitles",
+    	     src: emby.getVideoSubtitleData({
+    	         itemId: item.Id,
+    	         mediaSourceId: item.MediaSources[0].Id,
+    	         mediaSourceIndex: item.MediaSources[0].DefaultSubtitleStreamIndex
+    	     })
+          });
     	  video.textTracks[0].mode = 'showing'
        	}
 
@@ -125,7 +132,7 @@ Player.prototype.load = function(data, settings) {
 	
 		video.addEventListener("timeupdate", function(event) {
 			// update the time/duration and slider values
-			if (video.currentTime == 0)
+			if (video.currentTime == 0 || self.playStopped)
 				return;
 			prefs.videoDuration = video.duration;
 			var durhr = Math.floor(prefs.videoDuration / 3600);
@@ -161,21 +168,28 @@ Player.prototype.load = function(data, settings) {
 			time = Math.floor(event.target.currentTime);	
 			var ticks = time * 10000000;
 
-			emby.postSessionPlayingProgress({
-				data: {
-					ItemId: item.Id,
-					MediaSourceId: item.Id,
-					QueueableMediaTypes: "video",
-					CanSeek: true,
-					PositionTicks: ticks,
-					PlayMethod: "DirectStream",
-					IsPaused: true
-				}
-			});
+			if (!self.playStopped)
+			{
+				playerpopup.show({
+					duration: 1000,
+					text: "video onpause"+' '+self.playStopped
+				});	
+			   emby.postSessionPlayingProgress({
+				   data: {
+					   ItemId: item.Id,
+					   MediaSourceId: item.Id,
+					   QueueableMediaTypes: "video",
+					   CanSeek: true,
+					   PositionTicks: ticks,
+					   PlayMethod: "DirectStream",
+					   IsPaused: true
+				   }
+			   });
+			}
 						
 			console.log("Play Paused - " + time + " : " + ticks);
 		};
-		
+
 		// Event listener for the play/pause button
 		playButton.addEventListener("click", function() {
 			if (video.paused == true) {
@@ -228,7 +242,7 @@ Player.prototype.load = function(data, settings) {
 		seekBar.addEventListener("mouseup", function() {
 			self.showControls({duration: 1000})
 			prefs.currentTime = prefs.videoDuration * (seekBar.value / 100);
-			if (prefs.directPlay == true)
+			if (prefs.directPlay == true || prefs.isLiveTvItem)
 				video.currentTime = prefs.currentTime
 			else
 			{	
@@ -248,6 +262,7 @@ Player.prototype.load = function(data, settings) {
 	        video.play();
 			playButton.innerHTML = "Pause";
 		});
+
 
 		video.addEventListener("mousemove",function(){
 			self.showControls({duration: 6000});
@@ -293,12 +308,14 @@ Player.prototype.load = function(data, settings) {
 
 Player.prototype.close = function(event) {
 //	clearInterval(this.interval)
-	var video = document.getElementById("video");		
+	var video = document.getElementById("video");
+	var self = this
+	self.playStopped = true;
 	time = Math.floor(video.currentTime);	
 	var ticks = time * 10000000;
 
 	emby.postSessionPlayingStopped({
-		success: function(){emby.postActiveEncodingStop()},
+		success: stopEncoding,
 		data: {
 			ItemId: item.Id,
 			MediaSourceId: item.Id,
@@ -308,11 +325,23 @@ Player.prototype.close = function(event) {
 			PlayMethod: "DirectStream"
 		}
 	});	
+	emby.postActiveEncodingStop()
+	if (prefs.liveStreamId != null)
+	   emby.postLiveStreamClose({
+		   success: stopEncoding,
+		   data: {
+			   LiveStreamId: prefs.liveStreamId
+		   }
+	})
 	
  
     dom.remove("#player");	
 	dom.remove("#video-controls");
 	dom.focus("#viewPlay")
+	
+	function stopEncoding(data){
+		return;
+	}
    	
 };
 
@@ -403,7 +432,7 @@ Player.prototype.restartAt = function(){
 	if (restartPoint < 0)
 	   restartPoint = 0;
 	var video = document.getElementById("video");
-    if (prefs.directPlay == true)
+    if (prefs.directPlay == true || prefs.isLiveTvItem)
     {
     	video.currentTime = Math.floor(prefs.currentTime + prefs.skipTime)
     }	

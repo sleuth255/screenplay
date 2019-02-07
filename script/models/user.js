@@ -76,11 +76,12 @@ User.prototype.authenticate = function(data) {
 							dom.focus(dom.data("#view", "lastFocus"));
 							break;	
 						case keys.KEY_OK: 
+							event.preventDefault();
 							event.target.click();
 							break;																			
 					}
 				});	
-
+                
 				dom.on("#homeLink a", "keydown", function(event) {
 					switch (event.which) {
 						case keys.KEY_DOWN: 
