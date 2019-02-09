@@ -555,6 +555,9 @@
 .glyphicon.forward:before {
 	content: "\E177";
 }
+.glyphicon.record:before {
+	content: "\E170";
+}
 .glyphicon.trash:before {
 	content: "\E017";
 }

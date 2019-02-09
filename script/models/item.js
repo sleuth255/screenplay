@@ -5,6 +5,7 @@
 
 function Item() {
 	this.data = {};
+	this.tvdata = {};
 	this.iteration;
 	this.playedStatus;
 };
@@ -32,14 +33,32 @@ Item.prototype.load = function(id, backstate, settings) {
 		id: "playerBackdrop"
 	});
 	dom.hide('#playerBackdrop')
-	emby.getUserItem({
+	emby.getLiveTvItem({
 		id: id,
-		success: displayItem,
-		error: error					
+		success: storeTvItem,
+		error: getUserItem					
 	})	
 
+	function storeTvItem(data){
+		self.tvdata = data;
+		emby.getUserItem({
+			id: id,
+			success: displayItem,
+			error: error					
+		})	
+	}
+	function getUserItem(){
+		self.tvdata = {};
+		emby.getUserItem({
+			id: id,
+			success: displayItem,
+			error: error					
+		})	
+		
+	}
 	function displayItem(data) {
 		self.data = data;
+		now = new Date().toISOString();
 
 		
 		if (data.Type == "Series" || data.Type == "Season")
@@ -69,23 +88,7 @@ Item.prototype.load = function(id, backstate, settings) {
 				   childNodes: [{
 					   nodeName: "div",
 					   className: "user-views-column",
-					   id: "userViews_0",
-					   childNodes: [{
-						   nodeName: "a",
-						   className: "user-views-item user-views-item_0",
-						   href: "#",
-						   id: "viewPlay",
-						   dataset: {
-							   keyUp: "#homeLink a",
-							   keyDown: ".user-views-item_"+ (idx+1),
-							   keyRight: "a.latest-item"	
-						   },
-						   childNodes: [{
-							   nodeName: "span",
-							   className: "user-views-item-name glyphicon play",
-							   text: ""
-						   }]					
-					   }]
+					   id: "userViews_0"
 				   }]
 			   }, {
 				   nodeName: "div",
@@ -93,6 +96,45 @@ Item.prototype.load = function(id, backstate, settings) {
 				   id: "itemContent"
 			   }]
 		   });
+		   if (typeof data.ChannelId != 'undefined' && data.StartDate > now) // not a liveTv item
+		   {
+		      dom.append("#userViews_0", {
+			      nodeName: "a",
+			      href: "#",
+			      className: "user-views-item user-views-item_0",
+			      id: "viewRecord",
+			      dataset: {
+					   keyUp: "#homeLink a",
+					   keyDown: ".user-views-item_"+ (idx+1),
+					   keyRight: "a.latest-item"	
+			      },
+			      childNodes: [{
+				      nodeName: "span",
+				      className: "user-views-item-name glyphicon record",	
+				      text: ""				
+			      }]
+		      });
+		   }
+		   else
+		   {
+		      dom.append("#userViews_0", {
+			      nodeName: "a",
+			      href: "#",
+			      className: "user-views-item user-views-item_0",
+			      id: "viewPlay",
+			      dataset: {
+					   keyUp: "#homeLink a",
+					   keyDown: ".user-views-item_"+ (idx+1),
+					   keyRight: "a.latest-item"	
+			      },
+			      childNodes: [{
+				      nodeName: "span",
+				      className: "user-views-item-name glyphicon play",	
+				      text: ""				
+			      }]
+		      });
+		   }
+		   
 		   if (data.UserData.PlaybackPositionTicks > 0)  // resume data available: show resume button
 		   {
    		      dom.append("#userViews_0", {
@@ -112,6 +154,7 @@ Item.prototype.load = function(id, backstate, settings) {
 			      }]
 		      });		
 		   }
+		   
 		   if (typeof data.ChannelId == 'undefined') // not a liveTv item
 		   {
 		      dom.append("#userViews_0", {
@@ -171,7 +214,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		
 		dom.addClass("#item", "item-view-" + data.Type.toLowerCase());
 		
-		renderer.userItem(data, {
+		renderer.userItem(data,self.tvdata, {
 			container: "#itemContent"
 		});
 		

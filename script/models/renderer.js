@@ -51,9 +51,13 @@ if (data.Items.length > 0) {
 					
 		
 		data.Items.forEach(function(item, index) {
-			var end = Math.abs(new Date(item.EndDate) - new Date(item.StartDate))
-			var now = Math.abs(new Date() - new Date(item.StartDate))
-			var PlayedPercentage = now * 100 / end;
+			var now = new Date()
+			var itemStartDate = new Date(item.StartDate)
+			var end = Math.abs(new Date(item.EndDate) - itemStartDate)
+			var start = Math.abs(new Date() - itemStartDate)
+			var PlayedPercentage = start * 100 / end;
+			if (PlayedPercentage >= 100 || itemStartDate > now)
+				PlayedPercentage = 0;
 			var column = Math.floor((startIndex + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;
@@ -95,6 +99,7 @@ if (data.Items.length > 0) {
 						name: item.Name,
 						year: item.ProductionYear ? item.ProductionYear : "",
 						runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
+						startdate: item.StartDate,
 						id: item.Id,
 						index: startIndex + index,
 						keyUp: up,
@@ -109,7 +114,6 @@ if (data.Items.length > 0) {
 							backgroundImage: PlayedPercentage > 0 ? 
 									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
 									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
-							//backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
 						},
 						childNodes: [{
 							nodeName: "div",
@@ -498,9 +502,10 @@ RENDERER.prototype.userResumeItems = function(data, settings) {
 	}
 };
 
-RENDERER.prototype.userItem = function(data, settings) {
+RENDERER.prototype.userItem = function(data,tvdata, settings) {
 	settings = settings || {};
-	var item = data;	
+	var item = data;
+	var tvitem = tvdata;
 	var container = settings.container;
 	
 	var imageId = item.Id;
@@ -535,7 +540,7 @@ RENDERER.prototype.userItem = function(data, settings) {
 				    childNodes:
 				    [{
 			           nodeName: "div",
-			           className: item.UserData.Played ? "cardIndicators indicator" : "nothing"
+			           className: item.UserData.Played ? "cardIndicators indicator" : tvitem.SeriesTimerId ? "cardIndicators seriesRecording" : tvitem.TimerId ? "cardIndicators episodeRecording" :"nothing"
 				    }]
 	           }]
 			});
@@ -550,6 +555,7 @@ RENDERER.prototype.userItem = function(data, settings) {
 	var time = item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : Math.round((item.CumulativeRunTimeTicks/(60*10000000)));
 	var hours = (time >= 60 ? Math.floor(time/60) + " hr " : "");
 	var mins = (time % 60 > 0 ? time % 60 + " min" : "");
+	var now = new Date().toISOString();
 	dom.append(container, {
 		nodeName: "div",
 		id: "itemDetails",
@@ -577,6 +583,10 @@ RENDERER.prototype.userItem = function(data, settings) {
 			nodeName: "div",
 			className: "runtime",
 			text: hours + mins
+		} : {}, tvitem.StartDate && tvitem.StartDate > now ? {
+			nodeName: "div",
+			className: "genre",
+			text: "Airs "+formatDate(item.StartDate)+" on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
 		} : {}, item.Genres && item.Genres.length > 0 ? {
 			nodeName: "div",
 			className: "genre",
@@ -608,6 +618,26 @@ RENDERER.prototype.userItem = function(data, settings) {
 		} : {}]
 	});		
 
+    function formatDate(isoDate) {
+  	  var monthNames = 
+      [
+	      "January", "February", "March",
+  	      "April", "May", "June", "July",
+  	      "August", "September", "October",
+  	      "November", "December"
+  	  ];
+  	  var date = new Date(isoDate)
+  	  var day = date.getDate();
+  	  var monthIndex = date.getMonth();
+  	  var hours = date.getHours();
+  	  var minutes = date.getMinutes();
+  	  var ampm = hours >= 12 ? 'pm' : 'am';
+  	  hours = hours % 12;
+  	  hours = hours ? hours : 12; // the hour '0' should be '12'
+  	  minutes = minutes < 10 ? '0'+minutes : minutes;
+  	  var strTime = hours + ':' + minutes + ' ' + ampm;
+  	  return monthNames[monthIndex]+' '+ day + ' at ' + strTime;
+  }
 };
 
 RENDERER.prototype.userItemChildren = function(data, settings) {

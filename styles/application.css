@@ -21,6 +21,42 @@ a {
 	left: 0;
 	background: #000 url("../images/screenplay-logo-full-stacked.png") no-repeat center center;
 }
+.seriesRecording {
+    -webkit-border-radius: 50em;
+    border-radius: 50em;
+    display: -webkit-flex;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    font-weight: 500;
+    width: 1.5em;
+    height: 1.5em;
+    background:url(../images/seriesrecord.png);
+    background-size: contain;
+}
+.episodeRecording {
+    -webkit-border-radius: 50em;
+    border-radius: 50em;
+    display: -webkit-flex;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    font-weight: 500;
+    width: 1.5em;
+    height: 1.5em;
+    background:url(../images/record.png);
+    background-size: contain;
+}
 .indicator {
     -webkit-border-radius: 50em;
     border-radius: 50em;

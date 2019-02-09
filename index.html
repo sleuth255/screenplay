@@ -73,6 +73,13 @@
 				livetv.load(false);
 			});
 
+			dom.on(document, "liveTvCollectionSelected", function(event) {
+				history.pushState({
+					action: "livetv"
+				}, "livetv");
+				livetv.load(false);
+			});
+
 			dom.on(document, "userViewSelected", function(event) {
 				history.pushState({
 					action: "summary",

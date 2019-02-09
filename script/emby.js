@@ -125,13 +125,19 @@ EMBY.prototype.getLiveTvChannel = function(settings){
 EMBY.prototype.getLiveTvPrograms = function(settings){
 	settings = settings || {};
 	var limit = settings.limit || this.limit;
-	var MaxStartDate = settings.MaxStartDate || this.MaxStartDate;
-	var HasAired = settings.HasAired || this.HasAired
+	var MaxStartDate = settings.MaxStartDate || "";
+	var MinStartDate = settings.MinStartDate || "";
+	var isMovie = settings.isMovie || "";
+	var isSeries = settings.isSeries || "";
+	var HasAired = settings.HasAired || "";
 	
 	
 	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending'+
 		(limit ? "&limit=" + limit : "")+
 		(HasAired ? "&HasAired=" + HasAired : "")+
+		(MinStartDate ? "&MinStartDate=" + MinStartDate : "")+
+		(isMovie ? "&isMovie=" + isMovie : "")+
+		(isSeries ? "&isSeries=" + isSeries : "")+
 		(MaxStartDate ? "&MaxStartDate=" + MaxStartDate : "") , {
 		method: "GET",
 		headers: this.headers(), 
@@ -262,6 +268,19 @@ EMBY.prototype.getUserItem = function(settings) {
 	settings = settings || {};
 	
 	ajax.request(this.settings.ServerUrl + "/users/" + this.settings.User.Id  + "/items/" + settings.id, {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.getLiveTvItem = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/Programs/" + settings.id, {
 		method: "GET",
 		headers: this.headers(), 
 		success: function(data) {
