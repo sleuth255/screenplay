@@ -79,7 +79,7 @@ if (data.Items.length > 0) {
 			}
 									
 			var up = (row == 0) ? headerLink : "#" + id + "_" + column + "_" + (row - 1) ;
-			var down = (row == 1) ? "%index%" : "#" + id + "_" + column + "_" + (row + 1);
+			var down = ((index+1) == data.Items.length) ? "%index%" : ((row == 1) ? "%index%" : "#" + id + "_" + column + "_" + (row + 1));
 			var left = (column == 0) ? "%previous%" : "#" + id + "_" + (column - 1) + "_" + row;
 			var right = (column < lastColumn) ? "#" + id + "_" + (column + 1) + "_" + row : "%next%";	
 			
@@ -97,6 +97,8 @@ if (data.Items.length > 0) {
 					dataset: {
 						backdrop: item.BackdropImageTags[0],
 						name: item.Name,
+						episode: item.EpisodeTitle ? item.EpisodeTitle : "",
+						channelid: item.ChannelId,
 						year: item.ProductionYear ? item.ProductionYear : "",
 						runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
 						startdate: item.StartDate,
@@ -202,7 +204,7 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 			}
 									
 			var up = (row == 0) ? headerLink : "#" + id + "_" + column + "_" + (row - 1) ;
-			var down = (row == 1) ? "%index%" : "#" + id + "_" + column + "_" + (row + 1);
+			var down = ((index+1) == data.Items.length) ? "%index%" : ((row == 1) ? "%index%" : "#" + id + "_" + column + "_" + (row + 1));
 			var left = (column == 0) ? "%previous%" : "#" + id + "_" + (column - 1) + "_" + row;
 			var right = (column < lastColumn) ? "#" + id + "_" + (column + 1) + "_" + row : "%next%";	
 			
@@ -566,7 +568,7 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 		childNodes: [{
 			nodeName: "div",
 			className: "title",
-			text: item.Name
+			text: tvitem.EpisodeTitle? tvitem.EpisodeTitle.split(';')[0]: item.Name
 		}, item.AlbumArtist ? {
 			nodeName: "div",
 			className: "artist",
@@ -587,6 +589,10 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 			nodeName: "div",
 			className: "genre",
 			text: "Airs "+formatDate(item.StartDate)+" on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
+		} : {}, tvitem.StartDate && tvitem.StartDate <= now ? {
+			nodeName: "div",
+			className: "genre",
+			text: "Now Playing on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
 		} : {}, item.Genres && item.Genres.length > 0 ? {
 			nodeName: "div",
 			className: "genre",

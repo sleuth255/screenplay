@@ -51,6 +51,7 @@ function Prefs() {
 	this.liveTvEnabled = false;
 	this.isLiveTvItem = false;
 	this.liveStreamId = null;
+	this.playSessionId = null;
 };
 
 

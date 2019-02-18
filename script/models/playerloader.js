@@ -40,6 +40,7 @@ PlayerLoader.prototype.load = function(data) {
     }
     function prepPlayerLaunch(data){
 	   prefs.liveStreamId = data.MediaSources[0].LiveStreamId;
+	   prefs.playSessionId = data.PlaySessionId;
    	   launchPlayer(self.data);
     }
     function launchPlayer(data){

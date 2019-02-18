@@ -429,10 +429,15 @@ Collection.prototype.load = function(data, backstate, settings) {
 	function lostFocus(event) {
 		if (dom.exists("#screenplaySettings") || dom.exists("#player") || dom.exists("#validaterequest"))
 			return;
-		if (event.target.tagName != "A") {
-			dom.focus(dom.data("#view", "lastFocus"));
-		}
-	}
+		if (event.target.tagName != "A") 
+   	       if (self.lastItemIndex == null)
+   	    	   if (dom.exists(".latest-item"))
+                   focus(".latest-item");
+   	    	   else
+   	    		   focus(".homelink")
+	       else
+		       restoreCollectionFocus();
+	}   
 
 	function navigation(event) {
 		event.preventDefault();

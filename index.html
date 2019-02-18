@@ -27,6 +27,7 @@
 	<script type="text/javascript" src="./script/models/playerloader.js"></script>
 	<script type="text/javascript" src="./script/models/player.js"></script>
 	<script type="text/javascript" src="./script/models/livetv.js"></script>
+	<script type="text/javascript" src="./script/models/livetv.items.js"></script>
 										
 	<script type="text/javascript">
 		dom.on(document, "DOMContentLoaded", function() {
@@ -36,6 +37,7 @@
 			var home = new Home();						
 			var collection = new Collection();
 			var livetv = new LiveTv();
+			var livetvitems = new LiveTvItems();
 			var summary = new CollectionSummary();	
 			var item = new Item();
 			var playerloader = new PlayerLoader();
@@ -75,9 +77,20 @@
 
 			dom.on(document, "liveTvCollectionSelected", function(event) {
 				history.pushState({
+					activeButton: event.detail.activeButton,
 					action: "livetv"
 				}, "livetv");
-				livetv.load(false);
+				livetv.load(event.detail,false);
+			});
+
+			dom.on(document, "LiveTvItemsSelected", function(event) {
+				history.pushState({
+					id: event.detail.id,
+					name: event.detail.name,
+					activeButton: event.detail.activeButton,
+					action: "livetvitems"
+				}, "livetvitems");
+				livetvitems.load(event.detail,false);
 			});
 
 			dom.on(document, "userViewSelected", function(event) {
@@ -182,7 +195,11 @@
 							break;
 							
 						case "livetv":
-							livetv.load(true);					
+							livetv.load(event.state,true);					
+							break;	
+							
+						case "livetvitems":
+							livetvitems.load(event.state,true);					
 							break;	
 							
 						case "item":

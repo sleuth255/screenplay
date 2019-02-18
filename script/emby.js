@@ -107,12 +107,55 @@ EMBY.prototype.getLiveTV = function(settings){
 	});			
 };
 
+EMBY.prototype.getLiveTvSeriesTimers = function(settings){
+	settings = settings || {};
+	
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/SeriesTimers", {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.getLiveTvTimers = function(settings){
+	settings = settings || {};
+	
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/Timers", {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
 EMBY.prototype.getLiveTvChannel = function(settings){
 	settings = settings || {};
 	var id = settings.id  || 0;
 	
 	
 	ajax.request(this.settings.ServerUrl + "/LiveTV/Channels/"+id, {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.getLiveTvProgramsId = function(settings){
+	settings = settings || {};
+	var id = settings.id  || 0;
+	
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTV/Programs/"+id, {
 		method: "GET",
 		headers: this.headers(), 
 		success: function(data) {
@@ -132,7 +175,7 @@ EMBY.prototype.getLiveTvPrograms = function(settings){
 	var HasAired = settings.HasAired || "";
 	
 	
-	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending'+
+	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending&enableImageTypes=primary,thumb,backdrop'+
 		(limit ? "&limit=" + limit : "")+
 		(HasAired ? "&HasAired=" + HasAired : "")+
 		(MinStartDate ? "&MinStartDate=" + MinStartDate : "")+
@@ -261,6 +304,32 @@ EMBY.prototype.deleteItem = function(settings) {
 	ajax.request(this.settings.ServerUrl + "/items/" + settings.id, {
 		method: "DELETE",
 		headers: this.headers()
+	});			
+};
+
+EMBY.prototype.deleteLiveTvTimer = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/Timers/" + settings.id, {
+		method: "DELETE",
+		headers: this.headers(),
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.deleteLiveTvSeriesTimer = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/SeriesTimers/" + settings.id, {
+		method: "DELETE",
+		headers: this.headers(),
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
 	});			
 };
 
@@ -404,8 +473,9 @@ EMBY.prototype.getLiveTvHlsStreamUrl = function(settings) {
 	settings = settings || {};
 		
 	var itemId = settings.itemid;
-	var container = settings.container;
-	return this.settings.ServerUrl + "/videos/" + itemId + "/live.m3u8?id=" + itemId + "&container=" + container;
+	var container = settings.container  || "ts";
+	var mediaSourceId = settings.liveStreamId.substring(settings.liveStreamId.indexOf("native"))
+	return this.settings.ServerUrl + "/videos/" + itemId + "/live.m3u8?id=" + itemId + "&SegmentContainer=" + container + "&MediaSourceId="+ mediaSourceId + "&LiveStreamId="+ settings.liveStreamId + "&PlaySessionId=" + settings.playSessionId+ "&VideoCodec=h264&Static=true";
 	
 };
 
@@ -422,6 +492,7 @@ EMBY.prototype.getImageUrl = function(settings) {
 	var percentPlayed = settings.percentPlayed || "";
 	var addPlayedIndicator = settings.addPlayedIndicator || false;
 	return this.settings.ServerUrl + "/items/" + item + "/images/" + imageType + "?height=" + height + "&width=" + width + "&tag=" + tag + "&enableImageEnhancers=" + enableImageEnhancers + "&quality=" + quality + "&percentPlayed=" + percentPlayed + "&addPlayedIndicator=" + addPlayedIndicator;
+//	return this.settings.ServerUrl + "/items/" + item + "/images/" + imageType + "?tag=" + tag + "&enableImageEnhancers=" + enableImageEnhancers + "&quality=" + quality + "&percentPlayed=" + percentPlayed + "&addPlayedIndicator=" + addPlayedIndicator;
 };
 	
 EMBY.prototype.getUserImageUrl = function(settings) {
@@ -465,7 +536,11 @@ EMBY.prototype.postSessionPlayingStarted = function(settings) {
 	ajax.request(this.settings.ServerUrl + "/sessions/playing" , {
 		method: "POST",
 		headers: this.headers(), 
-		data: settings.data
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
 	});			
 };
 
@@ -475,7 +550,11 @@ EMBY.prototype.postSessionPlayingProgress = function(settings) {
 	ajax.request(this.settings.ServerUrl + "/sessions/playing/progress" , {
 		method: "POST",
 		headers: this.headers(), 
-		data: settings.data
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
 	});			
 };
 
@@ -483,6 +562,34 @@ EMBY.prototype.postSessionPlayingStopped = function(settings) {
 	settings = settings || {};
 
 	ajax.request(this.settings.ServerUrl + "/sessions/playing/stopped" , {
+		method: "POST",
+		headers: this.headers(), 
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+
+};
+
+EMBY.prototype.postLiveTvTimers = function(settings) {
+	settings = settings || {};
+	ajax.request(this.settings.ServerUrl + "/liveTv/Timers" , {
+		method: "POST",
+		headers: this.headers(), 
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+
+};
+
+EMBY.prototype.postLiveTvSeriesTimers = function(settings) {
+	settings = settings || {};
+	ajax.request(this.settings.ServerUrl + "/liveTv/SeriesTimers" , {
 		method: "POST",
 		headers: this.headers(), 
 		data: settings.data,
@@ -526,7 +633,11 @@ EMBY.prototype.postPlaybackInfo = function(settings) {
 EMBY.prototype.postActiveEncodingStop = function(settings) {
 	ajax.request(this.settings.ServerUrl + "/Videos/ActiveEncodings?DeviceId=" + device.id , {
 		method: "DELETE",
-		headers: this.headers() 
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
 	});			
 };	
 
@@ -541,7 +652,11 @@ EMBY.prototype.updatePlayedStatus = function(settings) {
 	ajax.request(this.settings.ServerUrl + "/users/" + data.userId + "/playeditems/" + settings.Id , {
 		method: posttype,
 		headers: this.headers(), 
-		data: settings
+		data: settings,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
 	});			
 };
 

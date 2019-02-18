@@ -56,7 +56,35 @@ Player.prototype.load = function(data, settings) {
 		node.setAttribute("playsinline","")
 		node.setAttribute("autoplay","autoplay")
 		node.setAttribute("preload","metadata")
-        if (prefs.directPlay == true || prefs.isLiveTvItem)
+		if (prefs.isLiveTvItem)
+        {	
+
+			prefs.mimeType = "m3u8"
+          	
+       	    dom.append("#video", {
+			    nodeName: "source",
+			    src: emby.getLiveTvHlsStreamUrl({
+				    itemid: item.Id,					
+			        liveStreamId: prefs.liveStreamId,
+			        playSessionId: prefs.playSessionId
+			    }),
+			    "type": mime.lookup(prefs.mimeType)
+		    });
+/*		    
+          	prefs.mimeType = "mp4"
+              	
+           	    dom.append("#video", {
+    			    nodeName: "source",
+    			    src: emby.getVideoStreamUrl({
+    				    itemId: item.Id,					
+    			        mediaSourceId: item.MediaSources[0].Id,
+    			    }),
+    			    "type": mime.lookup(prefs.mimeType)
+    		    });
+*/    		    
+	    }
+		else
+        if (prefs.directPlay == true)
         {	
           	prefs.mimeType = "mp4"
           	
@@ -121,7 +149,9 @@ Player.prototype.load = function(data, settings) {
 					CanSeek: true,
 					PositionTicks: ticks,
 					PlayMethod: "DirectStream"
-				}
+				},
+				success: success,
+				error: error
 			});
 							
 		});
@@ -158,7 +188,9 @@ Player.prototype.load = function(data, settings) {
 						CanSeek: true,
 						PositionTicks: ticks,
 						PlayMethod: "DirectStream"
-					}
+					},
+					success: success,
+					error: error
 				});
 					
 
@@ -183,7 +215,9 @@ Player.prototype.load = function(data, settings) {
 					   PositionTicks: ticks,
 					   PlayMethod: "DirectStream",
 					   IsPaused: true
-				   }
+				   },
+				   success: success,
+				   error: error
 			   });
 			}
 						
@@ -234,7 +268,10 @@ Player.prototype.load = function(data, settings) {
 		seekBar.addEventListener("mousedown", function() {
 			video.pause();
 			self.showControls({persist: true})
-			emby.postActiveEncodingStop()
+			emby.postActiveEncodingStop({
+				success: success,
+				error: error
+			})
 			playButton.innerHTML = "Play";
 		});
 
@@ -304,6 +341,12 @@ Player.prototype.load = function(data, settings) {
 		video.load();
 		video.play();
 	}
+	function success(data){
+		return;
+	}
+	function error(data){
+		return;
+	}
 };
 
 Player.prototype.close = function(event) {
@@ -325,7 +368,10 @@ Player.prototype.close = function(event) {
 			PlayMethod: "DirectStream"
 		}
 	});	
-	emby.postActiveEncodingStop()
+	emby.postActiveEncodingStop({
+		success: success,
+		error: error
+	})
 	if (prefs.liveStreamId != null)
 	   emby.postLiveStreamClose({
 		   success: stopEncoding,
@@ -342,6 +388,12 @@ Player.prototype.close = function(event) {
 	function stopEncoding(data){
 		return;
 	}
+	function success(data){
+		return;
+	}
+	function error(data){
+		return;
+	}
    	
 };
 
@@ -352,7 +404,10 @@ Player.prototype.skip = function() {
 		prefs.firstSkip = false
 		prefs.currentTime = video.currentTime
 		prefs.skipTime = Math.floor(prefs.fwdSkip)
-		emby.postActiveEncodingStop()
+		emby.postActiveEncodingStop({
+			success: success,
+			error: error
+		})
 	}
 	else
 		prefs.skipTime += Math.floor(prefs.fwdSkip)
@@ -383,6 +438,13 @@ Player.prototype.skip = function() {
 	if (prefs.interval)
   	    window.clearTimeout(prefs.interval);
 	prefs.interval = window.setTimeout(this.restartAt, 700);
+	
+	function success(data){
+		return;
+	}
+	function error(data){
+		return;
+	}
 };
 
 Player.prototype.backskip = function() {
@@ -392,7 +454,10 @@ Player.prototype.backskip = function() {
 		prefs.firstSkip = false
 		prefs.currentTime = video.currentTime
 		prefs.skipTime = Math.floor(prefs.backSkip * -1)
-		emby.postActiveEncodingStop()
+		emby.postActiveEncodingStop({
+			success: success,
+			error: error
+		})
 	}
 	else
 		prefs.skipTime -= Math.floor(prefs.backSkip)
@@ -423,6 +488,12 @@ Player.prototype.backskip = function() {
 	if (prefs.interval)
   	    window.clearTimeout(prefs.interval);
 	prefs.interval = window.setTimeout(this.restartAt, 700);
+	function success(data){
+		return;
+	}
+	function error(data){
+		return;
+	}
 };
 
 Player.prototype.restartAt = function(){

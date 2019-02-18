@@ -764,7 +764,7 @@ input:hover {
 	outline: none;
 	border: 2px solid rgba(82, 181, 75, 0.5);		
 }
- 
+/* 
 .cover {
 	position: relative;
 	display: block;
@@ -772,6 +772,16 @@ input:hover {
 	background-position: center bottom;	
 	background-color: #333;
 }
+*/
+.cover {
+    position: relative;
+    display: block;
+    background-size: contain;
+    background-position: center top;
+    background-color: transparent;
+    background-repeat: no-repeat;
+}
+
 
 .cover-series-large, .cover-movie-large, .cover-season-large, .cover-program-large {
 	width: 272px;
