@@ -114,13 +114,16 @@ if (data.Items.length > 0) {
 						className: imageClass,
 						style: {
 							backgroundImage: PlayedPercentage > 0 ? 
-									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
-									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericPortraitImage.jpg')" 	
 						},
 						childNodes: [{
 							nodeName: "div",
 							className: "cover-title",
 							text: item.Name
+						},{
+					        nodeName: "div",
+					        className: item.SeriesTimerId ? "cardIndicators seriesRecording" : item.TimerId ? "cardIndicators episodeRecording" :"nothing"
 						}]					
 					}]
 				});	
@@ -237,8 +240,8 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 						className: imageClass,
 						style: {
 							backgroundImage: item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericPortraitImage.jpg')" 	
 						},
 						childNodes: [{
 				           nodeName: "div",

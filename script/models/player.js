@@ -6,11 +6,13 @@
 function Player() {
 	var item;
 	var playStopped;
+	var myTimer;
 };
 Player.prototype.load = function(data, settings) {
 	settings = settings || {};
 	var self = this;
 	self.playStopped = false;
+	prefs.myTimer = null;
 	item = data;
 	var time = 0;
 	if (true) {  //for now, just assume its a video item				
@@ -179,7 +181,9 @@ Player.prototype.load = function(data, settings) {
 			if (Math.floor(video.currentTime) > time + 4) {
 				time = Math.floor(event.target.currentTime);	
 				var ticks = time * 10000000;
-					
+				
+				prefs.itemId = item.Id;
+				prefs.ticks = ticks;
 				emby.postSessionPlayingProgress({
 					data: {
 						ItemId: item.Id,
@@ -202,10 +206,6 @@ Player.prototype.load = function(data, settings) {
 
 			if (!self.playStopped)
 			{
-				playerpopup.show({
-					duration: 1000,
-					text: "video onpause"+' '+self.playStopped
-				});	
 			   emby.postSessionPlayingProgress({
 				   data: {
 					   ItemId: item.Id,
@@ -232,12 +232,17 @@ Player.prototype.load = function(data, settings) {
 
 				// Update the button text to 'Pause'
 				playButton.innerHTML = "Pause";
+				if (prefs.myTimer != null)
+				   clearInterval(prefs.myTimer);
+				prefs.myTimer = null
 			} else {
 				// Pause the video
 				video.pause();
 
 				// Update the button text to 'Play '
 				playButton.innerHTML = "Play";
+				if (prefs.isLiveTvItem)
+				   prefs.myTimer = window.setInterval(postProgress, 9000);
 			}
 		});
 
@@ -341,6 +346,25 @@ Player.prototype.load = function(data, settings) {
 		video.load();
 		video.play();
 	}
+	function postProgress(){
+		emby.postSessionPlayingProgress({
+			data: {
+				ItemId: prefs.itemId,
+				MediaSourceId: prefs.itemId,
+				QueueableMediaTypes: "video",
+				EventName: "timeupdate",
+				BufferedRanges: [{start: 0, end: 989885539.9999999}],
+		        LiveStreamId: prefs.liveStreamId,
+		        playSessionId: prefs.playSessionId,
+				CanSeek: true,
+				IsPaused: true,
+				PositionTicks: prefs.ticks,
+				PlayMethod: "DirectStream"
+			},
+			success: success,
+			error: error
+		});
+	}
 	function success(data){
 		return;
 	}
@@ -379,7 +403,8 @@ Player.prototype.close = function(event) {
 			   LiveStreamId: prefs.liveStreamId
 		   }
 	})
-	
+	if (prefs.myTimer != null)
+		clearInterval(prefs.myTimer);
  
     dom.remove("#player");	
 	dom.remove("#video-controls");
@@ -538,12 +563,44 @@ Player.prototype.play = function() {
 	video.play();
 	if (video.playbackRate != 1)
 	    video.playbackRate = 1;
+	if (prefs.myTimer != null)
+		clearInterval(prefs.myTimer);
+	prefs.myTimer = null;
 };
 Player.prototype.pause = function() {
 	var playButton = document.getElementById("play-pause");
 	playButton.innerHTML = "Play";
 	var video = document.getElementById("video");
 	video.pause();
+	if (prefs.isLiveTvItem)
+       prefs.myTimer = window.setInterval(postProgress, 9000);
+	
+	
+	function postProgress(){
+		emby.postSessionPlayingProgress({
+			data: {
+				ItemId: prefs.itemId,
+				MediaSourceId: prefs.itemId,
+				BufferedRanges: [{start: 0, end: 989885539.9999999}],
+		        liveStreamId: prefs.liveStreamId,
+		        playSessionId: prefs.playSessionId,
+		        QueueableMediaTypes: "video",
+				EventName: "timeupdate",
+				CanSeek: true,
+				IsPaused: true,
+				PositionTicks: prefs.ticks,
+				PlayMethod: "DirectStream"
+			},
+			success: success,
+			error: error
+		});
+	}
+	function success(data){
+		return;
+	}
+	function error(data){
+		return;
+	}
 };
 Player.prototype.fastforward = function() {
 	var video = document.getElementById("video");

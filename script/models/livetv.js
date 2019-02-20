@@ -19,6 +19,7 @@ function LiveTv() {
 	
 	this.id;
 	this.activeButton;
+	this.lastButton;
 	this.heading;
 	this.lostfocus;
 	this.lastItemIndex;
@@ -36,7 +37,11 @@ LiveTv.prototype.load = function(settings, backstate) {
 	
 	var self = this;
 	self.activeButton = settings.activeButton || 1
-	self.heading = self.activeButton == 1 ? "On Now" : self.activeButton == 2 ? "Next Up" : self.activeButton == 3 ? "Today's Shows" : self.activeButton == 4 ? "Movies" : "Recordings" 
+	self.heading = self.activeButton == 1 ? "On Now" 
+			     : self.activeButton == 2 ? "Next Up" 
+			     : self.activeButton == 3 ? "Today's Shows" 
+			     : self.activeButton == 4 ? "Movies" 
+			     : "Recordings" 
 	this.total = 5;
 	this.count = 0;
 
@@ -468,6 +473,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		dom.addClass('#viewItem_0_5','activeButton')
 		var dataset = {}
 		dataset.activeButton = 5;
+		self.lastButton = self.activeButton
 		dom.dispatchCustonEvent(document, "liveTvCollectionSelected", dataset);
 	});	
 
@@ -581,14 +587,10 @@ LiveTv.prototype.load = function(settings, backstate) {
 				duration: 2000,
 				text: "There are no recordings scheduled"
 			});	
-			self.activeButton = 1;
-			self.heading = "On Now";
-			var dataset = {}
-			dataset.activeButton = 1;
-			dom.dispatchCustonEvent(document, "liveTvCollectionSelected", dataset);
+            focus(".activeButton");
 			return;
     	}
- 	    emby.getLiveTvProgramsId({
+ 	    emby.getLiveTvProgram({
    	       id: timerData[0].ProgramId,
        	   success: pushItemData,
        	   error: discarderror				
@@ -596,13 +598,19 @@ LiveTv.prototype.load = function(settings, backstate) {
     	
     }
     function pushItemData(data){
+    	var tdata = {};
+    	tdata = data;
+    	if (timerData[idx].IsSeriesTimer)
+    	   tdata["SeriesTimerId"] = true;
+    	else
+    	   tdata["TimerId"] = true;	
     	self.newdata.Items.push(data);
     	idx++;
     	if (idx >= timerData.length){
     		displayUserItems(self.newdata)
     		return
     	}
- 	    emby.getLiveTvProgramsId({
+ 	    emby.getLiveTvProgram({
    	        id: timerData[idx].ProgramId,
         	success: pushItemData,
         	error: discarderror				
@@ -614,7 +622,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     		displayUserItems(self.newdata)
     		return
     	}
- 	    emby.getLiveTvProgramsId({
+ 	    emby.getLiveTvProgram({
    	        id: timerData[idx].ProgramId,
         	success: pushItemData,
         	error: discarderror				
@@ -722,9 +730,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		}	
 			
 		if (backstate == false || self.lastItemIndex == null)
-		{	
             focus(".activeButton");
-		}
 		else
 			restoreCollectionFocus();
 	}

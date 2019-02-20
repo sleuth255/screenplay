@@ -66,7 +66,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		id: "playerBackdrop"
 	});
 	dom.hide('#playerBackdrop')
-	emby.getLiveTvItem({
+	emby.getLiveTvProgram({
 		id: id,
 		success: storeTvItem,
 		error: getUserItem					
@@ -349,7 +349,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		dom.delegate("#item", "a", "keydown", navigation);
 	}
     function handleRecordRequest(){
-    	emby.getLiveTvProgramsId({
+    	emby.getLiveTvProgram({
     		id: self.data.Id,
     		success: processRecordState,
     		error: recorderror
@@ -412,7 +412,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		
 	}
 	function handleResult(data){
-    	emby.getLiveTvProgramsId({
+    	emby.getLiveTvProgram({
     		id: self.data.Id,
     		success: updateItemPage,
     		error: recorderror
@@ -424,7 +424,7 @@ Item.prototype.load = function(id, backstate, settings) {
 			dom.dispatchCustonEvent(document, "reloadItem", data)
 	        return
 		}
-    	emby.getLiveTvProgramsId({
+    	emby.getLiveTvProgram({
     		id: self.data.Id,
     		success: updateItemPage,
     		error: recorderror

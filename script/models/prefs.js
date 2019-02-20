@@ -52,6 +52,9 @@ function Prefs() {
 	this.isLiveTvItem = false;
 	this.liveStreamId = null;
 	this.playSessionId = null;
+	this.myTimer = null;
+	this.itemId = null;
+	this.ticks = null;
 };
 
 

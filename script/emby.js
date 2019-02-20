@@ -79,25 +79,13 @@ EMBY.prototype.getSystemInformation = function(settings) {
 	});			
 };
 
-EMBY.prototype.getUser = function(settings) {
-	settings = settings || {};
-	var userId = settings.userId || this.settings.User.Id;
-	
-	ajax.request(this.settings.ServerUrl + "/users/" + userId, {
-		method: "GET",
-		headers: this.headers(), 
-		success: function(data) {
-			settings.success(data);
-		},
-		error: settings.error
-	});			
-};
+// Live Tv functions
 
 EMBY.prototype.getLiveTV = function(settings){
 	settings = settings || {};
 	
 	
-	ajax.request(this.settings.ServerUrl + "/LiveTV/Info", {
+	ajax.request(this.settings.ServerUrl + "/LiveTv/Info", {
 		method: "GET",
 		headers: this.headers(), 
 		success: function(data) {
@@ -135,6 +123,34 @@ EMBY.prototype.getLiveTvTimers = function(settings){
 	});			
 };
 
+EMBY.prototype.postLiveTvTimers = function(settings) {
+	settings = settings || {};
+	ajax.request(this.settings.ServerUrl + "/liveTv/Timers" , {
+		method: "POST",
+		headers: this.headers(), 
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+
+};
+
+EMBY.prototype.postLiveTvSeriesTimers = function(settings) {
+	settings = settings || {};
+	ajax.request(this.settings.ServerUrl + "/liveTv/SeriesTimers" , {
+		method: "POST",
+		headers: this.headers(), 
+		data: settings.data,
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+
+};
+
 EMBY.prototype.getLiveTvChannel = function(settings){
 	settings = settings || {};
 	var id = settings.id  || 0;
@@ -150,12 +166,11 @@ EMBY.prototype.getLiveTvChannel = function(settings){
 	});			
 };
 
-EMBY.prototype.getLiveTvProgramsId = function(settings){
+EMBY.prototype.getLiveTvProgram = function(settings) {
 	settings = settings || {};
 	var id = settings.id  || 0;
 	
-	
-	ajax.request(this.settings.ServerUrl + "/LiveTV/Programs/"+id, {
+	ajax.request(this.settings.ServerUrl + "/LiveTv/Programs/" + id, {
 		method: "GET",
 		headers: this.headers(), 
 		success: function(data) {
@@ -182,6 +197,77 @@ EMBY.prototype.getLiveTvPrograms = function(settings){
 		(isMovie ? "&isMovie=" + isMovie : "")+
 		(isSeries ? "&isSeries=" + isSeries : "")+
 		(MaxStartDate ? "&MaxStartDate=" + MaxStartDate : "") , {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.deleteLiveTvTimer = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/Timers/" + settings.id, {
+		method: "DELETE",
+		headers: this.headers(),
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.deleteLiveTvSeriesTimer = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTv/SeriesTimers/" + settings.id, {
+		method: "DELETE",
+		headers: this.headers(),
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
+EMBY.prototype.getLiveTvHlsStreamUrl = function(settings) {
+	settings = settings || {};
+		
+	var itemId = settings.itemid;
+	var container = settings.container  || "ts";
+	var mediaSourceId = settings.liveStreamId.substring(settings.liveStreamId.indexOf("native"))
+	return this.settings.ServerUrl + "/videos/" + itemId + "/live.m3u8" +
+	"?id=" + itemId + 
+	"&SegmentContainer=" + container + 
+	"&MediaSourceId="+ mediaSourceId + 
+	"&LiveStreamId="+ settings.liveStreamId + 
+	"&PlaySessionId=" + settings.playSessionId + 
+	"&AudioCodec=mp3,aac" +
+	"&MinSegments=1" +
+	"&AudioStreamIndex=-1" +
+	"&TranscodingMaxAudioChannels=2" +
+	"&BreakOnNonKeyFrames=True" +
+	"&ManifestSubtitles=vtt" +
+	"&TranscodeReasons=ContainerNotSupported" +
+    "&VideoCodec=h264"+
+    "&h264-profile=high,main,baseline,constrainedbaseline,high10" +
+    "&h264-level=51" +
+	"&Static=true"+
+	"&VideoBitrate=139808000"
+	"&AudioBitrate=192000"
+	;
+	
+};
+
+// User Functions
+
+EMBY.prototype.getUser = function(settings) {
+	settings = settings || {};
+	var userId = settings.userId || this.settings.User.Id;
+	
+	ajax.request(this.settings.ServerUrl + "/users/" + userId, {
 		method: "GET",
 		headers: this.headers(), 
 		success: function(data) {
@@ -307,49 +393,10 @@ EMBY.prototype.deleteItem = function(settings) {
 	});			
 };
 
-EMBY.prototype.deleteLiveTvTimer = function(settings) {
-	settings = settings || {};
-	
-	ajax.request(this.settings.ServerUrl + "/LiveTv/Timers/" + settings.id, {
-		method: "DELETE",
-		headers: this.headers(),
-		success: function(data) {
-			settings.success(data);
-		},
-		error: settings.error
-	});			
-};
-
-EMBY.prototype.deleteLiveTvSeriesTimer = function(settings) {
-	settings = settings || {};
-	
-	ajax.request(this.settings.ServerUrl + "/LiveTv/SeriesTimers/" + settings.id, {
-		method: "DELETE",
-		headers: this.headers(),
-		success: function(data) {
-			settings.success(data);
-		},
-		error: settings.error
-	});			
-};
-
 EMBY.prototype.getUserItem = function(settings) {
 	settings = settings || {};
 	
 	ajax.request(this.settings.ServerUrl + "/users/" + this.settings.User.Id  + "/items/" + settings.id, {
-		method: "GET",
-		headers: this.headers(), 
-		success: function(data) {
-			settings.success(data);
-		},
-		error: settings.error
-	});			
-};
-
-EMBY.prototype.getLiveTvItem = function(settings) {
-	settings = settings || {};
-	
-	ajax.request(this.settings.ServerUrl + "/LiveTv/Programs/" + settings.id, {
 		method: "GET",
 		headers: this.headers(), 
 		success: function(data) {
@@ -469,16 +516,6 @@ EMBY.prototype.getVideoHlsStreamUrl = function(settings) {
 };
 
 
-EMBY.prototype.getLiveTvHlsStreamUrl = function(settings) {
-	settings = settings || {};
-		
-	var itemId = settings.itemid;
-	var container = settings.container  || "ts";
-	var mediaSourceId = settings.liveStreamId.substring(settings.liveStreamId.indexOf("native"))
-	return this.settings.ServerUrl + "/videos/" + itemId + "/live.m3u8?id=" + itemId + "&SegmentContainer=" + container + "&MediaSourceId="+ mediaSourceId + "&LiveStreamId="+ settings.liveStreamId + "&PlaySessionId=" + settings.playSessionId+ "&VideoCodec=h264&Static=true";
-	
-};
-
 EMBY.prototype.getImageUrl = function(settings) {
 	settings = settings || {};
 	
@@ -562,34 +599,6 @@ EMBY.prototype.postSessionPlayingStopped = function(settings) {
 	settings = settings || {};
 
 	ajax.request(this.settings.ServerUrl + "/sessions/playing/stopped" , {
-		method: "POST",
-		headers: this.headers(), 
-		data: settings.data,
-		success: function(data) {
-			settings.success(data);
-		},
-		error: settings.error
-	});			
-
-};
-
-EMBY.prototype.postLiveTvTimers = function(settings) {
-	settings = settings || {};
-	ajax.request(this.settings.ServerUrl + "/liveTv/Timers" , {
-		method: "POST",
-		headers: this.headers(), 
-		data: settings.data,
-		success: function(data) {
-			settings.success(data);
-		},
-		error: settings.error
-	});			
-
-};
-
-EMBY.prototype.postLiveTvSeriesTimers = function(settings) {
-	settings = settings || {};
-	ajax.request(this.settings.ServerUrl + "/liveTv/SeriesTimers" , {
 		method: "POST",
 		headers: this.headers(), 
 		data: settings.data,
