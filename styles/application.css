@@ -621,7 +621,7 @@ input:hover {
 
 .user-views-item:focus, .user-views-item-settings:focus, .user-views-item-livetv:focus {
 	outline: none;
-	background-color: rgba(82, 181, 75, 0.3);	
+	background-color: rgba(82, 181, 75,0.3);	
 	border: 2px solid rgba(82, 181, 75, 1);	
 	box-shadow: 0 0 20px rgba(82, 181, 75, 0.8);	
 }
@@ -630,6 +630,18 @@ input:hover {
 	outline: none;
 	border: 2px solid rgba(82, 181, 75, 0.5);	
 	box-shadow: 0 0 20px rgba(82, 181, 75, 0.3);	
+}
+.user-views-item-click {
+	display: block;
+	width: 200px;
+	height: 40px;
+	margin: 5px;
+	padding: 10px;
+	text-decoration: none;
+	color: #fff;
+	background-color: rgba(10, 10, 281, 0.3);
+	border: 2px solid transparent;
+	font-size: 30px;
 }
 
 .user-views-item-name {

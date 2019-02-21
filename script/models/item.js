@@ -9,9 +9,11 @@ function Item() {
 	this.iteration;
 	this.playedStatus;
 	this.recordStatus;
+	this.lostfocus;
 };
 
 Item.prototype.close = function(){
+	dom.off("body","keydown", this.lostfocus);
 	dom.remove("#item")
 }
 Item.prototype.load = function(id, backstate, settings) {
@@ -294,19 +296,23 @@ Item.prototype.load = function(id, backstate, settings) {
 				prefs.video3DFormat = "2D"
 		}
 
+		this.lostfocus = dom.on("body", "keydown", lostFocus);
 
 		dom.on("#viewPlay", "click", function(event) {
 			event.preventDefault();
 			prefs.resumeTicks = 0;
+			flashButton(event.target);
 		    dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
 		dom.on("#viewResume", "click", function(event) {
 			event.preventDefault();
 			prefs.resumeTicks = data.UserData.PlaybackPositionTicks;
+			flashButton(event.target);
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
 		dom.on("#viewRecord", "click", function(event) {
 			event.preventDefault();
+			flashButton(event.target);
             handleRecordRequest()
         });
 		dom.on("#viewTogglePlayed", "click", function(event) {
@@ -316,6 +322,7 @@ Item.prototype.load = function(id, backstate, settings) {
 			else
 				data.UserData.Played = false
 			prefs.playedStatus = data.UserData.Played
+			flashButton(event.target);
 			emby.updatePlayedStatus({
 				Id: id,
 				UserData: data.UserData,
@@ -330,6 +337,7 @@ Item.prototype.load = function(id, backstate, settings) {
 	    });
 		dom.on("#viewDelete", "click", function(event) {
 			event.preventDefault()
+			flashButton(event.target);
 			validaterequest.showPopup({
 				eventHandler: "#viewDelete",
 				text: "Delete Item?"
@@ -348,7 +356,27 @@ Item.prototype.load = function(id, backstate, settings) {
 
 		dom.delegate("#item", "a", "keydown", navigation);
 	}
-    function handleRecordRequest(){
+
+	
+	function lostFocus(event) {
+		if (dom.exists("#screenplaySettings") || dom.exists("#player") || dom.exists("#validaterequest"))
+			return;
+		if (event.target.tagName != "A") 
+    	   if (dom.exists(".user-views-item"))
+               focus(".user-views-item");
+    	   else
+    		   focus(".homelink")
+	}   
+
+	function flashButton(node){
+		dom.removeClass(node,"user-views-item")
+		dom.addClass(node,"user-views-item-click")
+		window.setTimeout(function(){
+			dom.removeClass(node,"user-views-item-click")
+			dom.addClass(node,"user-views-item")
+		},100)
+	}
+	function handleRecordRequest(){
     	emby.getLiveTvProgram({
     		id: self.data.Id,
     		success: processRecordState,

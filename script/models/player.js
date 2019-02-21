@@ -162,6 +162,7 @@ Player.prototype.load = function(data, settings) {
 			history.back();
 		});
 	
+	
 		video.addEventListener("timeupdate", function(event) {
 			// update the time/duration and slider values
 			if (video.currentTime == 0 || self.playStopped)
@@ -347,10 +348,26 @@ Player.prototype.load = function(data, settings) {
 		video.play();
 	}
 	function postProgress(){
+		// update seekbar time values
+		var infoButton = document.getElementById("info-button");
+		var seekBar = document.getElementById("seek-bar");
+		var video = document.getElementById("video");
+		prefs.videoDuration = video.duration;
+		var durhr = Math.floor(prefs.videoDuration / 3600);
+	    var durmin = Math.floor((prefs.videoDuration % 3600) / 60);
+		durmin = durmin < 10 ? '0' + durmin : durmin;
+			
+		var curhr = Math.floor(video.currentTime / 3600);
+	    var curmin = Math.floor((video.currentTime % 3600) / 60);
+		curmin = curmin < 10 ? '0' + curmin : curmin;
+
+		infoButton.innerHTML = curhr+":"+curmin+"/"+durhr+ ":"+durmin; 
+		seekBar.value = (100 / prefs.videoDuration) * video.currentTime;
+
 		emby.postSessionPlayingProgress({
 			data: {
 				ItemId: prefs.itemId,
-				MediaSourceId: prefs.itemId,
+				//MediaSourceId: prefs.itemId,
 				QueueableMediaTypes: "video",
 				EventName: "timeupdate",
 				BufferedRanges: [{start: 0, end: 989885539.9999999}],
@@ -577,10 +594,26 @@ Player.prototype.pause = function() {
 	
 	
 	function postProgress(){
+		//update seekbar values
+		var infoButton = document.getElementById("info-button");
+		var seekBar = document.getElementById("seek-bar");
+		var video = document.getElementById("video");
+		prefs.videoDuration = video.duration;
+		var durhr = Math.floor(prefs.videoDuration / 3600);
+	    var durmin = Math.floor((prefs.videoDuration % 3600) / 60);
+		durmin = durmin < 10 ? '0' + durmin : durmin;
+			
+		var curhr = Math.floor(video.currentTime / 3600);
+	    var curmin = Math.floor((video.currentTime % 3600) / 60);
+		curmin = curmin < 10 ? '0' + curmin : curmin;
+
+		infoButton.innerHTML = curhr+":"+curmin+"/"+durhr+ ":"+durmin; 
+		seekBar.value = (100 / prefs.videoDuration) * video.currentTime;
+
 		emby.postSessionPlayingProgress({
 			data: {
 				ItemId: prefs.itemId,
-				MediaSourceId: prefs.itemId,
+				//MediaSourceId: prefs.itemId,
 				BufferedRanges: [{start: 0, end: 989885539.9999999}],
 		        liveStreamId: prefs.liveStreamId,
 		        playSessionId: prefs.playSessionId,

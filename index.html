@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script type="text/javascript" src="./script/webOSTV.js"></script>
 	<script type="text/javascript" src="./script/emby.js"></script>
 	<script type="text/javascript" src="./script/ajax.js"></script>
 	<script type="text/javascript" src="./script/keys.js"></script>	
@@ -46,6 +47,10 @@
 			var subtitlesVisible = true;
 			var firstEvent = true;
 									
+			history.pushState({
+				action: "home"
+			}, "home");
+
 			dom.addClass("body", device.bodyClass);
 			
 			dom.on(document, "serverOpenFailed", function(event) {
@@ -183,7 +188,15 @@
 					item.close();
 					switch(event.state.action) {
 						case "home":
-							home.load();
+							if (dom.exists('#home'))
+								webOS.platformBack();
+							
+							//playerpopup.show({
+	    					//		duration: 2000,
+	    					//		text: "Press HOME to exit"
+    						//	});
+							else
+							    home.load();
 							break;
 							
 						case "summary":
@@ -214,14 +227,15 @@
 				else
 				{
 					if (dom.exists('#home'))
-					    playerpopup.show({
-						    duration: 2000,
-						    text: "Press MENU to exit"
-					    });
-					
-					history.pushState({
-						action: "home"
-					}, "home");
+						history.pushState({
+							action: "home"
+						}, "home");
+						
+						webOS.platformBack();					    
+					//	playerpopup.show({
+					//	    duration: 2000,
+					//	    text: "Press HOME to exit"
+					//  });
 					
 				}
 			});	
@@ -236,7 +250,6 @@
 				home.close();
 				livetv.close();
 				summary.close();
-				home.close();
 				home.load();
 			});
 
