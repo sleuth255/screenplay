@@ -292,6 +292,17 @@ a {
 	bottom: 0;
 	left: 0;
 	background: #000;
+	z-index: 99;
+}
+
+#spinnerBackdrop {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: rgba(0,0,0,0);
+	z-index: 99;
 }
 
 .screenplayCol1 {
@@ -1115,3 +1126,17 @@ button:focus {
 	background-color: blue;
 	color: white;
 }
+.spinningimage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 200px;
+    margin:-60px 0 0 -60px;
+    -webkit-animation:spin 4s linear infinite;
+    -moz-animation:spin 4s linear infinite;
+    animation:spin 4s linear infinite;
+}
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }

@@ -162,7 +162,19 @@ Player.prototype.load = function(data, settings) {
 			history.back();
 		});
 	
-	
+		video.addEventListener("waiting", function(event) {
+			if (prefs.playerSkipped){
+				prefs.playerSkipped = false;
+				return;
+			}
+			if (prefs.spinnerTimer != null)
+				window.clearTimeout(prefs.spinnerTimer)
+			dom.show('#spinnerBackdrop')
+			prefs.spinnerTimer = window.setTimeout(function(){
+				dom.hide('#spinnerBackdrop')
+				prefs.spinnerTimer = null;
+			},8000)
+		})
 		video.addEventListener("timeupdate", function(event) {
 			// update the time/duration and slider values
 			if (video.currentTime == 0 || self.playStopped)
@@ -185,18 +197,37 @@ Player.prototype.load = function(data, settings) {
 				
 				prefs.itemId = item.Id;
 				prefs.ticks = ticks;
-				emby.postSessionPlayingProgress({
-					data: {
-						ItemId: item.Id,
-						MediaSourceId: item.Id,
-						QueueableMediaTypes: "video",
-						CanSeek: true,
-						PositionTicks: ticks,
-						PlayMethod: "DirectStream"
-					},
-					success: success,
-					error: error
-				});
+                if (prefs.isLiveTvItem)
+            		emby.postSessionPlayingProgress({
+            			data: {
+            				ItemId: prefs.itemId,
+            				mediaSourceId: prefs.liveStreamId.substring(prefs.liveStreamId.indexOf("native")),
+            				QueueableMediaTypes: "video",
+            				EventName: "timeupdate",
+            				BufferedRanges: [{start: 0, end: 989885539.9999999}],
+            		        LiveStreamId: prefs.liveStreamId,
+            		        playSessionId: prefs.playSessionId,
+            				CanSeek: true,
+            				IsPaused: true,
+            				PositionTicks: prefs.ticks,
+            				PlayMethod: "DirectStream"
+            			},
+            			success: success,
+            			error: error
+            		});
+                else
+				   emby.postSessionPlayingProgress({
+					   data: {
+						   ItemId: item.Id,
+						   MediaSourceId: item.Id,
+						   QueueableMediaTypes: "video",
+						   CanSeek: true,
+						   PositionTicks: ticks,
+						   PlayMethod: "DirectStream"
+					   },
+					   success: success,
+					   error: error
+				   });
 					
 
 			}
@@ -367,7 +398,7 @@ Player.prototype.load = function(data, settings) {
 		emby.postSessionPlayingProgress({
 			data: {
 				ItemId: prefs.itemId,
-				//MediaSourceId: prefs.itemId,
+				mediaSourceId: prefs.liveStreamId.substring(prefs.liveStreamId.indexOf("native")),
 				QueueableMediaTypes: "video",
 				EventName: "timeupdate",
 				BufferedRanges: [{start: 0, end: 989885539.9999999}],
@@ -540,7 +571,7 @@ Player.prototype.backskip = function() {
 
 Player.prototype.restartAt = function(){
 
-	prefs.playerRestarting = true
+	prefs.playerRestarting = prefs.playerSkipped = true
 	var restartPoint = Math.floor(prefs.currentTime + prefs.skipTime) * 1000
 	if (restartPoint < 0)
 	   restartPoint = 0;
@@ -613,7 +644,7 @@ Player.prototype.pause = function() {
 		emby.postSessionPlayingProgress({
 			data: {
 				ItemId: prefs.itemId,
-				//MediaSourceId: prefs.itemId,
+				mediaSourceId: prefs.liveStreamId.substring(prefs.liveStreamId.indexOf("native")),
 				BufferedRanges: [{start: 0, end: 989885539.9999999}],
 		        liveStreamId: prefs.liveStreamId,
 		        playSessionId: prefs.playSessionId,

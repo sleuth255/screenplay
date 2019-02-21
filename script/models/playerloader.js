@@ -11,7 +11,6 @@ function PlayerLoader() {
 PlayerLoader.prototype.load = function(data) {
 	var self = this
 	prefs.liveStreamId = null;
-	dom.show('#playerBackdrop')
 	self.channelid = data.ChannelId;
 	if (typeof self.channelid != 'undefined')
 		prefs.isLiveTvItem = true;
@@ -39,17 +38,21 @@ PlayerLoader.prototype.load = function(data) {
     	})
     }
     function prepPlayerLaunch(data){
+//		dom.show('#playerBackdrop')
+		window.setTimeout(function(){
+			dom.hide('#playerBackdrop')
+		},2000)
 	   prefs.liveStreamId = data.MediaSources[0].LiveStreamId;
 	   prefs.playSessionId = data.PlaySessionId;
    	   launchPlayer(self.data);
     }
     function launchPlayer(data){
-		dom.hide('#playerBackdrop')
+		//dom.hide('#playerBackdrop')
 		prefs.resumeTicks = 0;
 	    dom.dispatchCustonEvent(document, "launchPlayer", data);
 	}
 	function error(){
-		dom.hide('#playerBackdrop')
+		//dom.hide('#playerBackdrop')
 		playerpopup.show({
 		      duration: 2000,
 		      text: 'Player not Loaded'

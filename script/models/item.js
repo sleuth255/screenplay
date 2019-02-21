@@ -53,6 +53,7 @@ Item.prototype.load = function(id, backstate, settings) {
 	
 	
 	dom.remove('#playerBackdrop');
+	dom.remove('#spinnerBackdrop')
 	dom.hide("#server");
 	dom.hide("#user");
 	dom.hide("#details")
@@ -67,7 +68,20 @@ Item.prototype.load = function(id, backstate, settings) {
 		className: "backdrop",
 		id: "playerBackdrop"
 	});
+	dom.append("body", {
+		nodeName: "div",
+		className: "backdrop",
+		id: "spinnerBackdrop",
+		childNodes: [{
+			nodeName: "img",
+			className: "spinningimage",
+			src: "images/spinner.png",
+			width: 200,
+			height: 200
+		}]
+	});
 	dom.hide('#playerBackdrop')
+	dom.hide('#spinnerBackdrop')
 	emby.getLiveTvProgram({
 		id: id,
 		success: storeTvItem,

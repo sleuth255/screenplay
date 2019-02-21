@@ -53,6 +53,8 @@ function Prefs() {
 	this.liveStreamId = null;
 	this.playSessionId = null;
 	this.myTimer = null;
+	this.spinnerTimer = null;
+	this.playerSkipped = false;
 	this.itemId = null;
 	this.ticks = null;
 };
