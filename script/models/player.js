@@ -163,6 +163,8 @@ Player.prototype.load = function(data, settings) {
 		});
 	
 		video.addEventListener("waiting", function(event) {
+			if (!prefs.isLiveTvItem)
+				return;
 			if (prefs.playerSkipped){
 				prefs.playerSkipped = false;
 				return;

@@ -650,12 +650,13 @@ input:hover {
 	padding: 10px;
 	text-decoration: none;
 	color: #fff;
-	background-color: rgba(10, 10, 281, 0.3);
+	background-color: rgba(10, 10, 10, 0.3);
 	border: 2px solid transparent;
 	font-size: 30px;
 }
 
 .user-views-item-name {
+
 	width: 200px;
 	height: 40px;	
 	display: block;
@@ -799,7 +800,7 @@ input:hover {
 .cover {
     position: relative;
     display: block;
-    background-size: contain;
+    background-size: cover;
     background-position: center top;
     background-color: transparent;
     background-repeat: no-repeat;

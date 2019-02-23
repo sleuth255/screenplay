@@ -129,7 +129,48 @@ if (data.Items.length > 0) {
 				});	
 			}
 		});	
-	}						
+	}
+    function renderSeriesTimer(){
+		dom.append("#c_" + id + "_" + column, {
+			nodeName: "a",
+			href: "#",
+			className: "latest-item latest-item-" + item.Type.toLowerCase(),
+			id: id + "_" + column + "_" + row,
+			dataset: {
+				backdrop: item.BackdropImageTags[0],
+				name: item.Name,
+				episode: item.EpisodeTitle ? item.EpisodeTitle : "",
+				channelid: item.ChannelId,
+				year: item.ProductionYear ? item.ProductionYear : "",
+				runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
+				startdate: item.StartDate,
+				id: item.Id,
+				index: startIndex + index,
+				keyUp: up,
+				keyRight: right,
+				keyLeft: left,
+				keyDown: down
+			},
+			childNodes: [{
+				nodeName: "div",
+				className: imageClass,
+				style: {
+					backgroundImage: PlayedPercentage > 0 ? 
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericPortraitImage.jpg')" 	
+				},
+				childNodes: [{
+					nodeName: "div",
+					className: "cover-title",
+					text: item.Name
+				},{
+			        nodeName: "div",
+			        className: item.SeriesTimerId ? "cardIndicators seriesRecording" : item.TimerId ? "cardIndicators episodeRecording" :"nothing"
+				}]					
+			}]
+		});	
+    	
+    }
 };
 
 

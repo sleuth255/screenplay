@@ -251,22 +251,45 @@ Home.prototype.load = function() {
 		dom.on(".user-views-item-settings", "click", function(event) {
 			event.stopPropagation()
 			event.preventDefault()
+		    flashButton(event.target)
 			self.close()
 			dom.dispatchCustonEvent(document, "userPrefsSelected", this.dataset);
 		});
 		dom.on(".user-views-item-livetv", "click", function(event) {
 			event.stopPropagation()
 			event.preventDefault()
+		    flashButton(event.target)
 			self.close()
 			dom.dispatchCustonEvent(document, "userLiveTvSelected", this.dataset);
 		});
 		dom.on(".user-views-item", "click", function(event) {
 			event.stopPropagation()
 			event.preventDefault()
+		    flashButton(event.target)
 			self.close()
 			dom.dispatchCustonEvent(document, "userViewSelected", this.dataset);
 		});	
 		dom.focus('#viewItem_0_0');
+
+		function flashButton(node){
+			if (dom.hasClass(node,'user-views-item')){
+			    dom.removeClass(node,"user-views-item")
+			    dom.addClass(node,"user-views-item-click")
+			    window.setTimeout(function(){
+				    dom.removeClass(node,"user-views-item-click")
+				    dom.addClass(node,"user-views-item")
+			    },100)
+			}
+			else{
+			    dom.removeClass(node.parentNode,"user-views-item")
+			    dom.addClass(node.parentNode,"user-views-item-click")
+			    window.setTimeout(function(){
+				    dom.removeClass(node.parentNode,"user-views-item-click")
+				    dom.addClass(node.parentNode,"user-views-item")
+			    },100)
+				
+			}
+		}
 	}
 
 	function displayUserResumeItems(data) {

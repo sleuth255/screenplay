@@ -424,6 +424,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	dom.delegate("#collection", "a.user-views-item_1", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
+		flashButton(event.target)
 		self.lastItemIndex = null;
 		dom.removeClass('.user-views-item','activeButton');
 		dom.addClass('#viewItem_0_1','activeButton')
@@ -435,6 +436,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	dom.delegate("#collection", "a.user-views-item_2", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
+		flashButton(event.target)
 		self.lastItemIndex = null;
 		dom.removeClass('.user-views-item','activeButton');
 		dom.addClass('#viewItem_0_2','activeButton')
@@ -446,6 +448,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	dom.delegate("#collection", "a.user-views-item_3", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
+		flashButton(event.target)
 		self.lastItemIndex = null;
 		dom.removeClass('.user-views-item','activeButton');
 		dom.addClass('#viewItem_0_3','activeButton')
@@ -457,6 +460,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	dom.delegate("#collection", "a.user-views-item_4", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
+		flashButton(event.target)
 		self.lastItemIndex = null;
 		dom.removeClass('.user-views-item','activeButton');
 		dom.addClass('#viewItem_0_4','activeButton')
@@ -468,6 +472,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	dom.delegate("#collection", "a.user-views-item_5", "click", function(event) {
 		event.stopPropagation()
 		event.preventDefault()
+		flashButton(event.target)
 		self.lastItemIndex = null;
 		dom.removeClass('.user-views-item','activeButton');
 		dom.addClass('#viewItem_0_5','activeButton')
@@ -511,7 +516,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	tomorrow = tomorrow.toISOString();
     if (self.activeButton == 1)
  	   emby.getLiveTvPrograms({
- 		   limit: 500,
+ 		   limit: 1000,
  		   HasAired: 'false',
  		   MaxStartDate: now,
  		   success: displayUserItems,
@@ -520,7 +525,7 @@ LiveTv.prototype.load = function(settings, backstate) {
      else
     if (self.activeButton == 2)
 	   emby.getLiveTvPrograms({
-		   limit: 500,
+		   limit: 1000,
 		   HasAired: 'false',
 		   MinStartDate: now,
 		   MaxStartDate: today,
@@ -530,7 +535,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     else
     if (self.activeButton == 3)
    	   emby.getLiveTvPrograms({
-   		   limit: 1000,
+   		   limit: 2000,
    		   HasAired: 'false',
    		   MinStartDate: now,
    		   MaxStartDate: tomorrow,
@@ -541,7 +546,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     else
     if (self.activeButton == 4)
    	   emby.getLiveTvPrograms({
-   		   limit: 1000,
+   		   limit: 2000,
    		   HasAired: 'false',
    		   isMovie: true,
    		   success: displayUserItems,
@@ -563,6 +568,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     		if (now < end){
     		   var timerItem = {};
     		   timerItem.ProgramId = item.ProgramId;
+    		   timerItem.ChannelId = item.ChannelId;
     		   timerItem.IsSeriesTimer = true
     		   timerData.push(timerItem);
     		}
@@ -577,6 +583,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     		if ((item.Status == 'InProgress' || item.Status == 'New') && !item.SeriesTimerId){
         		var timerItem = {};
     		    timerItem.ProgramId = item.ProgramId;
+    		    timerItem.ChannelId = item.ChannelId;
     		    timerItem.IsSeriesTimer = false
     		    timerData.push(timerItem);
     		}
@@ -600,6 +607,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     function pushItemData(data){
     	var tdata = {};
     	tdata = data;
+    	if (tdata.ChannelId = timerData[idx].ChannelId)
     	if (timerData[idx].IsSeriesTimer)
     	   tdata["SeriesTimerId"] = true;
     	else
@@ -660,10 +668,105 @@ LiveTv.prototype.load = function(settings, backstate) {
     	self.data = data;
 		// get shows and remove duplicates.
 		var now = new Date().toISOString()
+		var sortdata = {
+			Items:[]
+		}
 		var newdata = {
 			Items:[],
 			TotalRecordCount:0
 		}
+		
+		//load the sort array
+		for (var  x=0;x<data.Items.length;x++){
+			sortdata.Items.push(data.Items[x])
+			sortdata.Items[x].Name[0] = sortdata.Items[x].Name[0].toUpperCase();
+		}
+        
+		//first sort is by record data
+		var length = sortdata.Items.length;
+	    var temp;
+	    for (var j = 0; j < length; j++)
+	        for (var i=0; i < (length - j - 1); i++)
+	            if ((typeof (sortdata.Items[i].SeriesTimerId) != 'undefined' ||  typeof(sortdata.Items[i].TimerId) != 'undefined') && (typeof (sortdata.Items[i+1].SeriesTimerId) == 'undefined' && typeof (sortdata.Items[i+1].TimerId) == 'undefined'))
+	            {
+	               temp = sortdata.Items[i];
+	               sortdata.Items[i] = sortdata.Items[i+1];
+	               sortdata.Items[i+1] = temp;
+	            }
+	    //second sort is by name
+	    for (var j = 0; j < length; j++)
+	        for (var i=0; i < (length - j - 1); i++)
+	            if (sortdata.Items[i].Name > sortdata.Items[i+1].Name)
+	            {
+	               temp = sortdata.Items[i];
+	               sortdata.Items[i] = sortdata.Items[i+1];
+	               sortdata.Items[i+1] = temp;
+	            }
+	    	
+			
+		if (self.activeButton == 1) // get in-progress shows
+		{
+           if (sortdata.Items.length == 1 && sortdata.Items[0].StartDate < now)				   
+  		      newdata.Items.push(sortdata.Items[0])
+  		   else
+		   for (var x = 0; x < sortdata.Items.length-1;x++)
+			   if (sortdata.Items[x].StartDate < now && sortdata.Items[x].Name != sortdata.Items[x+1].Name)
+				   newdata.Items.push(sortdata.Items[x])
+		}
+		else
+		if (self.activeButton == 2) // get next-up shows
+		{
+		   var onehourlater = new Date()
+		   onehourlater.setTime(onehourlater.getTime() + 60*60*1000)
+		   onehourlater = onehourlater.toISOString()
+           if (sortdata.Items[0].StartDate > now && sortdata.Items[0].StartDate < onehourlater && sortdata.Items.length == 1)				   
+ 		      newdata.Items.push(sortdata.Items[0])
+ 		   else
+		   for (var x = 0; x < sortdata.Items.length-1;x++)
+			   if (sortdata.Items[x].StartDate > now && sortdata.Items[x].StartDate < onehourlater && sortdata.Items[x].Name != sortdata.Items[x+1].Name)
+				   newdata.Items.push(sortdata.Items[x])
+		}
+		else 
+		if (self.activeButton == 3 || self.activeButton == 4) // just remove duplicates
+        {			
+           if (sortdata.Items.length == 1)				   
+ 		      newdata.Items.push(sortdata.Items[0])
+ 		   else
+		   for (var x = 0; x < sortdata.Items.length-1;x++)
+			   if (sortdata.Items[x].Name != sortdata.Items[x+1].Name)
+				   newdata.Items.push(sortdata.Items[x])
+        }
+		else
+		   for (var x = 0; x < sortdata.Items.length;x++) // may have duplicates
+			   newdata.Items.push(sortdata.Items[x])
+				   
+				  
+       newdata.TotalRecordCount = newdata.Items.length;
+		
+
+/*        
+		//first sort is by record data
+		var length = data.Items.length;
+	    var temp;
+	    for (var j = 0; j < length; j++)
+	        for (var i=0; i < (length - j - 1); i++)
+	            if ((typeof (data.Items[i].SeriesTimerId) != 'undefined' ||  typeof(data.Items[i].TimerId) != 'undefined') && (typeof (data.Items[i+1].SeriesTimerId) == 'undefined' && typeof (data.Items[i+1].TimerId) == 'undefined'))
+	            {
+	               temp = data.Items[i];
+	               data.Items[i] = data.Items[i+1];
+	               data.Items[i+1] = temp;
+	            }
+	    //second sort is by name
+	    for (var j = 0; j < length; j++)
+	        for (var i=0; i < (length - j - 1); i++)
+	            if (data.Items[i].Name > data.Items[i+1].Name)
+	            {
+	               temp = data.Items[i];
+	               data.Items[i] = data.Items[i+1];
+	               data.Items[i+1] = temp;
+	            }
+	    	
+			
 		if (self.activeButton == 1) // get in-progress shows
 		{
            if (data.Items.length == 1 && data.Items[0].StartDate < now)				   
@@ -702,20 +805,8 @@ LiveTv.prototype.load = function(settings, backstate) {
 				   
 				  
        newdata.TotalRecordCount = newdata.Items.length;
+*/
 		
-
-		//sort by first char of name
-		var length = newdata.Items.length;
-	    var temp;
-	    for (var j = 0; j < length; j++)
-	        for (var i=0; i < (length - j - 1); i++)
-	            if (newdata.Items[i].Name[0].toUpperCase() > newdata.Items[i+1].Name[0].toUpperCase())
-	            {
-	               temp = newdata.Items[i];
-	               newdata.Items[i] = newdata.Items[i+1];
-	               newdata.Items[i+1] = temp;
-	            }
-	    	
 		
 		var id = guid.create();	
 									
@@ -735,6 +826,25 @@ LiveTv.prototype.load = function(settings, backstate) {
 			restoreCollectionFocus();
 	}
 
+	function flashButton(node){
+		if (dom.hasClass(node,'user-views-item')){
+		    dom.removeClass(node,"user-views-item")
+		    dom.addClass(node,"user-views-item-click")
+		    window.setTimeout(function(){
+			    dom.removeClass(node,"user-views-item-click")
+			    dom.addClass(node,"user-views-item")
+		    },100)
+		}
+		else{
+		    dom.removeClass(node.parentNode,"user-views-item")
+		    dom.addClass(node.parentNode,"user-views-item-click")
+		    window.setTimeout(function(){
+			    dom.removeClass(node.parentNode,"user-views-item-click")
+			    dom.addClass(node.parentNode,"user-views-item")
+		    },100)
+			
+		}
+	}
 	function restoreCollectionFocus(){
 		var elmnts = dom.querySelectorAll(".latest-item")
 		for(var idx = 0;idx<elmnts.length;idx++)

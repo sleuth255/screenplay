@@ -248,15 +248,14 @@ EMBY.prototype.getLiveTvHlsStreamUrl = function(settings) {
 	"&MinSegments=1" +
 	"&AudioStreamIndex=-1" +
 	"&TranscodingMaxAudioChannels=2" +
-	//"&BreakOnNonKeyFrames=True" +
+	"&BreakOnNonKeyFrames=True" +
 	"&ManifestSubtitles=vtt" +
-	//"&TranscodeReasons=ContainerNotSupported" +
+	"&TranscodeReasons=ContainerNotSupported" +
     "&VideoCodec=h264"+
     "&h264-profile=high,main,baseline,constrainedbaseline,high10" +
-    "&h264-level=51" 
-	//"&Static=true"+
-	//"&VideoBitrate=139808000"
-	//"&AudioBitrate=192000"
+    "&h264-level=51" + 
+	"&VideoBitrate=139808000"
+	"&AudioBitrate=192000"
 	;
 	
 };

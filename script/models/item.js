@@ -6,6 +6,7 @@
 function Item() {
 	this.data = {};
 	this.tvdata = {};
+	this.timerdata = {};
 	this.iteration;
 	this.playedStatus;
 	this.recordStatus;
@@ -383,12 +384,23 @@ Item.prototype.load = function(id, backstate, settings) {
 	}   
 
 	function flashButton(node){
-		dom.removeClass(node,"user-views-item")
-		dom.addClass(node,"user-views-item-click")
-		window.setTimeout(function(){
-			dom.removeClass(node,"user-views-item-click")
-			dom.addClass(node,"user-views-item")
-		},100)
+		if (dom.hasClass(node,'user-views-item')){
+		    dom.removeClass(node,"user-views-item")
+		    dom.addClass(node,"user-views-item-click")
+		    window.setTimeout(function(){
+			    dom.removeClass(node,"user-views-item-click")
+			    dom.addClass(node,"user-views-item")
+		    },100)
+		}
+		else{
+		    dom.removeClass(node.parentNode,"user-views-item")
+		    dom.addClass(node.parentNode,"user-views-item-click")
+		    window.setTimeout(function(){
+			    dom.removeClass(node.parentNode,"user-views-item-click")
+			    dom.addClass(node.parentNode,"user-views-item")
+		    },100)
+			
+		}
 	}
 	function handleRecordRequest(){
     	emby.getLiveTvProgram({
@@ -401,9 +413,9 @@ Item.prototype.load = function(id, backstate, settings) {
     	if (data.SeriesTimerId)
     		cancelSeriesRecordTimer(data.SeriesTimerId)
     	else
-    	if (data.TimerId && data.IsSeries)
-    		scheduleSeriesRecordTimer()
-        else    		
+//    	if (data.TimerId && data.IsSeries)
+//    		scheduleSeriesRecordTimer()
+//        else    		
     	if (!data.TimerId)
     	   scheduleItemRecordTimer();
     	else
