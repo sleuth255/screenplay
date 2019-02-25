@@ -9,6 +9,173 @@ function RENDERER() {
 	
 };
 
+RENDERER.prototype.userAllTvItemsPlaceholder = function(data, settings) {
+	settings = settings || {};
+
+	var lastColumn = Math.ceil(data.TotalRecordCount / 2);
+	
+	var heading = settings.heading;
+	var container = settings.container;
+	var headerLink = settings.headerLink || "";	
+	var id = settings.id;
+	var initialise = settings.initialise;
+	var startIndex = data.StartIndex || 0;
+	var addClass = settings.addClass || "";
+											
+    if (data.Items.length > 0) {
+		var width = device.columnWidth;
+		if (initialise) {
+			var totalRecords = data.TotalRecordCount % 2 ? data.TotalRecordCount + 1 : data.TotalRecordCount;
+			
+			dom.append(container, {
+				nodeName: "div",
+				className: "latest-items latest-items-livetv",
+				id: id,
+				style: {
+					width: width * (totalRecords / 2) + "px"
+				},
+				dataset: {
+					collectionType: "livetv",
+					limit: data.limit,
+					lastColumn: lastColumn
+				},
+				childNodes: [{
+					nodeName: "div",
+					className: "latest-items-header",
+					text: heading	
+				}]
+			});
+			
+			dom.data("#" + id, "count", data.Items.length);
+		}
+					
+		
+		data.Items.forEach(function(item, index) {
+			var now = new Date()
+			var itemStartDate = new Date(item.StartDate)
+			var end = Math.abs(new Date(item.EndDate) - itemStartDate)
+			var start = Math.abs(new Date() - itemStartDate)
+			var PlayedPercentage = start * 100 / end;
+			if (PlayedPercentage >= 100 || itemStartDate > now)
+				PlayedPercentage = 0;
+			var column = Math.floor((parseInt(startIndex,10) + index) / 2);
+			var row = (startIndex + index) % 2;
+			var cid = "c_" + id + "_" + column;
+			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
+			//if (index == 0)
+			//	playerpopup.show({
+			//		duration: 5000,
+			//		text: startIndex+' '+column
+			//	});	
+			if (!dom.exists("#" + cid)) {
+				dom.append("#" + id, {
+					nodeName: "div",
+					className: "latest-items-column-abs column-" + column + 
+							" column-" + character + " " + addClass,
+					id: cid,
+					dataset: {
+						index: character,
+						location: (column * width)
+					},
+					style: {
+						left: (column * width) + "px"
+					}						
+				});
+			}
+									
+			var up = (row == 0) ? headerLink : "#" + id + "_" + column + "_" + (row - 1) ;
+			var down = ((index+1) == data.Items.length) ? "%index%" : ((row == 1) ? "%index%" : "#" + id + "_" + column + "_" + (row + 1));
+			var left = (column == 0) ? "%previous%" : "#" + id + "_" + (column - 1) + "_" + row;
+			var right = (column < lastColumn) ? "#" + id + "_" + (column + 1) + "_" + row : "%next%";	
+			
+			var imageId = item.ImageTags.Primary ? item.Id: data.parentId;
+			var imageTag = item.ImageTags.Primary ? item.ImageTags.Primary : "";	
+			var imageType = "primary";
+			var imageClass =  "cover cover-" + item.Type.toLowerCase();
+			
+			if (!dom.exists("#" + id + "_" + column + "_" + row)) {
+				dom.append("#c_" + id + "_" + column, {
+					nodeName: "a",
+					href: "#",
+					className: "latest-item latest-item-" + item.Type.toLowerCase(),
+					id: id + "_" + column + "_" + row,
+					dataset: {
+						backdrop: item.BackdropImageTags[0],
+						name: item.Name,
+						episode: item.EpisodeTitle ? item.EpisodeTitle : "",
+						channelid: item.ChannelId,
+						year: item.ProductionYear ? item.ProductionYear : "",
+						runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
+						startdate: item.StartDate,
+						id: item.Id,
+						placeholder: true,
+						playedpercentage: PlayedPercentage,
+						imageid: imageId,
+						imagetag: imageTag,
+						imagetype: imageType,
+						index: startIndex + index,
+						keyUp: up,
+						keyRight: right,
+						keyLeft: left,
+						keyDown: down
+					},
+					childNodes: [{
+						nodeName: "div",
+						className: imageClass,
+						style: {
+							backgroundImage: "url('./images/GenericPortraitImage.jpg')"
+						},
+						childNodes: [{
+							nodeName: "div",
+							className: "cover-title",
+							text: item.Name
+						},{
+					        nodeName: "div",
+					        className: item.SeriesTimerId ? "cardIndicators seriesRecording" : item.TimerId ? "cardIndicators episodeRecording" :"nothing"
+						}]					
+					}]
+				});	
+			}
+		});	
+	   dom.css("#"+id,{width: parseInt(dom.data(dom.querySelector("#"+id).lastChild,"location"),10) + device.columnWidth + "px"})
+    }
+};
+
+RENDERER.prototype.userAllTvItemsImages = function(left,right,id) {
+	var nodes = dom.querySelector('#'+id).childNodes;
+	nodes = Array.prototype.slice.call(nodes);
+	var location
+	var found = 0;
+	nodes.forEach(function(node,index){
+		location = dom.data(node,"location")
+		
+		if (location >= left && location <= right)
+			setBackgroundImage(node)
+	})
+	function setBackgroundImage(node){
+		var PlayedPercentage
+		var imageId
+		var imageTag
+		var imageType
+		var nodes = node.childNodes;
+		nodes = Array.prototype.slice.call(nodes);
+		nodes.forEach(function(node,index){
+			PlayedPercentage = dom.data(node,"playedpercentage")
+			imageId = dom.data(node,"imageid")
+			imageTag = dom.data(node,"imagetag")
+			imageType = dom.data(node,"imagetype")
+			if (dom.data(node,"placeholder") == "true"){
+				dom.data(node,"placeholder","false")
+				node.childNodes[0].style.backgroundImage = PlayedPercentage > 0 ? 
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 400}) + "),url('./images/GenericPortraitImage.jpg')" 	
+		    }
+
+		})
+	}
+	
+	
+}
 RENDERER.prototype.userAllTvItems = function(data, settings) {
 	settings = settings || {};
 
@@ -136,49 +303,7 @@ RENDERER.prototype.userAllTvItems = function(data, settings) {
 		});	
 	   dom.css("#"+id,{width: parseInt(dom.data(dom.querySelector("#"+id).lastChild,"location"),10) + device.columnWidth + "px"})
     }
-    function renderSeriesTimer(){
-		dom.append("#c_" + id + "_" + column, {
-			nodeName: "a",
-			href: "#",
-			className: "latest-item latest-item-" + item.Type.toLowerCase(),
-			id: id + "_" + column + "_" + row,
-			dataset: {
-				backdrop: item.BackdropImageTags[0],
-				name: item.Name,
-				episode: item.EpisodeTitle ? item.EpisodeTitle : "",
-				channelid: item.ChannelId,
-				year: item.ProductionYear ? item.ProductionYear : "",
-				runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
-				startdate: item.StartDate,
-				id: item.Id,
-				index: startIndex + index,
-				keyUp: up,
-				keyRight: right,
-				keyLeft: left,
-				keyDown: down
-			},
-			childNodes: [{
-				nodeName: "div",
-				className: imageClass,
-				style: {
-					backgroundImage: PlayedPercentage > 0 ? 
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericPortraitImage.jpg')" 	
-				},
-				childNodes: [{
-					nodeName: "div",
-					className: "cover-title",
-					text: item.Name
-				},{
-			        nodeName: "div",
-			        className: item.SeriesTimerId ? "cardIndicators seriesRecording" : item.TimerId ? "cardIndicators episodeRecording" :"nothing"
-				}]					
-			}]
-		});	
-    	
-    }
 };
-
 
 RENDERER.prototype.userAllItems = function(data, settings) {
 	settings = settings || {};

@@ -182,7 +182,7 @@ EMBY.prototype.getLiveTvProgram = function(settings) {
 
 EMBY.prototype.getLiveTvPrograms = function(settings){
 	settings = settings || {};
-	var limit = settings.limit || this.limit;
+	var limit = settings.limit || "";
 	var MaxStartDate = settings.MaxStartDate || "";
 	var MinStartDate = settings.MinStartDate || "";
 	var isMovie = settings.isMovie || "";
@@ -191,7 +191,7 @@ EMBY.prototype.getLiveTvPrograms = function(settings){
 	var HasAired = settings.HasAired || "";
 	
 	//was: SortBy=sortName
-	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending&enableImageTypes=primary,thumb,backdrop'+
+	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortOrder=Ascending&enableImageTypes=primary,thumb,backdrop'+
 		(limit ? "&limit=" + limit : "")+
 		(HasAired ? "&HasAired=" + HasAired : "")+
 		(MinStartDate ? "&MinStartDate=" + MinStartDate : "")+
