@@ -18,11 +18,11 @@ RENDERER.prototype.userAllTvItems = function(data, settings) {
 	var container = settings.container;
 	var headerLink = settings.headerLink || "";	
 	var id = settings.id;
-	var initialise = settings.initialise || true;
-	var startIndex = data.startIndex || 0;
+	var initialise = settings.initialise;
+	var startIndex = data.StartIndex || 0;
 	var addClass = settings.addClass || "";
 											
-if (data.Items.length > 0) {
+    if (data.Items.length > 0) {
 		var width = device.columnWidth;
 		if (initialise) {
 			var totalRecords = data.TotalRecordCount % 2 ? data.TotalRecordCount + 1 : data.TotalRecordCount;
@@ -32,7 +32,7 @@ if (data.Items.length > 0) {
 				className: "latest-items latest-items-livetv",
 				id: id,
 				style: {
-					width: width * totalRecords / 2 + "px"
+					width: width * (totalRecords / 2) + "px"
 				},
 				dataset: {
 					collectionType: "livetv",
@@ -58,10 +58,15 @@ if (data.Items.length > 0) {
 			var PlayedPercentage = start * 100 / end;
 			if (PlayedPercentage >= 100 || itemStartDate > now)
 				PlayedPercentage = 0;
-			var column = Math.floor((startIndex + index) / 2);
+			var column = Math.floor((parseInt(startIndex,10) + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;
 			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
+			//if (index == 0)
+			//	playerpopup.show({
+			//		duration: 5000,
+			//		text: startIndex+' '+column
+			//	});	
 			if (!dom.exists("#" + cid)) {
 				dom.append("#" + id, {
 					nodeName: "div",
@@ -129,7 +134,8 @@ if (data.Items.length > 0) {
 				});	
 			}
 		});	
-	}
+	   dom.css("#"+id,{width: parseInt(dom.data(dom.querySelector("#"+id).lastChild,"location"),10) + device.columnWidth + "px"})
+    }
     function renderSeriesTimer(){
 		dom.append("#c_" + id + "_" + column, {
 			nodeName: "a",

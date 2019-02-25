@@ -320,6 +320,8 @@ DOM.prototype.focus = function(query) {
 			{
 			   	view.scrollLeft += (rect.right - window.innerWidth + 5);
 			}
+			var rect = node.getBoundingClientRect();
+			if (rect.right <= window.innerWidth)
 			node.focus();
 			return node;
 		}

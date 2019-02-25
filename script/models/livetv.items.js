@@ -187,7 +187,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 				id: id,
 				heading: self.heading,
 				headerLink: "#homeLink a",
-				more: false
+				initialise: true
 			});
 		}	
 			

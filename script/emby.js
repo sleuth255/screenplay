@@ -187,15 +187,17 @@ EMBY.prototype.getLiveTvPrograms = function(settings){
 	var MinStartDate = settings.MinStartDate || "";
 	var isMovie = settings.isMovie || "";
 	var isSeries = settings.isSeries || "";
+	var StartIndex = settings.StartIndex || "";
 	var HasAired = settings.HasAired || "";
 	
-	
+	//was: SortBy=sortName
 	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending&enableImageTypes=primary,thumb,backdrop'+
 		(limit ? "&limit=" + limit : "")+
 		(HasAired ? "&HasAired=" + HasAired : "")+
 		(MinStartDate ? "&MinStartDate=" + MinStartDate : "")+
 		(isMovie ? "&isMovie=" + isMovie : "")+
 		(isSeries ? "&isSeries=" + isSeries : "")+
+		(StartIndex ? "&StartIndex=" + StartIndex : "")+
 		(MaxStartDate ? "&MaxStartDate=" + MaxStartDate : "") , {
 		method: "GET",
 		headers: this.headers(), 

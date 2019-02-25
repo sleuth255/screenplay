@@ -246,7 +246,7 @@ a {
 #view {
 	position: absolute; 
 	left: 0; 
-	top: 150px; 
+	top: 150px;
 	bottom: 0;
 	right: 0;	
 	background-color: rgba(0, 0, 0, 0.3);		
