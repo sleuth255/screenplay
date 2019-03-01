@@ -545,8 +545,8 @@ RENDERER.prototype.userSummaryItems = function(data, settings) {
 					className: imageClass,
 					style: {
 						backgroundImage: item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.png')" :
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.png')" 	
 					},
 					childNodes: [{
 			           nodeName: "div",
@@ -659,8 +659,8 @@ RENDERER.prototype.userResumeItems = function(data, settings) {
 					className: "cover cover-thumb",
 					style: {
 						backgroundImage: item.ParentThumbImageTag ?
-							"url(" + emby.getImageUrl({'itemId': item.ParentBackdropItemId, tag: item.ParentThumbImageTag, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
-							"url(" + emby.getImageUrl({'itemId': item.Id, tag: item.ImageTags.Thumb, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.jpg')"	
+							"url(" + emby.getImageUrl({'itemId': item.ParentBackdropItemId, tag: item.ParentThumbImageTag, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.png')" :
+							"url(" + emby.getImageUrl({'itemId': item.Id, tag: item.ImageTags.Thumb, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.png')"	
 					},
 					childNodes: [{
 			           nodeName: "div",
@@ -712,7 +712,7 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 					className: imageClass,
 					style: 
 					{
-						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600}) + "),url('./images/GenericImage.jpg')"	
+						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600}) + "),url('./images/GenericImage.png')"	
 					},
 				    childNodes:
 				    [{
@@ -893,8 +893,8 @@ RENDERER.prototype.userItemChildren = function(data, settings) {
 					className: imageClass,
 					style: {
 						backgroundImage: item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.jpg')" :
-							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.jpg')" 	
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericImage.png')" :
+							"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + "),url('./images/GenericImage.png')" 	
 					},
 					childNodes: [{
 			           nodeName: "div",

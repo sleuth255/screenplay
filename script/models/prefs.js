@@ -423,6 +423,24 @@ Prefs.prototype.clientSettings = function(){
 			self.autoSize = true;
 		else
 			self.autoSize = false;
+		if (self.autoSize){// need to change cover class
+			var sheet = (function() {
+				var style = document.createElement("style");
+				style.appendChild(document.createTextNode(""));
+				document.head.appendChild(style);
+				return style.sheet;
+			})();
+			sheet.insertRule(".cover {position: relative;display: block;background-size: cover; background-position: center top; background-color: transparent;}",0)
+		}
+		else{
+			var sheet = (function() {
+				var style = document.createElement("style");
+				style.appendChild(document.createTextNode(""));
+				document.head.appendChild(style);
+				return style.sheet;
+			})();
+			sheet.insertRule(".cover {position: relative;display: block;background-size: contain; background-position: center top; background-color: transparent;}",0)
+		}
 		playerpopup.show({
 			duration: 1000,
 			text: "Settings changed" 
