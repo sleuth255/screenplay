@@ -12,6 +12,7 @@ function LiveTvItems() {
 	this.limit;
 	this.scroll;
 	this.data = {};
+	this.timerdata = {};
 	this.totalRecordCount;
 	
 	this.id;
@@ -94,7 +95,6 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	tomorrow = tomorrow.toISOString();
     if (settings.activeButton == 1)
   	   emby.getLiveTvPrograms({
-  		   limit: 500,
   		   HasAired: 'false',
   		   MaxStartDate: now,
   		   success: displayUserItems,
@@ -103,7 +103,6 @@ LiveTvItems.prototype.load = function(settings,backstate) {
      else
      if (settings.activeButton == 2)
  	   emby.getLiveTvPrograms({
- 		   limit: 500,
  		   HasAired: 'false',
  		   MinStartDate: now,
  		   MaxStartDate: today,
@@ -113,7 +112,6 @@ LiveTvItems.prototype.load = function(settings,backstate) {
     else
     if (settings.activeButton == 3)
    	   emby.getLiveTvPrograms({
-   		   limit: 1000,
    		   HasAired: 'false',
    		   MinStartDate: now,
    		   MaxStartDate: tomorrow,
@@ -124,7 +122,6 @@ LiveTvItems.prototype.load = function(settings,backstate) {
     else
     if (settings.activeButton == 4)
    	   emby.getLiveTvPrograms({
-   		   limit: 1000,
    		   HasAired: 'false',
    		   isMovie: true,
    		   success: displayUserItems,
@@ -132,6 +129,15 @@ LiveTvItems.prototype.load = function(settings,backstate) {
    	   });
 	
 
+    function setSeriesTimer(idx){
+		var found = false;
+    	self.timerdata.Items.forEach (function(item){
+    		if ((item.ChannelId == self.data.Items[idx].ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.Items[idx].SeriesTimerId)
+    			found = true
+    	})
+		if (!found)
+			delete self.data.Items[idx].SeriesTimerId
+    }
     function formatDate(isoDate) {
     	  var monthNames = [
 	          "Jan", "Feb", "Mar",
@@ -153,31 +159,41 @@ LiveTvItems.prototype.load = function(settings,backstate) {
     }
 
     function displayUserItems(data) {
-    	self.data = data;
+   	   self.data = data;
+   	   emby.getLiveTvSeriesTimers({
+ 		   success: processUserItems,
+   		   error: error				
+   	   });
+    }
+    function processUserItems(timerdata){
+    	self.timerdata = timerdata
 		// get shows and remove duplicates.
 		var now = new Date().toISOString()
 		var newdata = {
 			Items:[],
 			TotalRecordCount:0
 		}
-	   for (var x = 0; x < data.Items.length-1;x++)
-	      if (data.Items[x].Name == settings.name)
-		      newdata.Items.push(data.Items[x])
+        
+		// get shows and remove duplicates.
+		var now = new Date().toISOString()
+		var newdata = {
+			Items:[],
+			TotalRecordCount:0
+		}
+	    // set Series timers
+	    for (var i = 0; i < self.data.Items.length ; i++)
+	    	if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
+	    		setSeriesTimer(i);
+	    
+	   for (var x = 0; x < self.data.Items.length;x++)
+	      if (self.data.Items[x].Name == settings.name)
+		      newdata.Items.push(self.data.Items[x])
 				  
        newdata.TotalRecordCount = newdata.Items.length;
+	   var length = newdata.Items.length;
+	   var temp;
 		
-		//sort by first char of name
-		var length = newdata.Items.length;
-	    var temp;
-	    for (var j = 0; j < length; j++)
-	        for (var i=0; i < (length - j - 1); i++)
-	            if (newdata.Items[i].Name[0] > newdata.Items[i+1].Name[0])
-	            {
-	               temp = newdata.Items[i];
-	               newdata.Items[i] = newdata.Items[i+1];
-	               newdata.Items[i+1] = temp;
-	            }
-	    	
+  	
 		
 		var id = guid.create();	
 									

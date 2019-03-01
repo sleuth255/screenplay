@@ -12,6 +12,8 @@ function LiveTv() {
 	this.limit;
 	this.scroll;
 	this.data = {};
+	this.timerdata = {};
+	this.timerarray = [];
 	this.newdata = { 
 		Items:[]
     }
@@ -58,9 +60,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	
 	this.id = guid.create();
 	var token = guid.create();	
-	var timerData = [];
 
-	
 	
 	dom.hide("#server");
 	dom.hide("#user");
@@ -489,7 +489,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		event.preventDefault()
 		self.lastItemIndex = event.delegateTarget.dataset.index;
 		self.lastItemPosition = document.getElementById("view").scrollLeft;
-		if (countEpisodes(event.delegateTarget.dataset.name) > 1){
+		if (self.activeButton != 5 && countEpisodes(event.delegateTarget.dataset.name) > 1){
 			var dataset = {}
 			dataset.name = event.delegateTarget.dataset.name;
 			dataset.id = event.delegateTarget.dataset.id;
@@ -562,7 +562,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	
     function assembleSeriesTimers(data){
         self.newdata.Items = [];
-        timerData = []
+        self.timerarray = []
     	var now = new Date();
     	data.Items.forEach(function(item, index) {
     		var end = new Date(item.EndDate)
@@ -570,8 +570,9 @@ LiveTv.prototype.load = function(settings, backstate) {
     		   var timerItem = {};
     		   timerItem.ProgramId = item.ProgramId;
     		   timerItem.ChannelId = item.ChannelId;
+    		   timerItem.TimerId = item.Id;
     		   timerItem.IsSeriesTimer = true
-    		   timerData.push(timerItem);
+    		   self.timerarray.push(timerItem);
     		}
     	})
    	    emby.getLiveTvTimers({
@@ -585,12 +586,13 @@ LiveTv.prototype.load = function(settings, backstate) {
         		var timerItem = {};
     		    timerItem.ProgramId = item.ProgramId;
     		    timerItem.ChannelId = item.ChannelId;
+    		    timerItem.TimerId = item.Id
     		    timerItem.IsSeriesTimer = false
-    		    timerData.push(timerItem);
+    		    self.timerarray.push(timerItem);
     		}
     	})
     	idx = 0;
-    	if (timerData.length < 1){
+    	if (self.timerarray.length < 1){
 			playerpopup.show({
 				duration: 2000,
 				text: "There are no recordings scheduled"
@@ -599,7 +601,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 			return;
     	}
  	    emby.getLiveTvProgram({
-   	       id: timerData[0].ProgramId,
+   	       id: self.timerarray[0].ProgramId,
        	   success: pushItemData,
        	   error: discarderror				
        });
@@ -608,36 +610,48 @@ LiveTv.prototype.load = function(settings, backstate) {
     function pushItemData(data){
     	var tdata = {};
     	tdata = data;
-    	if (tdata.ChannelId = timerData[idx].ChannelId)
-    	if (timerData[idx].IsSeriesTimer)
-    	   tdata["SeriesTimerId"] = true;
-    	else
-    	   tdata["TimerId"] = true;	
-    	self.newdata.Items.push(data);
+    	if (tdata.ChannelId = self.timerarray[idx].ChannelId){
+    	   if (self.timerarray[idx].IsSeriesTimer){
+    	      tdata["SeriesTimerId"] = self.timerarray[idx].TimerId;
+    	      tdata.Overview = '';
+    	   }
+    	   else
+    	      tdata["TimerId"] = self.timerarray[idx].TimerId;	
+    	   self.newdata.Items.push(data);
+    	}
     	idx++;
-    	if (idx >= timerData.length){
+    	if (idx >= self.timerarray.length){
     		displayUserItems(self.newdata)
     		return
     	}
  	    emby.getLiveTvProgram({
-   	        id: timerData[idx].ProgramId,
+   	        id: self.timerarray[idx].ProgramId,
         	success: pushItemData,
         	error: discarderror				
         });
     }
 	function discarderror(data) {
     	idx++;
-    	if (idx >= timerData.length){
+    	if (idx >= self.timerarray.length){
     		displayUserItems(self.newdata)
     		return
     	}
  	    emby.getLiveTvProgram({
-   	        id: timerData[idx].ProgramId,
+   	        id: self.timerarray[idx].ProgramId,
         	success: pushItemData,
         	error: discarderror				
         });
 	}			
-    function countEpisodes(name){
+    function setSeriesTimer(idx){
+		var found = false;
+    	self.timerdata.Items.forEach (function(item){
+    		if ((item.ChannelId == self.data.Items[idx].ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.Items[idx].SeriesTimerId)
+    			found = true
+    	})
+		if (!found)
+			delete self.data.Items[idx].SeriesTimerId
+    }
+	function countEpisodes(name){
 		var count=0;
 		for (var x=0; x< self.data.Items.length;x++)
 			if (self.data.Items[x].Name == name)
@@ -666,7 +680,14 @@ LiveTv.prototype.load = function(settings, backstate) {
     }
 
     function displayUserItems(data) {
-    	self.data = data;
+       self.data = data;
+   	   emby.getLiveTvSeriesTimers({
+ 		   success: processUserItems,
+   		   error: error				
+   	   });
+    }
+    function processUserItems(timerdata){
+    	self.timerdata = timerdata
 		// get shows and remove duplicates.
 		var now = new Date().toISOString()
 		var newdata = {
@@ -674,33 +695,37 @@ LiveTv.prototype.load = function(settings, backstate) {
 			TotalRecordCount:0
 		}
         
+	    // set Series timers
+	    for (var i = 0; i < self.data.Items.length ; i++)
+	    	if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
+	    		setSeriesTimer(i);
+	    
 		//first sort is by record data
-		var length = data.Items.length;
+		var length = self.data.Items.length;
 	    var temp;
 
 	    for (var j = 0; j < length; j++){
 	    	var isSorted = true;
 	        for (var i=0; i < (length - j - 1); i++)
-	            if ((typeof (data.Items[i].SeriesTimerId) != 'undefined' ||  typeof(data.Items[i].TimerId) != 'undefined') && (typeof (data.Items[i+1].SeriesTimerId) == 'undefined' && typeof (data.Items[i+1].TimerId) == 'undefined'))
+	            if ((typeof (self.data.Items[i].SeriesTimerId) != 'undefined' ||  typeof(self.data.Items[i].TimerId) != 'undefined') && (typeof (self.data.Items[i+1].SeriesTimerId) == 'undefined' && typeof (self.data.Items[i+1].TimerId) == 'undefined'))
 	            {
-	               temp = data.Items[i];
-	               data.Items[i] = data.Items[i+1];
-	               data.Items[i+1] = temp;
+	               temp = self.data.Items[i];
+	               self.data.Items[i] = self.data.Items[i+1];
+	               self.data.Items[i+1] = temp;
 	               isSorted = false
 	            }
 	        if (isSorted)
 	        	break
 	    }
-
 	    //second sort is by name
 	    for (var j = 0; j < length; j++){
 	    	var isSorted = true;
 	        for (var i=0; i < (length - j - 1); i++)
-	            if (data.Items[i].Name > data.Items[i+1].Name)
+	            if (self.data.Items[i].Name > self.data.Items[i+1].Name)
 	            {
-	               temp = data.Items[i];
-	               data.Items[i] = data.Items[i+1];
-	               data.Items[i+1] = temp;
+	               temp = self.data.Items[i];
+	               self.data.Items[i] = self.data.Items[i+1];
+	               self.data.Items[i+1] = temp;
 	               isSorted = false
 	            }
 	        if (isSorted)
@@ -710,12 +735,12 @@ LiveTv.prototype.load = function(settings, backstate) {
 			
 		if (self.activeButton == 1) // get in-progress shows
 		{
-           if (data.Items.length == 1 && data.Items[0].StartDate < now)				   
-  		      newdata.Items.push(data.Items[0])
+           if (self.data.Items.length == 1 && self.data.Items[0].StartDate < now)				   
+  		      newdata.Items.push(self.data.Items[0])
   		   else
-		   for (var x = 0; x < data.Items.length-1;x++)
-			   if (data.Items[x].StartDate < now && data.Items[x].Name != data.Items[x+1].Name)
-				   newdata.Items.push(data.Items[x])
+		   for (var x = 0; x < self.data.Items.length-1;x++)
+			   if (self.data.Items[x].StartDate < now && self.data.Items[x].Name != self.data.Items[x+1].Name)
+				   newdata.Items.push(self.data.Items[x])
 		}
 		else
 		if (self.activeButton == 2) // get next-up shows
@@ -723,26 +748,26 @@ LiveTv.prototype.load = function(settings, backstate) {
 		   var onehourlater = new Date()
 		   onehourlater.setTime(onehourlater.getTime() + 60*60*1000)
 		   onehourlater = onehourlater.toISOString()
-           if (data.Items[0].StartDate > now && data.Items[0].StartDate < onehourlater && data.Items.length == 1)				   
- 		      newdata.Items.push(data.Items[0])
+           if (self.data.Items[0].StartDate > now && self.data.Items[0].StartDate < onehourlater && self.data.Items.length == 1)				   
+ 		      newdata.Items.push(self.data.Items[0])
  		   else
-		   for (var x = 0; x < data.Items.length-1;x++)
-			   if (data.Items[x].StartDate > now && data.Items[x].StartDate < onehourlater && data.Items[x].Name != data.Items[x+1].Name)
-				   newdata.Items.push(data.Items[x])
+		   for (var x = 0; x < self.data.Items.length-1;x++)
+			   if (self.data.Items[x].StartDate > now && self.data.Items[x].StartDate < onehourlater && self.data.Items[x].Name != self.data.Items[x+1].Name)
+				   newdata.Items.push(self.data.Items[x])
 		}
 		else 
 		if (self.activeButton == 3 || self.activeButton == 4) // just remove duplicates
         {			
-           if (data.Items.length == 1)				   
- 		      newdata.Items.push(data.Items[0])
+           if (self.data.Items.length == 1)				   
+ 		      newdata.Items.push(self.data.Items[0])
  		   else
-		   for (var x = 0; x < data.Items.length-1;x++)
-			   if (data.Items[x].Name != data.Items[x+1].Name)
-				   newdata.Items.push(data.Items[x])
+		   for (var x = 0; x < self.data.Items.length-1;x++)
+			   if (self.data.Items[x].Name != self.data.Items[x+1].Name)
+				   newdata.Items.push(self.data.Items[x])
         }
 		else
-		   for (var x = 0; x < data.Items.length;x++) // may have duplicates
-			   newdata.Items.push(data.Items[x])
+		   for (var x = 0; x < self.data.Items.length;x++) // may have duplicates
+			   newdata.Items.push(self.data.Items[x])
 				   
 				  
        newdata.TotalRecordCount = newdata.Items.length;
@@ -759,7 +784,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 				headerLink: "#homeLink a",
 				initialise: true
 			});
-			renderer.userAllTvItemsImages(0,50*250,self.id) // images for first 50
+			renderer.userAllTvItemsImages(0,10*device.columnWidth,self.id) // images for first 20
 		}	
 			
 		if (backstate == false || self.lastItemIndex == null)
@@ -889,7 +914,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	
 	function scrolling(event) {
 		var view = dom.querySelector("#view");
-		renderer.userAllTvItemsImages(view.scrollLeft-750,view.scrollLeft+25*250,self.id)
+		renderer.userAllTvItemsImages(view.scrollLeft-(device.columnWidth*3),view.scrollLeft+10*(device.columnWidth),self.id)
 	}
 	function scrollToIndex(event) {
 		event.stopPropagation()

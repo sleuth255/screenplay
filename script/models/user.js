@@ -21,7 +21,7 @@ User.prototype.close = function(){
 User.prototype.load = function(data) {
 	this.users = data;
 			
-	if (prefs.autoLogin == true && storage.exists(this.current)) {
+	if (prefs.autoLogin == true && prefs.serverSwitched == false && storage.exists(this.current)) {
 		this.authenticate(storage.get(this.current));
 	} else {		
 		this.login();
@@ -140,6 +140,7 @@ User.prototype.authenticate = function(data) {
 User.prototype.login = function() {
 	var self = this;
 	var lastFocus = "#keyUser0"
+	prefs.serverSwitched = false;
 	dom.remove("#home")
 	
 	dom.append("body", {

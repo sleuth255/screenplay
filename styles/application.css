@@ -1,3 +1,6 @@
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
 body {
 	background-color: #000;
 	overflow: hidden;
@@ -788,15 +791,6 @@ input:hover {
 	outline: none;
 	border: 2px solid rgba(82, 181, 75, 0.5);		
 }
-/* 
-.cover {
-	position: relative;
-	display: block;
-	background-size: cover;
-	background-position: center bottom;	
-	background-color: #333;
-}
-*/
 .cover {
     position: relative;
     display: block;
@@ -1123,6 +1117,13 @@ button:hover {
 	text-align: center;
     text-shadow: 0px 0px 0px #fff;
 }
+#viewItem_2_5{
+    color: transparent;
+	width: 50px;
+	height:40px;
+	text-align: center;
+    text-shadow: 0px 0px 0px #fff;
+}
 button:focus {
 	background-color: blue;
 	color: white;
@@ -1138,6 +1139,3 @@ button:focus {
     -moz-animation:spin 4s linear infinite;
     animation:spin 4s linear infinite;
 }
-@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
-@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
-@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }

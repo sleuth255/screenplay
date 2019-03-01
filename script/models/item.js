@@ -9,7 +9,11 @@ function Item() {
 	this.timerdata = {};
 	this.iteration;
 	this.playedStatus;
-	this.recordStatus;
+	this.itemRecordOn;
+	this.seriesRecordOn;
+	this.itemRecordOff;
+	this.cancelRecord;
+	this.seriesRecordOff;
 	this.lostfocus;
 };
 
@@ -106,12 +110,29 @@ Item.prototype.load = function(id, backstate, settings) {
 		})	
 		
 	}
-	function displayItem(data) {
-		self.data = data;
-		now = new Date().toISOString();
+    function displayItem(data) {
+        self.data = data;
+    	   emby.getLiveTvSeriesTimers({
+  		   success: processItem,
+    		   error: error				
+    	   });
+     }
+	function processItem(data) {
+		self.timerdata = data;
+    	if (typeof (self.tvdata.SeriesTimerId != 'undefined')){
+    		var found = false;
+        	self.timerdata.Items.forEach (function(item){
+        		if ((item.ChannelId == self.tvdata.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.tvdata.SeriesTimerId)
+        			found = true
+        	})
+    		if (!found)
+    			delete self.tvdata.SeriesTimerId
+    	}
+
+    	now = new Date().toISOString();
 
 		
-		if (data.Type == "Series" || data.Type == "Season")
+		if (self.data.Type == "Series" || self.data.Type == "Season")
 		{
 			dom.html("#view", {
 				nodeName: "div",
@@ -146,7 +167,7 @@ Item.prototype.load = function(id, backstate, settings) {
 				   id: "itemContent"
 			   }]
 		   });
-		   if (typeof data.ChannelId != 'undefined' && data.StartDate > now) // liveTv item
+		   if (typeof self.data.ChannelId != 'undefined' && self.data.StartDate > now) // liveTv item
 		   {
 		      dom.append("#userViews_0", {
 			      nodeName: "a",
@@ -155,12 +176,28 @@ Item.prototype.load = function(id, backstate, settings) {
 			      id: "viewRecord",
 			      dataset: {
 					   keyUp: "#homeLink a",
-					   keyDown: ".user-views-item_"+ (idx+1),
+					   keyDown: ".user-views-item_1",
 					   keyRight: "a.latest-item"	
 			      },
 			      childNodes: [{
 				      nodeName: "span",
 				      className: "user-views-item-name glyphicon record",	
+				      text: ""				
+			      }]
+		      });
+		      dom.append("#userViews_0", {
+			      nodeName: "a",
+			      href: "#",
+			      className: "user-views-item user-views-item_1",
+			      id: "viewStop",
+			      dataset: {
+					   keyUp: ".user-views-item_0",
+					   keyDown: ".user-views-item_0",
+					   keyRight: "a.latest-item"	
+			      },
+			      childNodes: [{
+				      nodeName: "span",
+				      className: "user-views-item-name glyphicon stop",	
 				      text: ""				
 			      }]
 		      });
@@ -185,7 +222,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		      });
 		   }
 		   
-		   if (data.UserData.PlaybackPositionTicks > 0)  // resume data available: show resume button
+		   if (self.data.UserData.PlaybackPositionTicks > 0)  // resume data available: show resume button
 		   {
    		      dom.append("#userViews_0", {
 			      nodeName: "a",
@@ -205,7 +242,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		      });		
 		   }
 		   
-		   if (typeof data.ChannelId == 'undefined') // not a liveTv item
+		   if (typeof self.data.ChannelId == 'undefined') // not a liveTv item
 		   {
 		      dom.append("#userViews_0", {
 			      nodeName: "a",
@@ -223,7 +260,7 @@ Item.prototype.load = function(id, backstate, settings) {
 			          text: ""				
 			      }]
 		      });		
-		      if (data.CanDelete == true)
+		      if (self.data.CanDelete == true)
 		      {	   
 		         dom.append("#userViews_0", {
 			         nodeName: "a",
@@ -247,31 +284,31 @@ Item.prototype.load = function(id, backstate, settings) {
 		
 
 		
- 	    if (typeof data.ChannelId != 'undefined') // liveTv item
+ 	    if (typeof self.data.ChannelId != 'undefined') // liveTv item
  	   	   dom.css("#poster", {
  			   backgroundImage: "url(./images/generic-backdrop.png)"
  		   });
  	    else
-		if (data.BackdropImageTags && data.BackdropImageTags[0])
+		if (self.data.BackdropImageTags && self.data.BackdropImageTags[0])
 			dom.css("#poster", {
-				backgroundImage: "url(" + emby.getImageUrl({'itemId': data.Id, tag: data.BackdropImageTags[0], imageType: 'Backdrop', height: 1080}) + ")"
+				backgroundImage: "url(" + emby.getImageUrl({'itemId': self.data.Id, tag: self.data.BackdropImageTags[0], imageType: 'Backdrop', height: 1080}) + ")"
 			});	
 		else 
-		if (data.ParentBackdropImageTags && data.ParentBackdropImageTags[0]) 
+		if (self.data.ParentBackdropImageTags && self.data.ParentBackdropImageTags[0]) 
 			dom.css("#poster", {
-				backgroundImage: "url(" + emby.getImageUrl({'itemId': data.ParentBackdropItemId, tag: data.ParentBackdropImageTags[0], imageType: 'Backdrop', height: 1080}) + ")"
+				backgroundImage: "url(" + emby.getImageUrl({'itemId': self.data.ParentBackdropItemId, tag: self.data.ParentBackdropImageTags[0], imageType: 'Backdrop', height: 1080}) + ")"
 			});				
 		
-		dom.addClass("#item", "item-view-" + data.Type.toLowerCase());
+		dom.addClass("#item", "item-view-" + self.data.Type.toLowerCase());
 		
-		renderer.userItem(data,self.tvdata, {
+		renderer.userItem(self.data,self.tvdata, {
 			container: "#itemContent"
 		});
 		
-		switch(data.Type) {
+		switch(self.data.Type) {
 			case "Series":
 				emby.getShowsSeasons({
-					id: data.Id,
+					id: self.data.Id,
 					fields: "ItemCounts,AudioInfo",	
 					success: function(data) {
 						data.heading = "Seasons";						
@@ -283,8 +320,8 @@ Item.prototype.load = function(id, backstate, settings) {
 
 			case "Season":
 				emby.getShowsEpisodes({
-					id: data.SeriesId,
-					seasonId: data.Id,
+					id: self.data.SeriesId,
+					seasonId: self.data.Id,
 					fields: "ItemCounts,AudioInfo",	
 					success: function(data) {
 						data.heading = "Episodes";						
@@ -296,16 +333,16 @@ Item.prototype.load = function(id, backstate, settings) {
 								
 		}	
 		
-		if (data.Type != "Series" && data.Type != "Season")
+		if (self.data.Type != "Series" && self.data.Type != "Season")
 		{
             focus("#userViews a:first-child");
-			if (data.Video3DFormat == "HalfTopAndBottom")
+			if (self.data.Video3DFormat == "HalfTopAndBottom")
 			   prefs.video3DFormat = "top_bottom"
 			else				   
-			if (data.Video3DFormat == "HalfSideBySide")
+			if (self.data.Video3DFormat == "HalfSideBySide")
 			   prefs.video3DFormat = "side_by_side_LR"
 			else				   
-			if (data.Video3DFormat == "FullSideBySide")
+			if (self.data.Video3DFormat == "FullSideBySide")
 				prefs.video3DFormat = "side_by_side_full_LR"
 			else
 				prefs.video3DFormat = "2D"
@@ -328,19 +365,26 @@ Item.prototype.load = function(id, backstate, settings) {
 		dom.on("#viewRecord", "click", function(event) {
 			event.preventDefault();
 			flashButton(event.target);
+			self.cancelRecord = false;
+            handleRecordRequest()
+        });
+		dom.on("#viewStop", "click", function(event) {
+			event.preventDefault();
+			flashButton(event.target);
+			self.cancelRecord = true;
             handleRecordRequest()
         });
 		dom.on("#viewTogglePlayed", "click", function(event) {
 			event.preventDefault()
-			if (data.UserData.Played == false)
-				data.UserData.Played = true
+			if (self.data.UserData.Played == false)
+				self.data.UserData.Played = true
 			else
-				data.UserData.Played = false
-			prefs.playedStatus = data.UserData.Played
+				self.data.UserData.Played = false
+			prefs.playedStatus = self.data.UserData.Played
 			flashButton(event.target);
 			emby.updatePlayedStatus({
 				Id: id,
-				UserData: data.UserData,
+				UserData: self.data.UserData,
 				success: success,
 				error: error
 			})
@@ -361,7 +405,7 @@ Item.prototype.load = function(id, backstate, settings) {
 		});
 		dom.on("#viewDelete","validate-yes", function(event){
 			emby.deleteItem({
-				id: data.Id				
+				id: self.data.Id				
 			})	
 			dom.dispatchCustonEvent(document, "itemDeleted", self.data);
 		})
@@ -405,24 +449,44 @@ Item.prototype.load = function(id, backstate, settings) {
 	function handleRecordRequest(){
     	emby.getLiveTvProgram({
     		id: self.data.Id,
-    		success: processRecordState,
+    		success: getSeriesTimers,
     		error: recorderror
     	})
     }
+    function getSeriesTimers(data) {
+        self.data = data;
+    	emby.getLiveTvSeriesTimers({
+  		  success: processRecordState,
+    	  error: error				
+    	});
+     }
     function processRecordState(data){
-    	if (data.SeriesTimerId)
-    		cancelSeriesRecordTimer(data.SeriesTimerId)
+		self.timerdata = data;
+    	if (typeof (self.data.SeriesTimerId != 'undefined')){
+    		var found = false;
+        	self.timerdata.Items.forEach (function(item){
+        		if ((item.ChannelId == self.data.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.SeriesTimerId)
+        			found = true
+        	})
+    		if (!found)
+    			delete self.data.SeriesTimerId
+    	}
+
+    	if (self.data.SeriesTimerId)
+    		cancelSeriesRecordTimer(self.data.SeriesTimerId)
     	else
-//    	if (data.TimerId && data.IsSeries)
-//    		scheduleSeriesRecordTimer()
-//        else    		
-    	if (!data.TimerId)
+    	if (self.data.TimerId && self.data.IsSeries && !self.cancelRecord)
+    		scheduleSeriesRecordTimer()
+        else    		
+    	if (!self.data.TimerId && !self.cancelRecord)
     	   scheduleItemRecordTimer();
     	else
-    	   cancelItemRecordTimer(data.TimerId);
+    	if (self.data.TimerId)
+    	   cancelItemRecordTimer(self.data.TimerId);
     }
     function cancelSeriesRecordTimer(TimerId){
-        self.recordStatus = false;
+        self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
+        self.seriesRecordOff = true;
   	   emby.deleteLiveTvSeriesTimer({
  		   id: TimerId,
  		   success: handleResult,
@@ -430,7 +494,8 @@ Item.prototype.load = function(id, backstate, settings) {
  	   })
      }
  	function scheduleSeriesRecordTimer(){
- 		self.recordStatus = true;
+        self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
+ 		self.seriesRecordOn = true;
  		timerDTO.ServerId = self.data.ServerId;
  		timerDTO.ChannelId = self.data.ChannelId;
  		timerDTO.ProgramId = self.data.Id;
@@ -444,7 +509,8 @@ Item.prototype.load = function(id, backstate, settings) {
  		
  	}
     function cancelItemRecordTimer(TimerId){
-       self.recordStatus = false;
+       self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
+       self.itemRecordOff = true;
  	   emby.deleteLiveTvTimer({
 		   id: TimerId,
 		   success: handleResult,
@@ -452,7 +518,8 @@ Item.prototype.load = function(id, backstate, settings) {
 	   })
     }
 	function scheduleItemRecordTimer(){
-		self.recordStatus = true;
+        self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
+		self.itemRecordOn = true;
 		timerDTO.ServerId = self.data.ServerId;
 		timerDTO.ChannelId = self.data.ChannelId;
 		timerDTO.ProgramId = self.data.Id;
@@ -468,19 +535,41 @@ Item.prototype.load = function(id, backstate, settings) {
 	function handleResult(data){
     	emby.getLiveTvProgram({
     		id: self.data.Id,
-    		success: updateItemPage,
+    		success: updateSeriesTimers,
     		error: recorderror
     	})
 	}
+    function updateSeriesTimers(data) {
+        self.data = data;
+    	emby.getLiveTvSeriesTimers({
+  		  success: updateItemPage,
+    	  error: error				
+    	});
+     }
 	function updateItemPage(data){
-		if (data.TimerId && self.recordStatus || !data.TimerId && !self.recordStatus)
+		self.timerdata = data
+    	if (typeof (self.data.SeriesTimerId != 'undefined')){
+    		var found = false;
+        	self.timerdata.Items.forEach (function(item){
+        		if ((item.ChannelId == self.data.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.SeriesTimerId)
+        			found = true
+        	})
+    		if (!found)
+    			delete self.data.SeriesTimerId
+    	}
+		if ((self.data.TimerId && self.itemRecordOn) || (self.data.SeriesTimerId && self.seriesRecordOn) || (!self.data.TimerId && self.itemRecordOff) || (!self.data.SeriesTimerId && self.seriesRecordOff))
 		{
-			dom.dispatchCustonEvent(document, "reloadItem", data)
+			if (self.itemRecordOn && self.data.IsSeries)
+				playerpopup.show({
+					duration: 1500,
+					text: "Click again to record the Series"
+				});	
+			dom.dispatchCustonEvent(document, "reloadItem", self.data)
 	        return
 		}
     	emby.getLiveTvProgram({
     		id: self.data.Id,
-    		success: updateItemPage,
+    		success: updateSeriesTimers,
     		error: recorderror
     	})
 	}

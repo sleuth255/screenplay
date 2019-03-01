@@ -190,7 +190,7 @@ EMBY.prototype.getLiveTvPrograms = function(settings){
 	var StartIndex = settings.StartIndex || "";
 	var HasAired = settings.HasAired || "";
 	
-	//was: SortBy=sortName&SortOrder=Ascending
+	//was: SortBy=sortName&SortOrder=Ascending&
 	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?enableImageTypes=primary,thumb,backdrop'+
 		(limit ? "&limit=" + limit : "")+
 		(HasAired ? "&HasAired=" + HasAired : "")+

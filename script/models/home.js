@@ -37,7 +37,24 @@ Home.prototype.load = function() {
 	}
 	   
 	dom.off("body","keydown", this.lostfocus);
-
+	if (prefs.autoSize){// need to change cover class
+		var sheet = (function() {
+			var style = document.createElement("style");
+			style.appendChild(document.createTextNode(""));
+			document.head.appendChild(style);
+			return style.sheet;
+		})();
+		sheet.insertRule(".cover {position: relative;display: block;background-size: cover; background-position: center top; background-color: transparent;}",0)
+	}
+	else{
+		var sheet = (function() {
+			var style = document.createElement("style");
+			style.appendChild(document.createTextNode(""));
+			document.head.appendChild(style);
+			return style.sheet;
+		})();
+		sheet.insertRule(".cover {position: relative;display: block;background-size: contain; background-position: center top; background-color: transparent;}",0)
+	}
 	dom.html("#view", {
 		nodeName: "div",
 		className: "home-view",

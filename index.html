@@ -95,6 +95,7 @@
 					activeButton: event.detail.activeButton,
 					action: "livetvitems"
 				}, "livetvitems");
+				livetv.close();
 				livetvitems.load(event.detail,false);
 			});
 
@@ -190,11 +191,6 @@
 						case "home":
 							if (dom.exists('#home'))
 								webOS.platformBack();
-							
-							//playerpopup.show({
-	    					//		duration: 2000,
-	    					//		text: "Press HOME to exit"
-    						//	});
 							else
 							    home.load();
 							break;
@@ -224,20 +220,13 @@
 							break;
 					}
 				}
-				else
-				{
-					if (dom.exists('#home'))
-						history.pushState({
-							action: "home"
-						}, "home");
-						
-						webOS.platformBack();					    
-					//	playerpopup.show({
-					//	    duration: 2000,
-					//	    text: "Press HOME to exit"
-					//  });
-					
-				}
+				else{
+					history.pushState({
+						action: "home"
+					}, "home");
+  				    if (dom.exists('#home'))
+					   webOS.platformBack();
+				   }
 			});	
 			
 			dom.on("#homeLink a", "click", function(event) {	
@@ -264,6 +253,7 @@
 			dom.on("#server", "click", function(event) {
 				event.preventDefault()
 				event.stopPropagation();
+				prefs.serverSwitched = true;
 				home.close();
 				server.add();
 			});
