@@ -20,9 +20,10 @@ function Item() {
 Item.prototype.close = function(){
 	dom.off("body","keydown", this.lostfocus);
 	dom.remove("#item")
-}
-Item.prototype.load = function(id, backstate, settings) {
-	settings = settings || {};
+};
+
+Item.prototype.load = function(id, backstate, data) {
+	//settings = settings || {};
 	var self = this;
     var timerDTO ={
     	RecordAnyTime:true,
@@ -32,7 +33,10 @@ Item.prototype.load = function(id, backstate, settings) {
     	RecordNewOnly:false,
     	Days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     	DayPattern:"Daily",
-    	ImageTags:{},
+    	ImageTags:{
+    		'Primary': '',
+    		'Thumb': ''
+    	},
     	Type:"SeriesTimer",
     	ServerId:"",
     	ChannelId:"",
@@ -44,6 +48,9 @@ Item.prototype.load = function(id, backstate, settings) {
     	StartDate:"",
     	EndDate:"",
     	ServiceName:"Emby",
+ 		ParentPrimaryImageTag: "",
+ 		ParentThumbImageTag: "",
+ 		ParentThumbItemId: "",
     	Priority:0,
     	PrePaddingSeconds:0,
     	PostPaddingSeconds:0,
@@ -87,10 +94,10 @@ Item.prototype.load = function(id, backstate, settings) {
 	});
 	dom.hide('#playerBackdrop')
 	dom.hide('#spinnerBackdrop')
-	emby.getLiveTvProgram({
-		id: id,
-		success: storeTvItem,
-		error: getUserItem					
+    emby.getLiveTvProgram({
+	   id: id,
+	   success: storeTvItem,
+	   error: getUserItem					
 	})	
 
 	function storeTvItem(data){
@@ -167,7 +174,7 @@ Item.prototype.load = function(id, backstate, settings) {
 				   id: "itemContent"
 			   }]
 		   });
-		   if (typeof self.data.ChannelId != 'undefined' && self.data.StartDate > now) // liveTv item
+		   if (typeof self.data.ChannelId != 'undefined' && (self.data.StartDate > now || self.data.EndDate < now)) // liveTv item
 		   {
 		      dom.append("#userViews_0", {
 			      nodeName: "a",
@@ -335,7 +342,10 @@ Item.prototype.load = function(id, backstate, settings) {
 		
 		if (self.data.Type != "Series" && self.data.Type != "Season")
 		{
-            focus("#userViews a:first-child");
+            if (dom.exists("#userViews a:first-child"))
+			    focus("#userViews a:first-child");
+            else
+    			focus(".home-link")
 			if (self.data.Video3DFormat == "HalfTopAndBottom")
 			   prefs.video3DFormat = "top_bottom"
 			else				   
@@ -500,7 +510,16 @@ Item.prototype.load = function(id, backstate, settings) {
  		timerDTO.ChannelId = self.data.ChannelId;
  		timerDTO.ProgramId = self.data.Id;
  		timerDTO.StartDate = self.data.StartDate;
- 		timerDTO.EndDate = self.data.EndDate
+ 		timerDTO.EndDate = self.data.EndDate;
+ 		timerDTO.Name = self.data.Name;
+ 		timerDTO.ImageTags.Primary = timerDTO.ImageTags.Thumb == '';
+ 		if (typeof self.data.ImageTags.Primary !='undefined')
+ 		    timerDTO.ImageTags.Primary = self.data.ImageTags.Primary
+ 		if (typeof self.data.ImageTags.Thumb != 'undefined')
+	        timerDTO.ImageTags.Thumb = self.data.ImageTags.Thumb
+ 		timerDTO.ParentPrimaryImageTag = self.data.ParentPrimaryImageTag;
+ 		timerDTO.ParentThumbImageTag = self.data.ParentThumbImageTag;
+ 		timerDTO.ParentThumbItemId = self.data.ParentThumbItemId;
  	    emby.postLiveTvSeriesTimers({
  		    data: timerDTO,
  		    success: handleResult,
@@ -600,7 +619,10 @@ Item.prototype.load = function(id, backstate, settings) {
 			dom.dispatchCustonEvent(document, "mediaItemSelected", event.delegateTarget.dataset);
 		});	
 		if (backstate == false || prefs.lastEpisodeFocus == null)
-            focus(".latest-item");
+			if (dom.exists(".latest-item"))
+                focus(".latest-item");
+			else
+				focus(".home-link");
 		else
 			episodefocus();
 //		dom.delegate("#item", "a.latest-item", "keydown", navigation);
@@ -659,9 +681,13 @@ Item.prototype.load = function(id, backstate, settings) {
 
 	function episodefocus(){
 		var elmnts = document.getElementsByClassName("latest-item")
-		var focusid = "#"+elmnts[prefs.lastEpisodeFocus].id
-		prefs.lastEpisodeFocus = null;
-        focus(focusid);
+		if (elmnts){
+		    var focusid = "#"+elmnts[prefs.lastEpisodeFocus].id
+		    prefs.lastEpisodeFocus = null;
+            focus(focusid);
+		}
+		else
+			focus(".home-link")
 	}
 	function focus(query) {
 		var node = dom.focus(query);
@@ -676,10 +702,11 @@ Item.prototype.load = function(id, backstate, settings) {
 		return;
 	}
 	function error(data) {
-		message.show({
-			messageType: message.error,			
-			text: "Loading item failed!"
+		playerpopup.show({
+			duration: 2000,			
+			text: "Item no longer Available"
 		});			
+		history.back();
 	}		
 	function recorderror(data) {
 		playerpopup.show({

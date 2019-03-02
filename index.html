@@ -77,7 +77,7 @@
 				history.pushState({
 					action: "livetv"
 				}, "livetv");
-				livetv.load(false);
+				livetv.load({activeButton: 1},false);
 			});
 
 			dom.on(document, "liveTvCollectionSelected", function(event) {
@@ -396,12 +396,12 @@
 					    case keys.KEY_STOP:
 					    	history.back();
 						    return;
-					    case keys.KEY_FAST_FWD:
-						    player.fastforward();
-						    return;
-					    case keys.KEY_REWIND:
-						    player.rewind();
-						    return;
+					    //case keys.KEY_FAST_FWD:
+						 //   player.fastforward();
+						  //  return;
+					    //case keys.KEY_REWIND:
+						 //   player.rewind();
+						  //  return;
 					    case keys.KEY_ESC || keys.KEY.BACK:
 					    	player.close()
 					    	return;

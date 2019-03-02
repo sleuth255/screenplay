@@ -733,6 +733,10 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 	var hours = (time >= 60 ? Math.floor(time/60) + " hr " : "");
 	var mins = (time % 60 > 0 ? time % 60 + " min" : "");
 	var now = new Date().toISOString();
+	if (typeof tvitem.EndDate != 'undefined' && tvitem.EndDate < now){
+		item.Overview = "";
+		tvitem.EpisodeTitle = item.Name + " Series Recording"
+	}
 	dom.append(container, {
 		nodeName: "div",
 		id: "itemDetails",
@@ -764,10 +768,14 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 			nodeName: "div",
 			className: "genre",
 			text: "Airs "+formatDate(item.StartDate)+" on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
-		} : {}, tvitem.StartDate && tvitem.StartDate <= now ? {
+		} : {}, tvitem.StartDate && tvitem.StartDate <= now && tvitem.EndDate >= now ? {
 			nodeName: "div",
 			className: "genre",
 			text: "Now Playing on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
+		} : {}, tvitem.EndDate && tvitem.EndDate < now ? {
+			nodeName: "div",
+			className: "genre",
+			text: "Series Airs on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
 		} : {}, item.Genres && item.Genres.length > 0 ? {
 			nodeName: "div",
 			className: "genre",

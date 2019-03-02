@@ -41,9 +41,9 @@ LiveTv.prototype.load = function(settings, backstate) {
 	self.activeButton = settings.activeButton || 1
 	self.heading = self.activeButton == 1 ? "On Now" 
 			     : self.activeButton == 2 ? "Next Up" 
-			     : self.activeButton == 3 ? "Today's Shows" 
+			     : self.activeButton == 3 ? "Next 24 Hours" 
 			     : self.activeButton == 4 ? "Movies" 
-			     : "Recordings" 
+			     : "Scheduled Tasks" 
 	this.total = 5;
 	this.count = 0;
 
@@ -380,7 +380,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		 childNodes: [{
 		      nodeName: "span",
 		      className: "user-views-item-name",	
-		      text: "Today's Shows"				
+		      text: "Shows"				
 	     }]
 	});		
     dom.append("#userViews_0", {
@@ -412,7 +412,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		 childNodes: [{
 		      nodeName: "span",
 		      className: "user-views-item-name",	
-		      text: "Recordings"				
+		      text: "Tasks"				
 	     }]
 	});
     dom.addClass('.user-views-item_'+self.activeButton,'activeButton')
@@ -571,7 +571,9 @@ LiveTv.prototype.load = function(settings, backstate) {
     		   timerItem.ProgramId = item.ProgramId;
     		   timerItem.ChannelId = item.ChannelId;
     		   timerItem.TimerId = item.Id;
-    		   timerItem.IsSeriesTimer = true
+    		   timerItem.IsSeriesTimer = true;
+    		   timerItem.StartDate = item.StartDate;
+    		   timerItem.ParentPrimaryImageItemId = item.ParentPrimaryImageItemId;
     		   self.timerarray.push(timerItem);
     		}
     	})
@@ -614,10 +616,11 @@ LiveTv.prototype.load = function(settings, backstate) {
     	   if (self.timerarray[idx].IsSeriesTimer){
     	      tdata["SeriesTimerId"] = self.timerarray[idx].TimerId;
     	      tdata.Overview = '';
+    	      tdata.Id = self.timerarray[idx].ParentPrimaryImageItemId
     	   }
     	   else
     	      tdata["TimerId"] = self.timerarray[idx].TimerId;	
-    	   self.newdata.Items.push(data);
+    	   self.newdata.Items.push(tdata);
     	}
     	idx++;
     	if (idx >= self.timerarray.length){
@@ -631,6 +634,13 @@ LiveTv.prototype.load = function(settings, backstate) {
         });
     }
 	function discarderror(data) {
+    	var tdata = {};
+ 	    if (self.timerarray[idx].IsSeriesTimer){
+ 	       tdata["SeriesTimerId"] = self.timerarray[idx].TimerId;
+ 	       tdata.Overview = '';
+ 	       tdata.Id = self.timerarray[idx].ParentPrimaryImageItemId
+   	       self.newdata.Items.push(tdata);
+ 	    }
     	idx++;
     	if (idx >= self.timerarray.length){
     		displayUserItems(self.newdata)
