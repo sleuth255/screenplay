@@ -11,6 +11,7 @@ function LiveTv() {
 	this.currentIndex;
 	this.limit;
 	this.scroll;
+	this.dataLoaded = false;
 	this.data = {};
 	this.timerdata = {};
 	this.timerarray = [];
@@ -41,7 +42,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	self.activeButton = settings.activeButton || 1
 	self.heading = self.activeButton == 1 ? "On Now" 
 			     : self.activeButton == 2 ? "Next Up" 
-			     : self.activeButton == 3 ? "Next 24 Hours" 
+			     : self.activeButton == 3 ? "Next 2 Days" 
 			     : self.activeButton == 4 ? "Movies" 
 			     : "Scheduled Tasks" 
 	this.total = 5;
@@ -73,6 +74,21 @@ LiveTv.prototype.load = function(settings, backstate) {
 		backgroundImage: "url(./images/generic-backdrop.png)"
 	});
 	
+	dom.remove("#spinnerBackdrop")
+	dom.append("body", {
+		nodeName: "div",
+		className: "backdrop",
+		id: "spinnerBackdrop",
+		childNodes: [{
+			nodeName: "img",
+			className: "spinningimage",
+			src: "images/spinner.png",
+			width: 200,
+			height: 200
+		}]
+	});
+	dom.hide('#spinnerBackdrop')
+
 	dom.html("#view", {
 		nodeName: "div",
 		className: "collection-view",
@@ -451,6 +467,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		event.preventDefault()
 		flashButton(event.target)
 		self.lastItemIndex = null;
+		self.dataLoaded = false;
 		dom.removeClass('.user-views-item','activeButton');
 		dom.addClass('#viewItem_0_3','activeButton')
 		var dataset = {}
@@ -511,10 +528,13 @@ LiveTv.prototype.load = function(settings, backstate) {
 	var now = new Date().toISOString();
 	var today = new Date()
 	var tomorrow = new Date()
+	var nextWeek = new Date()
 	tomorrow.setHours(24,0,0,0);
+	nextWeek.setHours((24*2),0,0,0)
     today.setTime(today.getTime() + 60*60*1000)
     today = today.toISOString()
 	tomorrow = tomorrow.toISOString();
+	nextWeek = nextWeek.toISOString();
     if (self.activeButton == 1)
  	   emby.getLiveTvPrograms({
  		   //limit: 1000,
@@ -534,16 +554,29 @@ LiveTv.prototype.load = function(settings, backstate) {
 		   error: error				
 	   });
     else
-    if (self.activeButton == 3)
-   	   emby.getLiveTvPrograms({
-   		   //limit: 50000,
-   		   HasAired: 'false',
-   		   MinStartDate: now,
-   		   MaxStartDate: tomorrow,
-   		   isSeries: true,
-   		   success: displayUserItems,
-   		   error: error				
-   	   });
+    if (self.activeButton == 3){
+    	if (self.dataLoaded)
+    		displayUserItems(self.data)
+        else{
+        	dom.show('#spinnerBackdrop')
+		    playerpopup.show({
+			    duration: 1000,
+			    text: "Retrieving Shows..."
+		    });	
+		    self.dataLoaded = true;
+			
+   	       emby.getLiveTvPrograms({
+   		       //limit: 50000,
+   		       HasAired: 'false',
+   		       MinStartDate: now,
+   		       // MaxStartDate: tomorrow,
+   		       MaxStartDate: nextWeek,
+   		       isSeries: true,
+   		       success: displayUserItems,
+   		       error: error				
+   	       });
+        }
+    }
     else
     if (self.activeButton == 4)
    	   emby.getLiveTvPrograms({
@@ -566,16 +599,14 @@ LiveTv.prototype.load = function(settings, backstate) {
     	var now = new Date();
     	data.Items.forEach(function(item, index) {
     		var end = new Date(item.EndDate)
-    		if (now < end){
-    		   var timerItem = {};
-    		   timerItem.ProgramId = item.ProgramId;
-    		   timerItem.ChannelId = item.ChannelId;
-    		   timerItem.TimerId = item.Id;
-    		   timerItem.IsSeriesTimer = true;
-    		   timerItem.StartDate = item.StartDate;
-    		   timerItem.ParentPrimaryImageItemId = item.ParentPrimaryImageItemId;
-    		   self.timerarray.push(timerItem);
-    		}
+   		    var timerItem = {};
+    		timerItem.ProgramId = item.ProgramId;
+    		timerItem.ChannelId = item.ChannelId;
+    		timerItem.TimerId = item.Id;
+    		timerItem.IsSeriesTimer = true;
+    		timerItem.StartDate = item.StartDate;
+    		timerItem.ParentPrimaryImageItemId = item.ParentPrimaryImageItemId;
+    		self.timerarray.push(timerItem);
     	})
    	    emby.getLiveTvTimers({
        		   success: assembleItemTimers,
@@ -706,9 +737,13 @@ LiveTv.prototype.load = function(settings, backstate) {
 		}
         
 	    // set Series timers
-	    for (var i = 0; i < self.data.Items.length ; i++)
+	    for (var i = 0; i < self.data.Items.length ; i++){
+	    	
+	    	if(/^[a-z]$/.test(self.data.Items[i].Name.charAt(0)))
+	    	    self.data.Items[i].Name = self.data.Items[i].Name.charAt(0).toUpperCase()+ self.data.Items[i].Name.substring(1)	    	
 	    	if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
 	    		setSeriesTimer(i);
+	    }
 	    
 		//first sort is by record data
 		var length = self.data.Items.length;
@@ -727,6 +762,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	        if (isSorted)
 	        	break
 	    }
+	    
 	    //second sort is by name
 	    for (var j = 0; j < length; j++){
 	    	var isSorted = true;
@@ -740,9 +776,8 @@ LiveTv.prototype.load = function(settings, backstate) {
 	            }
 	        if (isSorted)
 	        	break
-	    }
-	    	
-			
+	    } 
+	       	
 		if (self.activeButton == 1) // get in-progress shows
 		{
            if (self.data.Items.length == 1 && self.data.Items[0].StartDate < now)				   
@@ -783,8 +818,9 @@ LiveTv.prototype.load = function(settings, backstate) {
        newdata.TotalRecordCount = newdata.Items.length;
 
 		
+	    dom.hide('#spinnerBackdrop')
 		
-		self.id = guid.create();	
+	    self.id = guid.create();
 									
 		if (newdata.Items.length > 0) {					
 			renderer.userAllTvItemsPlaceholder(newdata, {
@@ -796,7 +832,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 			});
 			renderer.userAllTvItemsImages(0,10*device.columnWidth,self.id) // images for first 20
 		}	
-			
+		
 		if (backstate == false || self.lastItemIndex == null)
             focus(".activeButton");
 		else
@@ -932,6 +968,8 @@ LiveTv.prototype.load = function(settings, backstate) {
 		var index = event.currentTarget.dataset.index;
 		if (index == 'sym')
 			index = ' ';
+		if (/^[0-9]$/.test(index))
+			index = 'sym'
 		self.currentIndex = index;
 		var scrollpos = 0;
 		dom.data("#collectionIndex", "lastFocus", "#collectionIndex a[data-index='" + index + "']");
@@ -994,6 +1032,8 @@ LiveTv.prototype.load = function(settings, backstate) {
 		dom.removeClass(".index-item", "index-current");
 		if (index == ' ')
 			index = 'sym';
+		if (/^[0-9]$/.test(index))
+			index = 'sym'
 		if (index == "sym") {
 			dom.addClass("#index-1", "index-current");
 			dom.data("#collectionIndex", "lastFocus", "#index-1");

@@ -52,6 +52,7 @@ function Prefs() {
 	this.liveTvEnabled = false;
 	this.isLiveTvItem = false;
 	this.liveStreamId = null;
+	this.mediaSourceId = null;
 	this.playSessionId = null;
 	this.myTimer = null;
 	this.spinnerTimer = null;

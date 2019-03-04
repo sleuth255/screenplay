@@ -239,11 +239,10 @@ EMBY.prototype.getLiveTvHlsStreamUrl = function(settings) {
 		
 	var itemId = settings.itemid;
 	var container = settings.container  || "ts";
-	var mediaSourceId = settings.liveStreamId.substring(settings.liveStreamId.indexOf("native"))
 	return this.settings.ServerUrl + "/videos/" + itemId + "/live.m3u8" +
 	"?id=" + itemId + 
 	"&SegmentContainer=" + container + 
-	"&MediaSourceId="+ mediaSourceId + 
+	"&MediaSourceId="+ settings.mediaSourceId + 
 	"&LiveStreamId="+ settings.liveStreamId + 
 	"&PlaySessionId=" + settings.playSessionId + 
 	"&AudioCodec=mp3,aac" +
@@ -391,6 +390,19 @@ EMBY.prototype.deleteItem = function(settings) {
 	ajax.request(this.settings.ServerUrl + "/items/" + settings.id, {
 		method: "DELETE",
 		headers: this.headers()
+	});			
+};
+
+EMBY.prototype.getPlaybackInfo = function(settings) {
+	settings = settings || {};
+	
+	ajax.request(this.settings.ServerUrl + "/Items/" + settings.id+ '/PlaybackInfo?UserId='+ this.settings.User.Id  + "&StartTimeTicks=0&IsPlayback=true&AutoOpenLiveStream=true&MaxStreamingBitrate=10894941", {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
 	});			
 };
 

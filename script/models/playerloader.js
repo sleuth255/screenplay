@@ -28,8 +28,18 @@ PlayerLoader.prototype.load = function(data) {
 			success: launchPlayer,
 			error: error					
 		});	
-    function postPlaybackInfo(data){
+
+	function getPlaybackInfo(data){
     	self.data = data;
+    	emby.getPlaybackInfo({
+    		id: data.Id,
+    		success: postPlaybackInfo,
+    		error: tunerError
+    	})
+    }
+	
+	function postPlaybackInfo(data){
+		self.data = data;
     	emby.postPlaybackInfo({
     		id: self.channelid,
     		userid: emby.settings.User.Id,
@@ -38,21 +48,16 @@ PlayerLoader.prototype.load = function(data) {
     	})
     }
     function prepPlayerLaunch(data){
-//		dom.show('#playerBackdrop')
-		window.setTimeout(function(){
-			dom.hide('#playerBackdrop')
-		},2000)
+       prefs.mediaSourceId = data.MediaSources[0].Id
 	   prefs.liveStreamId = data.MediaSources[0].LiveStreamId;
 	   prefs.playSessionId = data.PlaySessionId;
    	   launchPlayer(self.data);
     }
     function launchPlayer(data){
-		//dom.hide('#playerBackdrop')
 		prefs.resumeTicks = 0;
 	    dom.dispatchCustonEvent(document, "launchPlayer", data);
 	}
 	function error(){
-		//dom.hide('#playerBackdrop')
 		playerpopup.show({
 		      duration: 2000,
 		      text: 'Player not Loaded'

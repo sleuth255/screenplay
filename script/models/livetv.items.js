@@ -23,7 +23,6 @@ function LiveTvItems() {
 };
 
 LiveTvItems.prototype.close = function() {
-	dom.remove("#collectionIndex");
 	dom.remove("playerBackdrop")
 	dom.off("#view", "scroll", this.scroll);
 	dom.off("body","keydown", this.lostfocus);
@@ -89,10 +88,13 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	var now = new Date().toISOString();
 	var today = new Date()
 	var tomorrow = new Date()
+	var nextWeek = new Date()
 	tomorrow.setHours(24,0,0,0);
+	nextWeek.setHours((24*2),0,0,0)
     today.setTime(today.getTime() + 60*60*1000)
     today = today.toISOString()
 	tomorrow = tomorrow.toISOString();
+	nextWeek = nextWeek.toISOString();
     if (settings.activeButton == 1)
   	   emby.getLiveTvPrograms({
   		   HasAired: 'false',
@@ -114,7 +116,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
    	   emby.getLiveTvPrograms({
    		   HasAired: 'false',
    		   MinStartDate: now,
-   		   MaxStartDate: tomorrow,
+   		   MaxStartDate: nextWeek,
    		   isSeries: true,
    		   success: displayUserItems,
    		   error: error				
@@ -260,8 +262,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 					focus(".column-0 a");
 					break;
 				case keys.KEY_DOWN: 
-					var down = dom.data(self, "keyDown");
-					focus(down == "%index%" ? dom.data("#collectionIndex", "lastFocus") : down);
+					focus(dom.data(self, "keyDown") == '%index%' ? dom.data(self, "keyUp") : dom.data(self, "keyDown"));
 					break;											
 			}
 		}
@@ -281,8 +282,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 					focus(dom.data(self, "keyRight").replace("%next%", "#latestItemSet_" + (columnSetIndex + 1) +  " .latest-items-column a"));
 					break;
 				case keys.KEY_DOWN: 
-					var down = dom.data(self, "keyDown");
-					focus(down == "%index%" ? dom.data("#collectionIndex", "lastFocus") : down);
+					focus(dom.data(self, "keyDown") == '%index%' ? dom.data(self, "keyUp") : dom.data(self, "keyDown"));
 					break;																	
 			}
 		}		

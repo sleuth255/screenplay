@@ -68,22 +68,11 @@ Player.prototype.load = function(data, settings) {
 			    src: emby.getLiveTvHlsStreamUrl({
 				    itemid: item.Id,					
 			        liveStreamId: prefs.liveStreamId,
+			        mediaSourceId: prefs.mediaSourceId,
 			        playSessionId: prefs.playSessionId
 			    }),
 			    "type": mime.lookup(prefs.mimeType)
 		    });
-/*		    
-          	prefs.mimeType = "mp4"
-              	
-           	    dom.append("#video", {
-    			    nodeName: "source",
-    			    src: emby.getVideoStreamUrl({
-    				    itemId: item.Id,					
-    			        mediaSourceId: item.MediaSources[0].Id,
-    			    }),
-    			    "type": mime.lookup(prefs.mimeType)
-    		    });
-*/    		    
 	    }
 		else
         if (prefs.directPlay == true)

@@ -22,8 +22,7 @@ Item.prototype.close = function(){
 	dom.remove("#item")
 };
 
-Item.prototype.load = function(id, backstate, data) {
-	//settings = settings || {};
+Item.prototype.load = function(id, backstate) {
 	var self = this;
     var timerDTO ={
     	RecordAnyTime:true,
@@ -176,38 +175,57 @@ Item.prototype.load = function(id, backstate, data) {
 		   });
 		   if (typeof self.data.ChannelId != 'undefined' && (self.data.StartDate > now || self.data.EndDate < now)) // liveTv item
 		   {
-		      dom.append("#userViews_0", {
-			      nodeName: "a",
-			      href: "#",
-			      className: "user-views-item user-views-item_0",
-			      id: "viewRecord",
-			      dataset: {
-					   keyUp: "#homeLink a",
-					   keyDown: ".user-views-item_1",
-					   keyRight: "a.latest-item"	
-			      },
-			      childNodes: [{
-				      nodeName: "span",
-				      className: "user-views-item-name glyphicon record",	
-				      text: ""				
-			      }]
-		      });
-		      dom.append("#userViews_0", {
-			      nodeName: "a",
-			      href: "#",
-			      className: "user-views-item user-views-item_1",
-			      id: "viewStop",
-			      dataset: {
-					   keyUp: ".user-views-item_0",
-					   keyDown: ".user-views-item_0",
-					   keyRight: "a.latest-item"	
-			      },
-			      childNodes: [{
-				      nodeName: "span",
-				      className: "user-views-item-name glyphicon stop",	
-				      text: ""				
-			      }]
-		      });
+			  if (self.data.EndDate > now){ // can only record if show has not ended
+		         dom.append("#userViews_0", {
+			         nodeName: "a",
+			         href: "#",
+			         className: "user-views-item user-views-item_0",
+			         id: "viewRecord",
+			         dataset: {
+					      keyUp: "#homeLink a",
+					      keyDown: ".user-views-item_1",
+					      keyRight: "a.latest-item"	
+			         },
+			         childNodes: [{
+				         nodeName: "span",
+				         className: "user-views-item-name glyphicon record",	
+				         text: ""				
+			         }]
+		         });
+			      dom.append("#userViews_0", {
+				      nodeName: "a",
+				      href: "#",
+				      className: "user-views-item user-views-item_1",
+				      id: "viewStop",
+				      dataset: {
+						   keyUp: ".user-views-item_0",
+						   keyDown: ".user-views-item_0",
+						   keyRight: "a.latest-item"	
+				      },
+				      childNodes: [{
+					      nodeName: "span",
+					      className: "user-views-item-name glyphicon stop",	
+					      text: ""				
+				      }]
+			      });
+			  }
+			  else
+		         dom.append("#userViews_0", {
+			         nodeName: "a",
+			         href: "#",
+			         className: "user-views-item user-views-item_0",
+			         id: "viewStop",
+			         dataset: {
+					      keyUp: "#homeLink a",
+					      keyDown: "#homeLink a",
+					      keyRight: "a.latest-item"	
+			         },
+			         childNodes: [{
+				         nodeName: "span",
+				         className: "user-views-item-name glyphicon stop",	
+				         text: ""				
+			         }]
+		         });
 		   }
 		   else
 		   {
@@ -512,11 +530,6 @@ Item.prototype.load = function(id, backstate, data) {
  		timerDTO.StartDate = self.data.StartDate;
  		timerDTO.EndDate = self.data.EndDate;
  		timerDTO.Name = self.data.Name;
- 		timerDTO.ImageTags.Primary = timerDTO.ImageTags.Thumb == '';
- 		if (typeof self.data.ImageTags.Primary !='undefined')
- 		    timerDTO.ImageTags.Primary = self.data.ImageTags.Primary
- 		if (typeof self.data.ImageTags.Thumb != 'undefined')
-	        timerDTO.ImageTags.Thumb = self.data.ImageTags.Thumb
  		timerDTO.ParentPrimaryImageTag = self.data.ParentPrimaryImageTag;
  		timerDTO.ParentThumbImageTag = self.data.ParentThumbImageTag;
  		timerDTO.ParentThumbItemId = self.data.ParentThumbItemId;
