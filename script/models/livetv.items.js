@@ -90,7 +90,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	var tomorrow = new Date()
 	var nextWeek = new Date()
 	tomorrow.setHours(24,0,0,0);
-	nextWeek.setHours((24*2),0,0,0)
+	nextWeek.setHours((24*prefs.showDays),0,0,0)
     today.setTime(today.getTime() + 60*60*1000)
     today = today.toISOString()
 	tomorrow = tomorrow.toISOString();
@@ -187,9 +187,19 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	    	if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
 	    		setSeriesTimer(i);
 	    
-	   for (var x = 0; x < self.data.Items.length;x++)
-	      if (self.data.Items[x].Name == settings.name)
-		      newdata.Items.push(self.data.Items[x])
+	   var a = 0
+	   var z = self.data.Items.length
+	   for (x=Math.floor(a/z); z - a < 10;x=Math.floor(a/z))
+		   if (settings.name > self.data.Items.Name[x])
+		      a = x
+		   else
+		      z = x	  
+       for (var x = a; x < self.data.Items.length;x++)
+	      if (self.data.Items[x].Name == settings.name){
+		      newdata.Items[newdata.Items.length]= self.data.Items[x]
+	          if (self.data.Items[x].Name > settings.name)
+	        	  break;
+	      }
 				  
        newdata.TotalRecordCount = newdata.Items.length;
 	   var length = newdata.Items.length;

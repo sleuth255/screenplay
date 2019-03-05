@@ -15,6 +15,7 @@ function Prefs() {
 	this.doViewItem_1_3_click;	
 	this.doViewItem_1_4_click;
 	this.doViewItem_1_5_click;
+	this.doViewItem_1_6_click;
 	this.doViewItem_2_0_click;	
 	this.doViewItem_2_1_click;	
 	this.doViewItem_2_2_click;	
@@ -26,6 +27,7 @@ function Prefs() {
 	this.directPlay = false;
 	this.autoLogin = true;
 	this.autoSize = true;
+	this.showDays = 1;
 	this.redButton = 1;
 	this.greenButton = 2;
 	this.yellowButton = 0;
@@ -34,7 +36,7 @@ function Prefs() {
 	this.audioBitrate = 128000;
 	this.resumeTicks = 0;
 	this.continueWatchingDays = 2;
-	this.prefsVersion = 4;
+	this.prefsVersion = 5;
 	this.interval;
 	this.restartInterval;
 	this.skipTime = 0;
@@ -81,10 +83,11 @@ Prefs.prototype.load = function() {
 		this.directPlay = prefs[9];
 		this.autoLogin = prefs[10];
 		this.autoSize = prefs[11]
-		if (this.prefsVersion != 4)
+		this.showDays = prefs[12]
+		if (this.prefsVersion != 5)
 		{
 			playerpopup.show({
-				duration: 4000,
+				duration: 2500,
 				text: "Settings reset due to database update: Please check your settings."
 			});	
 			self.reset()
@@ -97,7 +100,7 @@ Prefs.prototype.save = function(){
 	var self = this;
 	var prefs = new Array;
 	
-	prefs.push(this.fwdSkip,this.backSkip, this.videoBitrate, this.audioBitrate, this.redButton, this.greenButton, this.yellowButton, this.blueButton, this.prefsVersion, this.directPlay, this.autoLogin, this.autoSize);
+	prefs.push(this.fwdSkip,this.backSkip, this.videoBitrate, this.audioBitrate, this.redButton, this.greenButton, this.yellowButton, this.blueButton, this.prefsVersion, this.directPlay, this.autoLogin, this.autoSize, this.showDays);
 	storage.set(self.settings,prefs);
 };
 
@@ -108,13 +111,14 @@ Prefs.prototype.reset = function(){
 	this.directPlay = false;
 	this.autoLogin = true;
 	this.autoSize = true
+	this.showDays = 1;
 	this.videoBitrate = 100000000;
 	this.audioBitrate = 128000;
 	this.redButton = 1;
 	this.greenButton = 2;
 	this.yellowButton = 0;
 	this.blueButton = 0;
-	this.prefsVersion = 4;
+	this.prefsVersion = 5;
 }
 
 Prefs.prototype.clientSettingsClose = function(){
@@ -127,6 +131,7 @@ Prefs.prototype.clientSettingsClose = function(){
 	dom.off("#viewItem_1_3", "click", this.doViewItem_1_3_click);
 	dom.off("#viewItem_1_4", "click", this.doViewItem_1_4_click);
 	dom.off("#viewItem_1_5", "click", this.doViewItem_1_5_click);
+	dom.off("#viewItem_1_6", "click", this.doViewItem_1_6_click);
 	dom.off("#viewItem_2_0", "click", this.doViewItem_2_0_click);
 	dom.off("#viewItem_2_1", "click", this.doViewItem_2_1_click);
 	dom.off("#viewItem_2_2", "click", this.doViewItem_2_2_click);
@@ -162,8 +167,8 @@ Prefs.prototype.clientSettings = function(){
 	});
 
 	
-	var limit = 5;
-	var rowCount = 5;
+	//var limit = 5;
+	var rowCount = 6;
 	var columnCount = 2;		
 	var currentColumn = 0;
 	var currentRow = 0;
@@ -271,23 +276,28 @@ Prefs.prototype.clientSettings = function(){
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);
-
+	    
 	    tbl  = document.createElement('table');
 	    tr = tbl.insertRow(-1);
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);
 
-		body = document.getElementById("screenplaySettings3");
 	    tbl  = document.createElement('table');
-	    tbl  = document.createElement('table');
-	    tbl.style.borderSpacing = '0px';
-	    tbl.style.padding = '25px';
-	    tr = tbl.insertRow();
-	    td = tr.insertCell();
-	    td.innerHTML = '<button id ="viewItem_1_5" class="settings-submit">Update</button>';
+	    caption = tbl.createCaption();
+	    caption.style.fontSize = '40px';
+	    caption.style.textAlign = 'left';
+	    caption.innerHTML = "<b>Live TV Settings</b>";
+	    tbl.style.borderSpacing = '10px';
+	    tr = tbl.insertRow(-1);
+	    td = tr.insertCell(-1);
+	    td.appendChild(document.createTextNode('"Shows" Days:'));
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '<input style="font-size:35px; text-align:right; padding:0px 10px 0px 0px; width: 40px;" id ="viewItem_1_5" class="viewItem" type="text" maxlength="1" name="showdays" value="'+ self.showDays + '"/>';
+	    td = tr.insertCell(-1);
+	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);
-	    
+
 	    // Create Column 2 Settings
 		
 		body = document.getElementById("screenplaySettings2");
@@ -352,6 +362,18 @@ Prefs.prototype.clientSettings = function(){
 	    td = tr.insertCell(-1);
 	    td.innerHTML = '&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp';
 	    body.appendChild(tbl);
+         
+	    // Place Update button
+
+		body = document.getElementById("screenplaySettings3");
+	    tbl  = document.createElement('table');
+	    tbl  = document.createElement('table');
+	    tbl.style.borderSpacing = '0px';
+	    tbl.style.padding = '25px';
+	    tr = tbl.insertRow();
+	    td = tr.insertCell();
+	    td.innerHTML = '<button id ="viewItem_1_6" class="settings-submit">Update</button>';
+	    body.appendChild(tbl);
 	    
 	    
     
@@ -383,6 +405,7 @@ Prefs.prototype.clientSettings = function(){
 		this.doViewItem_1_3_click = dom.on("#viewItem_1_3", "click", doViewItem_1_3_click)
 		this.doViewItem_1_4_click = dom.on("#viewItem_1_4", "click", doViewItem_1_4_click)
 		this.doViewItem_1_5_click = dom.on("#viewItem_1_5", "click", doViewItem_1_5_click)
+		this.doViewItem_1_6_click = dom.on("#viewItem_1_6", "click", doViewItem_1_6_click)
 		this.doViewItem_2_0_click = dom.on("#viewItem_2_0", "click", doViewItem_2_0_click)
 		this.doViewItem_2_1_click = dom.on("#viewItem_2_1", "click", doViewItem_2_1_click)
 		this.doViewItem_2_2_click = dom.on("#viewItem_2_2", "click", doViewItem_2_2_click)
@@ -408,6 +431,7 @@ Prefs.prototype.clientSettings = function(){
 			self.directPlay = true;
 		else
 			self.directPlay = false;
+		self.showDays = dom.querySelector("#viewItem_1_5").value;
 		self.redButton = dom.querySelector("#viewItem_2_0").selectedIndex;
 		self.greenButton = dom.querySelector("#viewItem_2_1").selectedIndex;
 		self.yellowButton = dom.querySelector("#viewItem_2_2").selectedIndex;
@@ -447,7 +471,7 @@ Prefs.prototype.clientSettings = function(){
 			text: "Settings changed" 
 		});	
 		self.save();
-		dom.querySelector("#viewItem_1_5").focus();
+		dom.querySelector("#viewItem_1_6").focus();
 		currentColumn = 1;
 		currentRow = 4;
 	}
@@ -498,6 +522,14 @@ Prefs.prototype.clientSettings = function(){
 		currentColumn = 1
 		currentRow = 5
 		highlight("#viewItem_1_5")
+		listboxItemfocus = true;
+		settingsItemfocus = true;
+	}
+	
+	function doViewItem_1_6_click (event){
+		currentColumn = 1
+		currentRow = 6
+		highlight("#viewItem_1_6")
 	}
 	
 	function doViewItem_2_0_click (event){
@@ -577,6 +609,8 @@ function navigation(event) {
 	            event.stopPropagation()
                 event.preventDefault()
 	    	}
+	    	if (currentHighlight == "#viewItem_1_5")
+	    		listboxItemfocus = true;
 	        focusHandler();
 	        return
 	    }    
@@ -681,9 +715,9 @@ function navigation(event) {
 	    }
 		if (updateFocus)
 		{
-			dom.querySelector("#viewItem_1_5").focus()
-			currentHighlight = "#viewItem_1_5"
-			dom.addClass("#viewItem_1_5","viewItem_highlight");
+			dom.querySelector("#viewItem_1_6").focus()
+			currentHighlight = "#viewItem_1_6"
+			dom.addClass("#viewItem_1_6","viewItem_highlight");
 			updateFocus = false;
 			return;
 		}
@@ -693,17 +727,17 @@ function navigation(event) {
 		else
 			dom.querySelector("#viewItem_0_0").blur();
 
-		if (query == "#viewItem_1_5")
-			dom.querySelector("#viewItem_1_5").focus();
+		if (query == "#viewItem_1_6")
+			dom.querySelector("#viewItem_1_6").focus();
 		else
-			dom.querySelector("#viewItem_1_5").blur();
+			dom.querySelector("#viewItem_1_6").blur();
 		
 		dom.addClass(query,"viewItem_highlight");
 		currentHighlight = query;
 	}
 
 	function focusHandler(){
-		if (currentHighlight == "#viewItem_1_4" || currentHighlight == "#viewItem_1_5" || currentHighlight == "#viewItem_2_4" || currentHighlight == "#viewItem_2_5" || currentHighlight == "#viewItem_0_0" || currentHighlight == ".home-link")
+		if (currentHighlight == "#viewItem_1_4" || currentHighlight == "#viewItem_1_6" || currentHighlight == "#viewItem_2_4" || currentHighlight == "#viewItem_2_5" || currentHighlight == "#viewItem_0_0" || currentHighlight == ".home-link")
 		{
 			dom.querySelector(currentHighlight).click();
 			return;
@@ -721,9 +755,12 @@ function navigation(event) {
 		    else
 		    {
 			    settingsItemfocus = false;
+			    listboxItemfocus = false;
 				dom.removeClass(currentHighlight,"viewItem_Selected");
 				dom.addClass(currentHighlight,"viewItem");
 			    dom.querySelector(currentHighlight).blur();
+			    if (currentHighlight == "#viewItem_1_5")
+			    	checkShowDays()
 		    }
  		    return
 		}
@@ -747,6 +784,17 @@ function navigation(event) {
 			}
 			return
 		}
+	}
+	function checkShowDays(){
+//		if (dom.querySelector("#viewItem_1_5").value < 1 || dom.querySelector("#viewItem_1_5").value > 7){
+		if (!/^[1-7]$/.test(dom.querySelector("#viewItem_1_5").value)){
+		   playerpopup.show({
+			   duration: 2500,
+			   text: "Valid values are 1-7 only"
+		   });	
+		   dom.querySelector("#viewItem_1_5").value = prefs.showDays
+		}
+		
 	}
 	
 };

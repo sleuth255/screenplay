@@ -15,6 +15,7 @@ function Item() {
 	this.cancelRecord;
 	this.seriesRecordOff;
 	this.lostfocus;
+	this.iterations
 };
 
 Item.prototype.close = function(){
@@ -565,6 +566,7 @@ Item.prototype.load = function(id, backstate) {
 		
 	}
 	function handleResult(data){
+		self.iterations = 0;
     	emby.getLiveTvProgram({
     		id: self.data.Id,
     		success: updateSeriesTimers,
@@ -596,6 +598,11 @@ Item.prototype.load = function(id, backstate) {
 					duration: 1500,
 					text: "Click again to record the Series"
 				});	
+			dom.dispatchCustonEvent(document, "reloadItem", self.data)
+	        return
+		}
+		self.iterations++
+		if (self.iterations > 50){
 			dom.dispatchCustonEvent(document, "reloadItem", self.data)
 	        return
 		}

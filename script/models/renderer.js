@@ -61,7 +61,7 @@ RENDERER.prototype.userAllTvItemsPlaceholder = function(data, settings) {
 			var column = Math.floor((parseInt(startIndex,10) + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;
-			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
+			var character = /^[a-zA-Z]$/.test(item.SortName.toUpperCase().charAt(0)) ? item.SortName.toUpperCase().charAt(0) : "sym";
 			//if (index == 0)
 			//	playerpopup.show({
 			//		duration: 5000,
@@ -102,6 +102,7 @@ RENDERER.prototype.userAllTvItemsPlaceholder = function(data, settings) {
 					dataset: {
 						backdrop: item.BackdropImageTags[0],
 						name: item.Name,
+						sortname: item.SortName.charAt(0).toUpperCase()+item.SortName.substring(1),
 						episode: item.EpisodeTitle ? item.EpisodeTitle : "",
 						channelid: item.ChannelId,
 						year: item.ProductionYear ? item.ProductionYear : "",
@@ -228,7 +229,7 @@ RENDERER.prototype.userAllTvItems = function(data, settings) {
 			var column = Math.floor((parseInt(startIndex,10) + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;
-			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
+			var character = /^[a-zA-Z]$/.test(item.SortName.toUpperCase().charAt(0)) ? item.SortName.toUpperCase().charAt(0) : "sym";
 			//if (index == 0)
 			//	playerpopup.show({
 			//		duration: 5000,
@@ -361,7 +362,7 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 			var column = Math.floor((startIndex + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;
-			var character = /^[a-zA-Z]$/.test(item.SortName.toUpperCase().charAt(0)) ? item.SortName.toUpperCase().charAt(0) : "sym";
+			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
 			if (!dom.exists("#" + cid)) {
 				dom.append("#" + id, {
 					nodeName: "div",
