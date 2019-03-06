@@ -515,6 +515,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		if (self.activeButton != 5 && countEpisodes(event.delegateTarget.dataset.name) > 1){
 			var dataset = {}
 			dataset.name = event.delegateTarget.dataset.name;
+			dataset.sortName = event.delegateTarget.dataset.sortname
 			dataset.id = event.delegateTarget.dataset.id;
 			dataset.activeButton = self.activeButton;
 			dom.dispatchCustonEvent(document, "LiveTvItemsSelected", dataset);
@@ -873,16 +874,6 @@ LiveTv.prototype.load = function(settings, backstate) {
 		}
 	}
 	function restoreCollectionFocus(){
-		/*
-		var elmnts = dom.querySelectorAll(".latest-item")
-		for(var idx = 0;idx<elmnts.length;idx++)
-			if (elmnts[idx].dataset.index == self.lastItemIndex)
-			{	
-				highlightIndex(elmnts[idx].dataset.sortname.substring(0,1))
-				dom.focus(elmnts[idx]);
-				break;
-			}
-		*/
 		var position = self.lastItemPosition -(device.columnWidth*3)
 		document.getElementById("view").scrollLeft = self.lastItemPosition;
 		var nodes = dom.querySelector('#'+self.id).childNodes;

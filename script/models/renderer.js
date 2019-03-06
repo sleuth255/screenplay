@@ -146,13 +146,24 @@ RENDERER.prototype.userAllTvItemsImages = function(left,right,id) {
 	var nodes = dom.querySelector('#'+id).childNodes;
 	nodes = Array.prototype.slice.call(nodes);
 	var location
-	var found = 0;
-	nodes.forEach(function(node,index){
-		location = dom.data(node,"location")
+	var a = 0;
+	var x = 0;
+	var z = nodes.length
+	for (x=Math.floor((a+z)/2); (z - a) > 10;x=Math.floor((a+z)/2))
+		   if (parseInt(dom.data(nodes[x],"location"),10) > parseInt(left,10))
+		      z = x
+		   else
+		      a = x	  
+     for (var x = a; x < nodes.length;x++){
+		location = dom.data(nodes[x],"location")
 		
 		if (location >= left && location <= right)
-			setBackgroundImage(node)
-	})
+			setBackgroundImage(nodes[x])
+		else
+		if (location > right)
+			break
+     }
+
 	function setBackgroundImage(node){
 		var PlayedPercentage
 		var imageId

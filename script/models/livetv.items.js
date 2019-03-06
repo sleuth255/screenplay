@@ -11,6 +11,7 @@ function LiveTvItems() {
 	this.currentIndex;
 	this.limit;
 	this.scroll;
+	this.node;
 	this.data = {};
 	this.timerdata = {};
 	this.totalRecordCount;
@@ -168,44 +169,43 @@ LiveTvItems.prototype.load = function(settings,backstate) {
    	   });
     }
     function processUserItems(timerdata){
-    	self.timerdata = timerdata
-		// get shows and remove duplicates.
-		var now = new Date().toISOString()
-		var newdata = {
-			Items:[],
-			TotalRecordCount:0
-		}
-        
-		// get shows and remove duplicates.
-		var now = new Date().toISOString()
-		var newdata = {
-			Items:[],
-			TotalRecordCount:0
-		}
-	    // set Series timers
-	    for (var i = 0; i < self.data.Items.length ; i++)
-	    	if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
-	    		setSeriesTimer(i);
-	    
+       self.timerdata = timerdata
+	   // get shows and remove duplicates.
+	   var now = new Date().toISOString()
+	   var newdata = {
+		   Items:[],
+		   TotalRecordCount:0
+	   }
+    	
+	   // set Series timers
+	   for (var i = 0; i < self.data.Items.length ; i++)
+	      if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
+	    	  setSeriesTimer(i);
+
+       // binary search for start position
 	   var a = 0
+	   var x = 0
 	   var z = self.data.Items.length
-	   for (x=Math.floor(a/z); z - a < 10;x=Math.floor(a/z))
-		   if (settings.name > self.data.Items.Name[x])
-		      a = x
+	   var name
+	   
+	   for (x=Math.floor((a+z)/2); (z-a) > 10;x=Math.floor((a+z)/2)){
+		   if (self.data.Items[x].SortName.charAt(0).toUpperCase() >= settings.sortName.charAt(0))
+		      z = x
 		   else
-		      z = x	  
-       for (var x = a; x < self.data.Items.length;x++)
+		      a = x	  
+	   }
+       // load data 	   
+       for (x = a; x < self.data.Items.length;x++){
 	      if (self.data.Items[x].Name == settings.name){
 		      newdata.Items[newdata.Items.length]= self.data.Items[x]
-	          if (self.data.Items[x].Name > settings.name)
+	          if (self.data.Items[x].SortName.charAt(0).toUpperCase() > settings.sortName.charAt(0))
 	        	  break;
 	      }
+       }
 				  
        newdata.TotalRecordCount = newdata.Items.length;
 	   var length = newdata.Items.length;
 	   var temp;
-		
-  	
 		
 		var id = guid.create();	
 									
@@ -305,6 +305,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 				dom.data("#view", "lastFocus", "#" + node.id);
 			}
 			if (dom.hasClass(node, "latest-item")) {
+				self.node = node
 			   	emby.getLiveTvChannel({
 			   	   id: dom.data(node,"channelid"),
 			   	   success: updateDetails,
@@ -319,9 +320,9 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	}
 
 	function updateDetails(data){
-		var year = dom.data(node, "year") || "";
-		var runtime = Number(dom.data(node, "runtime")) || 0;
-		var startdate = dom.data(node, "startdate") || "";
+		var year = dom.data(self.node, "year") || "";
+		var runtime = Number(dom.data(self.node, "runtime")) || 0;
+		var startdate = dom.data(self.node, "startdate") || "";
 		var hours = (runtime >= 60 ? Math.floor(runtime/60) + " hr " : "");
 		var mins = (runtime % 60 > 0 ? runtime % 60 + " min" : "");
 		dom.html("#details", {
@@ -329,7 +330,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 			childNodes: [{
 				nodeName: "div",
 				className: "title",
-				text: dom.data(node, "episode") ? dom.data(node, "episode").split(';')[0] : dom.data(node,"name")
+				text: dom.data(self.node, "episode") ? dom.data(self.node, "episode").split(';')[0] : dom.data(self.node,"name")
 			}, {
 				nodeName: "div",
 				className: "subtitle",
