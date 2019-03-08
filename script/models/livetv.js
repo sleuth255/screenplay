@@ -34,6 +34,7 @@ function LiveTv() {
 };
 
 LiveTv.prototype.close = function() {
+	var self = this;
 	dom.remove("#collectionIndex");
 	dom.remove("playerBackdrop")
 	dom.off("#view", "scroll", this.scroll);
@@ -902,7 +903,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 				childnodes.forEach(function(cnode){
 				   if (dom.data(cnode,"index") == self.lastItemIndex){
 					   highlightIndex(dom.data(cnode,"sortname").charAt(0).toUpperCase())
-				       dom.focus(cnode)
+				       focus(cnode)
 				       found = true;
 				   }
 				})
@@ -1032,6 +1033,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 			   self.timer2 = null;
 			}
 			self.timer2 = setTimeout(function(){
+				highlightIndex(dom.data(node,"sortname").charAt(0).toUpperCase())
 				var year = dom.data(node, "year") || "";
 				var runtime = Number(dom.data(node, "runtime")) || 0;
 				var startdate = dom.data(node, "startdate") || "";
@@ -1051,11 +1053,6 @@ LiveTv.prototype.load = function(settings, backstate) {
 					}]
 				});
 				
-				var index = dom.data(node.parentNode, "index");
-				if (index != indexCurrent) {
-					highlightIndex(index);
-					indexCurrent = index;
-				}
 			},300)
 		
 	}
@@ -1086,6 +1083,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 		var node = dom.focus(query);
 		if (node && node.id) {
 			if (node.classList.contains("index-item")) {
+				highlightIndex(dom.data(node,"index"))
 				dom.data("#collectionIndex", "lastFocus", "#" + node.id);
 			}
 			if (dom.hasClass(node, "latest-item")) {
