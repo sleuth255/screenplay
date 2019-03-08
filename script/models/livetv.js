@@ -11,6 +11,7 @@ function LiveTv() {
 	
 	this.startIndex;
 	this.currentIndex;
+	this.itemIndex;
 	this.limit;
 	this.scroll;
 	this.dataLoaded = false;
@@ -600,9 +601,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     function assembleSeriesTimers(data){
         self.newdata.Items = [];
         self.timerarray = []
-    	var now = new Date();
     	data.Items.forEach(function(item, index) {
-    		var end = new Date(item.EndDate)
    		    var timerItem = {};
     		timerItem.ProgramId = item.ProgramId;
     		timerItem.ChannelId = item.ChannelId;
@@ -628,7 +627,7 @@ LiveTv.prototype.load = function(settings, backstate) {
     		    self.timerarray.push(timerItem);
     		}
     	})
-    	idx = 0;
+    	self.itemIndex = 0;
     	if (self.timerarray.length < 1){
 			playerpopup.show({
 				duration: 2000,
@@ -647,42 +646,42 @@ LiveTv.prototype.load = function(settings, backstate) {
     function pushItemData(data){
     	var tdata = {};
     	tdata = data;
-    	if (tdata.ChannelId = self.timerarray[idx].ChannelId){
-    	   if (self.timerarray[idx].IsSeriesTimer){
-    	      tdata["SeriesTimerId"] = self.timerarray[idx].TimerId;
+    	if (tdata.ChannelId = self.timerarray[self.itemIndex].ChannelId){
+    	   if (self.timerarray[self.itemIndex].IsSeriesTimer){
+    	      tdata["SeriesTimerId"] = self.timerarray[self.itemIndex].TimerId;
     	      tdata.Overview = '';
-    	      tdata.Id = self.timerarray[idx].ParentPrimaryImageItemId
+    	      tdata.Id = self.timerarray[self.itemIndex].ParentPrimaryImageItemId
     	   }
     	   else
-    	      tdata["TimerId"] = self.timerarray[idx].TimerId;	
+    	      tdata["TimerId"] = self.timerarray[self.itemIndex].TimerId;	
     	   self.newdata.Items.push(tdata);
     	}
-    	idx++;
-    	if (idx >= self.timerarray.length){
+    	self.itemIndex++;
+    	if (self.itemIndex >= self.timerarray.length){
     		displayUserItems(self.newdata)
     		return
     	}
  	    emby.getLiveTvProgram({
-   	        id: self.timerarray[idx].ProgramId,
+   	        id: self.timerarray[self.itemIndex].ProgramId,
         	success: pushItemData,
         	error: discarderror				
         });
     }
 	function discarderror(data) {
     	var tdata = {};
- 	    if (self.timerarray[idx].IsSeriesTimer){
- 	       tdata["SeriesTimerId"] = self.timerarray[idx].TimerId;
+ 	    if (self.timerarray[self.itemIndex].IsSeriesTimer){
+ 	       tdata["SeriesTimerId"] = self.timerarray[self.itemIndex].TimerId;
  	       tdata.Overview = '';
- 	       tdata.Id = self.timerarray[idx].ParentPrimaryImageItemId
+ 	       tdata.Id = self.timerarray[self.itemIndex].ParentPrimaryImageItemId
    	       self.newdata.Items.push(tdata);
  	    }
-    	idx++;
-    	if (idx >= self.timerarray.length){
+    	self.itemIndex++;
+    	if (self.itemIndex >= self.timerarray.length){
     		displayUserItems(self.newdata)
     		return
     	}
  	    emby.getLiveTvProgram({
-   	        id: self.timerarray[idx].ProgramId,
+   	        id: self.timerarray[self.itemIndex].ProgramId,
         	success: pushItemData,
         	error: discarderror				
         });
@@ -792,7 +791,9 @@ LiveTv.prototype.load = function(settings, backstate) {
 	    	setTimers(i)
 	    }
 	    
+	    self.data.Items[self.data.Items.length] = {Name: "DummyItemName"}
 	    var item = self.data.Items[0]
+	    
 		if (self.activeButton == 1) // get in-progress shows
 		{
 		   for (var x = 0; x < self.data.Items.length-1;x++){
@@ -844,11 +845,8 @@ LiveTv.prototype.load = function(settings, backstate) {
 		   for (var x = 0; x < self.data.Items.length-1;x++) // may have duplicates
  		      newdata.Items[newdata.Items.length] = self.data.Items[x]
 		
-        if (self.data.Items.length == 1)				   
-		      newdata.Items[newdata.Items.length] = item
-       newdata.TotalRecordCount = newdata.Items.length;
+		newdata.TotalRecordCount = newdata.Items.length;
 				  
-
 
 		
 	    dom.hide('#spinnerBackdrop')
