@@ -99,7 +99,18 @@ a {
     align-items: center;
     contain: layout style;
 }
-.splash-author {
+.cardIndicatorsTabular {
+    left: 30em;
+    top: .2em;
+    position: absolute;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    contain: layout style;
+}.splash-author {
 	position: absolute;
 	color: #aaa;
 	bottom: 50px;
@@ -143,7 +154,14 @@ a {
 /*	background-color: rgba(0, 0, 0, 0.1); */
 	color: #fff;
 }
-
+#footer{
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom:0;
+	height: 27px;
+	background-color: rgba(0, 0, 0, 0.3);		
+}
 #logo {
 	position: absolute; 
 	left: 5px;
@@ -259,16 +277,17 @@ a {
 	position: absolute; 
 	left: 0; 
 	top: 150px;
-	bottom: 0;
+	bottom: 27px;
 	right: 0;	
 	background-color: rgba(0, 0, 0, 0.3);		
 	padding: 20px 50px;
+	margin:0;
 	overflow-x: scroll;
 	overflow-y: hidden;
 }
 
 #view::-webkit-scrollbar {
-	height: 6px;
+	height: 0px;
 	background-color: #000;
 }
 
@@ -825,6 +844,10 @@ input:hover {
 	height: 195px;
 }
 
+.cover-thumb-tiny {
+	width: 90px;	
+	height: 120px;
+}
 .cover-thumb-large {
 	height: 400px;
 	width: 600px;
@@ -917,6 +940,16 @@ input:hover {
 }
 
 #details .subtitle {
+	font-size: 24px;
+	color: #eee;	
+}
+
+#episodedetails .title {
+	font-size: 30px;
+	font-weight: bold;	
+}
+
+#episodedetails .subtitle {
 	font-size: 24px;
 	color: #eee;	
 }

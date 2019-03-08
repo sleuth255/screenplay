@@ -166,6 +166,21 @@ EMBY.prototype.getLiveTvChannel = function(settings){
 	});			
 };
 
+EMBY.prototype.getLiveTvChannels = function(settings){
+	settings = settings || {};
+	var id = settings.id  || 0;
+	
+	
+	ajax.request(this.settings.ServerUrl + "/LiveTV/Channels/", {
+		method: "GET",
+		headers: this.headers(), 
+		success: function(data) {
+			settings.success(data);
+		},
+		error: settings.error
+	});			
+};
+
 EMBY.prototype.getLiveTvProgram = function(settings) {
 	settings = settings || {};
 	var id = settings.id  || 0;

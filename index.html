@@ -134,7 +134,8 @@
 			dom.on(document, "mediaItemSelected", function(event) {
 				collection.close()
 				home.close();
-				livetv.close()
+				livetv.close();
+				livetvitems.close();
 				history.pushState({
 					action: "item",					
 					id: event.detail.id		
@@ -171,6 +172,7 @@
 				collection.close();
 				home.close();
 				livetv.close();
+				livetvitems.close();
 				summary.close();
 				home.load()
 			});	
@@ -185,6 +187,7 @@
 				if (event.state) {
 					collection.close();
 					livetv.close();
+					livetvitems.close();
 					summary.close();
 					home.close();
 					item.close();
@@ -239,6 +242,7 @@
 				collection.close();	
 				home.close();
 				livetv.close();
+				livetvitems.close();
 				summary.close();
 				home.load();
 			});
@@ -468,6 +472,7 @@
  	<div id="homeLink" style="display: none;"><a href="#" class="home-link"><span class="glyphicon home"></span></a></div> 
 	</div>
 	<div id="view"></div>
+	<div id="footer"></div>
 	<div id="details"></div>
 </body>
 </html>

@@ -14,6 +14,7 @@ function LiveTvItems() {
 	this.node;
 	this.data = {};
 	this.timerdata = {};
+	this.channeldata = {}
 	this.totalRecordCount;
 	
 	this.id;
@@ -65,12 +66,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	dom.html("#view", {
 		nodeName: "div",
 		className: "collection-view",
-		id: "collection",
-		childNodes: [{
-			nodeName: "div",
-			className: "user-views-column",
-			id: "userViews_0"
-		}]
+		id: "collection"
 	});	
 
 	this.lostfocus = dom.on("body", "keydown", lostFocus);
@@ -89,13 +85,13 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	var now = new Date().toISOString();
 	var today = new Date()
 	var tomorrow = new Date()
-	var nextWeek = new Date()
+	var prefsDays = new Date()
 	tomorrow.setHours(24,0,0,0);
-	nextWeek.setHours((24*prefs.showDays),0,0,0)
+	prefsDays.setHours((24*prefs.showDays),0,0,0)
     today.setTime(today.getTime() + 60*60*1000)
     today = today.toISOString()
 	tomorrow = tomorrow.toISOString();
-	nextWeek = nextWeek.toISOString();
+	prefsDays = prefsDays.toISOString();
     if (settings.activeButton == 1)
   	   emby.getLiveTvPrograms({
   		   HasAired: 'false',
@@ -117,7 +113,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
    	   emby.getLiveTvPrograms({
    		   HasAired: 'false',
    		   MinStartDate: now,
-   		   MaxStartDate: nextWeek,
+   		   MaxStartDate: prefsDays,
    		   isSeries: true,
    		   success: displayUserItems,
    		   error: error				
@@ -164,12 +160,19 @@ LiveTvItems.prototype.load = function(settings,backstate) {
     function displayUserItems(data) {
    	   self.data = data;
    	   emby.getLiveTvSeriesTimers({
- 		   success: processUserItems,
+ 		   success: getChannels,
    		   error: error				
    	   });
     }
-    function processUserItems(timerdata){
-       self.timerdata = timerdata
+    function getChannels(timerdata){
+    	self.timerdata = timerdata;
+    	emby.getLiveTvChannels({
+    		success: processUserItems,
+    		error: error
+    	});
+    }
+    function processUserItems(channeldata){
+       self.channeldata = channeldata
 	   // get shows and remove duplicates.
 	   var now = new Date().toISOString()
 	   var newdata = {
@@ -202,7 +205,16 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	        	  break;
 	      }
        }
-				  
+	   // add channel data
+       var found = 0
+       for (x = 0;x<newdata.Items.length;x++)
+    	     for(var y=0;y<self.channeldata.Items.length;y++)
+    	    	 if(newdata.Items[x].ChannelId == self.channeldata.Items[y].Id){
+    	    		 found++
+    	    		 newdata.Items[x]['ChannelNumber'] = self.channeldata.Items[y].Number;
+    	    		 newdata.Items[x]['ChannelName'] = self.channeldata.Items[y].Name
+    	    	 }
+
        newdata.TotalRecordCount = newdata.Items.length;
 	   var length = newdata.Items.length;
 	   var temp;
@@ -210,7 +222,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		var id = guid.create();	
 									
 		if (newdata.Items.length > 0) {					
-			renderer.userAllTvItems(newdata, {
+			renderer.userAllTvItemsTabular(newdata, {
 				container: "#collection",
 				id: id,
 				heading: self.heading,
@@ -286,18 +298,37 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 					focus(dom.data(self, "keyLeft").replace("%previous%", ".activeButton"));
 					break;
 				case keys.KEY_UP: 
-					focus(dom.data(self, "keyUp"));
+					vfocus(dom.data(self, "keyUp"));
 					break;
 				case keys.KEY_RIGHT: 
 					focus(dom.data(self, "keyRight").replace("%next%", "#latestItemSet_" + (columnSetIndex + 1) +  " .latest-items-column a"));
 					break;
 				case keys.KEY_DOWN: 
-					focus(dom.data(self, "keyDown") == '%index%' ? dom.data(self, "keyUp") : dom.data(self, "keyDown"));
+					vfocus(dom.data(self, "keyDown") == '%index%' ? dom.data(self, "keyUp") : dom.data(self, "keyDown"));
 					break;																	
 			}
 		}		
 	}
-
+    function vfocus(query){
+		var node = dom.querySelector(query);
+		if (node){
+		   var view = dom.querySelector("#view");
+		   var rect = node.getBoundingClientRect();
+		   if (rect.top < 150)
+		   {	
+		  	   view.scrollTop-= (150 - rect.top) -5;
+		   }
+		   else
+		   if (rect.bottom > window.innerHeight)
+		   {
+		      	view.scrollTop += (rect.bottom - window.innerHeight + 5);
+		   }
+		   node.focus();
+		   if (node.classList.contains("latest-item") || node.classList.contains("user-views-item")) {
+			   dom.data("#view", "lastFocus", "#" + node.id);
+		   }
+		}
+    }
 	function focus(query) {
 		node = dom.focus(query);
 		if (node && node.id) {
@@ -320,6 +351,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	}
 
 	function updateDetails(data){
+		return
 		var year = dom.data(self.node, "year") || "";
 		var runtime = Number(dom.data(self.node, "runtime")) || 0;
 		var startdate = dom.data(self.node, "startdate") || "";

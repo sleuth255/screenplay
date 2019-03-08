@@ -16,6 +16,7 @@ function LiveTv() {
 	this.dataLoaded = false;
 	this.data = {};
 	this.timerdata = {};
+	this.itemtimerdata = {};
 	this.timerarray = [];
 	this.newdata = { 
 		Items:[]
@@ -535,13 +536,13 @@ LiveTv.prototype.load = function(settings, backstate) {
 	var now = new Date().toISOString();
 	var today = new Date()
 	var tomorrow = new Date()
-	var nextWeek = new Date()
+	var prefsDays = new Date()
 	tomorrow.setHours(24,0,0,0);
-	nextWeek.setHours((24*prefs.showDays),0,0,0)
+	prefsDays.setHours((24*prefs.showDays),0,0,0)
     today.setTime(today.getTime() + 60*60*1000)
     today = today.toISOString()
 	tomorrow = tomorrow.toISOString();
-	nextWeek = nextWeek.toISOString();
+	prefsDays = prefsDays.toISOString();
     if (self.activeButton == 1)
  	   emby.getLiveTvPrograms({
  		   //limit: 1000,
@@ -573,7 +574,7 @@ LiveTv.prototype.load = function(settings, backstate) {
    		       HasAired: 'false',
    		       MinStartDate: now,
    		       // MaxStartDate: tomorrow,
-   		       MaxStartDate: nextWeek,
+   		       MaxStartDate: prefsDays,
    		       isSeries: true,
    		       success: displayUserItems,
    		       error: error				
@@ -686,10 +687,49 @@ LiveTv.prototype.load = function(settings, backstate) {
         	error: discarderror				
         });
 	}			
-    function setSeriesTimer(idx){
+
+    function setTimers(idx){
+	    if (typeof self.data.Items[idx].SeriesTimerId != 'undefined'){
+	    	setSeriesTimer(idx);
+		}
+		checkForSeriesTimer(idx)
+	    if (typeof self.data.Items[idx].TimerId != 'undefined'){
+	    	setItemTimer(idx);
+		}
+	    checkForItemTimer(idx)
+    }
+    function checkForSeriesTimer(idx){
+    	self.timerdata.Items.forEach (function(item){
+    		var time1 = new Date(item.StartDate).getTime();
+    		var time2 = new Date(self.data.Items[idx].StartDate).getTime()
+    		if (item.ChannelId == self.data.Items[idx].ChannelId && time1 == time2){
+    			self.data.Items[idx]['SeriesTimerId'] = item.Id
+    		}
+    	})
+    }	
+    function checkForItemTimer(idx){
+    	self.itemtimerdata.Items.forEach (function(item){
+    		if ((item.Status == "New" || item.Status == 'InProgress') && item.ChannelId == self.data.Items[idx].ChannelId && item.ProgramId == self.data.Items[idx].Id)
+    			self.data.Items[idx]['TimerId'] = item.Id
+    	})
+    }	
+	
+	function setItemTimer(idx){
+		var found = false;
+    	self.itemtimerdata.Items.forEach (function(item){
+    		if (item.ChannelId == self.data.Items[idx].ChannelId && item.Id == self.data.Items[idx].TimerId && (item.Status == "New" || item.Status == 'InProgress'))
+    			found = true
+    	})
+		if (!found)
+			delete self.data.Items[idx].TimerId
+    }
+	
+	function setSeriesTimer(idx){
 		var found = false;
     	self.timerdata.Items.forEach (function(item){
-    		if ((item.ChannelId == self.data.Items[idx].ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.Items[idx].SeriesTimerId)
+    		var time1 = new Date(item.StartDate).getTime();
+    		var time2 = new Date(self.data.Items[idx].StartDate).getTime()
+    		if (item.ChannelId == self.data.Items[idx].ChannelId && time1 == time2)
     			found = true
     	})
 		if (!found)
@@ -727,12 +767,19 @@ LiveTv.prototype.load = function(settings, backstate) {
     function displayUserItems(data) {
        self.data = data;
    	   emby.getLiveTvSeriesTimers({
- 		   success: processUserItems,
+ 		   success: getLiveTvItemTimers,
    		   error: error				
    	   });
     }
-    function processUserItems(timerdata){
+    function getLiveTvItemTimers (timerdata){
     	self.timerdata = timerdata
+    	   emby.getLiveTvTimers({
+     		   success: processUserItems,
+       		   error: error				
+       	   });
+    }
+    function processUserItems(timerdata){
+    	self.itemtimerdata = timerdata
 		// get shows and remove duplicates.
 		var now = new Date().toISOString()
 		var newdata = {
@@ -740,54 +787,19 @@ LiveTv.prototype.load = function(settings, backstate) {
 			TotalRecordCount:0
 		}
         
-	    // set Series timers
+	    // set timers
 	    for (var i = 0; i < self.data.Items.length ; i++){
-	    	
-	    	if(/^[a-z]$/.test(self.data.Items[i].Name.charAt(0)))
-	    	    self.data.Items[i].Name = self.data.Items[i].Name.charAt(0).toUpperCase()+ self.data.Items[i].Name.substring(1)	    	
-	    	if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
-	    		setSeriesTimer(i);
+	    	setTimers(i)
 	    }
 	    
-/*
-		//first sort is by record data
-		var length = self.data.Items.length;
-	    var temp;
-
-	    for (var j = 0; j < length; j++){
-	    	var isSorted = true;
-	        for (var i=0; i < (length - j - 1); i++)
-	            if ((typeof (self.data.Items[i].SeriesTimerId) != 'undefined' ||  typeof(self.data.Items[i].TimerId) != 'undefined') && (typeof (self.data.Items[i+1].SeriesTimerId) == 'undefined' && typeof (self.data.Items[i+1].TimerId) == 'undefined'))
-	            {
-	               temp = self.data.Items[i];
-	               self.data.Items[i] = self.data.Items[i+1];
-	               self.data.Items[i+1] = temp;
-	               isSorted = false
-	            }
-	        if (isSorted)
-	        	break
-	    }
-    
-	    //second sort is by name
-	    for (var j = 0; j < length; j++){
-	    	var isSorted = true;
-	        for (var i=0; i < (length - j - 1); i++)
-	            if (self.data.Items[i].Name > self.data.Items[i+1].Name)
-	            {
-	               temp = self.data.Items[i];
-	               self.data.Items[i] = self.data.Items[i+1];
-	               self.data.Items[i+1] = temp;
-	               isSorted = false
-	            }
-	        if (isSorted)
-	        	break
-	    } 
-*/ 
 	    var item = self.data.Items[0]
 		if (self.activeButton == 1) // get in-progress shows
 		{
 		   for (var x = 0; x < self.data.Items.length-1;x++){
-			   if ((typeof (self.data.Items[x].SeriesTimerId) != 'undefined' ||  typeof(self.data.Items[x].TimerId) != 'undefined') && (self.data.Items[x].Name == item.Name))			   
+			   if (typeof self.data.Items[x].SeriesTimerId != 'undefined' && self.data.Items[x].Name == item.Name)			   
+				   item = self.data.Items[x]
+			   else
+			   if (typeof self.data.Items[x].TimerId != 'undefined' && self.data.Items[x].Name == item.Name && typeof item.SeriesTimerId == 'undefined')
 				   item = self.data.Items[x]
 			   if (self.data.Items[x].StartDate < now && self.data.Items[x].Name != self.data.Items[x+1].Name){
 				   newdata.Items[newdata.Items.length] = item
@@ -802,7 +814,10 @@ LiveTv.prototype.load = function(settings, backstate) {
 		   onehourlater.setTime(onehourlater.getTime() + 60*60*1000)
 		   onehourlater = onehourlater.toISOString()
 		   for (var x = 0; x < self.data.Items.length-1;x++){
-			   if ((typeof (self.data.Items[x].SeriesTimerId) != 'undefined' ||  typeof(self.data.Items[x].TimerId) != 'undefined') && (self.data.Items[x].Name == item.Name))			   
+			   if (typeof self.data.Items[x].SeriesTimerId != 'undefined' && self.data.Items[x].Name == item.Name)			   
+				   item = self.data.Items[x]
+			   else
+			   if (typeof self.data.Items[x].TimerId != 'undefined' && self.data.Items[x].Name == item.Name && typeof item.SeriesTimerId == 'undefined')
 				   item = self.data.Items[x]
 			   if (self.data.Items[x].StartDate > now && self.data.Items[x].StartDate < onehourlater && self.data.Items[x].Name != self.data.Items[x+1].Name){
 				   newdata.Items[newdata.Items.length] = item
@@ -814,7 +829,10 @@ LiveTv.prototype.load = function(settings, backstate) {
 		if (self.activeButton == 3 || self.activeButton == 4) // just remove duplicates
         {			
 		   for (var x = 0; x < self.data.Items.length-1;x++){
-			   if ((typeof (self.data.Items[x].SeriesTimerId) != 'undefined' ||  typeof(self.data.Items[x].TimerId) != 'undefined') && (self.data.Items[x].Name == item.Name))			   
+			   if (typeof self.data.Items[x].SeriesTimerId != 'undefined' && self.data.Items[x].Name == item.Name)			   
+				   item = self.data.Items[x]
+			   else
+			   if (typeof self.data.Items[x].TimerId != 'undefined' && self.data.Items[x].Name == item.Name && typeof item.SeriesTimerId == 'undefined')
 				   item = self.data.Items[x]
 			   if (item.Name != self.data.Items[x+1].Name){
 				   newdata.Items[newdata.Items.length] = item

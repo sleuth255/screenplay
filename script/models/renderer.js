@@ -178,9 +178,10 @@ RENDERER.prototype.userAllTvItemsImages = function(left,right,id) {
 			imageType = dom.data(node,"imagetype")
 			if (dom.data(node,"placeholder") == "true"){
 				dom.data(node,"placeholder","false")
-				node.childNodes[0].style.backgroundImage = PlayedPercentage > 0 ? 
+				imageId != 'undefined' ? node.childNodes[0].style.backgroundImage = PlayedPercentage > 0 ? 
 									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 400, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
-									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 400}) + "),url('./images/GenericPortraitImage.jpg')" 	
+									"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 400}) + "),url('./images/GenericPortraitImage.jpg')"
+						: node.childNodes[0].style.backgroundImage = "url('./images/GenericLiveTvImage.jpg')"
 		    }
 
 		})
@@ -317,6 +318,153 @@ RENDERER.prototype.userAllTvItems = function(data, settings) {
     }
 };
 
+RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
+	settings = settings || {};
+
+	var lastColumn = Math.ceil(data.TotalRecordCount / 2);
+	
+	var heading = settings.heading;
+	var container = settings.container;
+	var headerLink = settings.headerLink || "";	
+	var id = settings.id;
+	var initialise = settings.initialise;
+	var startIndex = data.StartIndex || 0;
+	var addClass = settings.addClass || "";
+											
+    if (data.Items.length > 0) {
+		var width = device.columnWidth;
+			var totalRecords = data.TotalRecordCount % 2 ? data.TotalRecordCount + 1 : data.TotalRecordCount;
+			
+			dom.append(container, {
+				nodeName: "div",
+				className: "latest-items-livetv",
+				id: id,
+				childNodes: [{
+					nodeName: "div",
+					className: "latest-items-header",
+					text: heading	
+				}]
+			});
+			
+			dom.data("#" + id, "count", data.Items.length);
+					
+		data.Items.forEach(function(item, index) {
+			var year = item.ProductionYear;
+			var valign = (index*130)+60
+			var runtime = Math.round(item.RunTimeTicks/(60*10000000));
+			var startdate = item.StartDate;
+			var hours = (runtime >= 60 ? Math.floor(runtime/60) + " hr " : "");
+			var mins = (runtime % 60 > 0 ? runtime % 60 + " min" : "");
+
+			var cid = "c_" + id + "_" + index;
+			var now = new Date()
+			var itemStartDate = new Date(item.StartDate)
+			var end = Math.abs(new Date(item.EndDate) - itemStartDate)
+			var start = Math.abs(new Date() - itemStartDate)
+			var PlayedPercentage = start * 100 / end;
+			if (PlayedPercentage >= 100 || itemStartDate > now)
+				PlayedPercentage = 0;
+									
+			var up = index == 0 ? headerLink : "#" + id + "_0_" + (index - 1) ;
+			var down = "#" + id + "_0_" + (index + 1);
+			var left = "";
+			var right = "";	
+			
+			var imageId = item.ImageTags.Primary ? item.Id: data.parentId;
+			var imageTag = item.ImageTags.Primary ? item.ImageTags.Primary : "";	
+			var imageType = "primary";
+			var imageClass =  "cover cover-thumb-tiny";
+			dom.append("#" + id, {
+				nodeName: "div",
+				style: {
+					position: "absolute",
+				    top: valign+"px",
+				    left: "10px"
+				},
+				className: "row-" + index,  
+				id: cid,
+			});
+			
+			dom.append("#"+cid, {
+				nodeName: "a",
+				href: "#",
+				className: "latest-item latest-item-" + item.Type.toLowerCase(),
+				id: id + "_0_" + index,
+				style: {
+					float: "left"
+				},
+				dataset: {
+					backdrop: item.BackdropImageTags[0],
+					name: item.Name,
+					episode: item.EpisodeTitle ? item.EpisodeTitle : "",
+					channelid: item.ChannelId,
+					year: item.ProductionYear ? item.ProductionYear : "",
+					runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
+					startdate: item.StartDate,
+					id: item.Id,
+					index: startIndex + index,
+					keyUp: up,
+					keyRight: right,
+					keyLeft: left,
+					keyDown: down
+				},
+				childNodes: [{
+					nodeName: "div",
+					className: imageClass,
+					style: {
+						backgroundImage: PlayedPercentage > 0 ? 
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 90, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericLiveTvImage.jpg')" :
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 90}) + "),url('./images/GenericLiveTvImage.jpg')" 	
+					     }
+					},{
+				        nodeName: "div",
+				        className: item.SeriesTimerId ? "cardIndicatorsTabular seriesRecording" : item.TimerId ? "cardIndicatorsTabular episodeRecording" :"nothing"
+					}]
+			});
+			dom.append("#"+cid, {
+				nodeName: "div",
+				id: "episodedetails",
+				style: {
+					float: "left"
+				},
+				childNodes: [{
+					nodeName: "div",
+					className: "title",
+					text: item.EpisodeTitle ? item.EpisodeTitle.split(';')[0] : item.Name
+				},{
+					nodeName: "div",
+					className: "subtitle",
+					text: year + (runtime ? " / " + hours + mins : "") + (startdate ? " / " + formatDate(startdate) : "") + ' / '+ item.ChannelName + ' ('+item.ChannelNumber+')'			
+				}]
+			})
+
+		
+		})
+	   dom.css("#"+id,{width: parseInt(dom.data(dom.querySelector("#"+id).lastChild,"location"),10) + device.columnWidth + "px"})
+	   dom.empty("#details")
+    }
+    function formatDate(isoDate) {
+  	  var monthNames = [
+	          "Jan", "Feb", "Mar",
+  	      "Apr", "May", "Jun", "Jul",
+  	      "Aug", "Sep", "Oct",
+  	      "Nov", "Dec"
+  	                  ];
+  	  var date = new Date(isoDate)
+  	  var day = date.getDate();
+  	  var monthIndex = date.getMonth();
+  	  var hours = date.getHours();
+  	  var minutes = date.getMinutes();
+  	  var ampm = hours >= 12 ? 'pm' : 'am';
+  	  hours = hours % 12;
+  	  hours = hours ? hours : 12; // the hour '0' should be '12'
+  	  minutes = minutes < 10 ? '0'+minutes : minutes;
+  	  var strTime = hours + ':' + minutes + ' ' + ampm;
+  	  return monthNames[monthIndex]+' '+ day + ' / ' + strTime;
+  }
+
+};
+
 RENDERER.prototype.userAllItems = function(data, settings) {
 	settings = settings || {};
 
@@ -373,7 +521,7 @@ RENDERER.prototype.userAllItems = function(data, settings) {
 			var column = Math.floor((startIndex + index) / 2);
 			var row = (startIndex + index) % 2;
 			var cid = "c_" + id + "_" + column;
-			var character = /^[a-zA-Z]$/.test(item.Name.toUpperCase().charAt(0)) ? item.Name.toUpperCase().charAt(0) : "sym";
+			var character = /^[a-zA-Z]$/.test(item.SortName.toUpperCase().charAt(0)) ? item.SortName.toUpperCase().charAt(0) : "sym";
 			if (!dom.exists("#" + cid)) {
 				dom.append("#" + id, {
 					nodeName: "div",
@@ -724,7 +872,7 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 					className: imageClass,
 					style: 
 					{
-						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600}) + "),url('./images/GenericImage.png')"	
+						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600}) + "),url('./images/GenericLiveTvImage.jpg')"
 					},
 				    childNodes:
 				    [{
