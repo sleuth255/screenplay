@@ -12,8 +12,10 @@ function LiveTvItems() {
 	this.limit;
 	this.scroll;
 	this.node;
+	this.dataLoaded;
 	this.data = {};
 	this.timerdata = {};
+	this.itemtimerdata = {};
 	this.channeldata = {}
 	this.totalRecordCount;
 	
@@ -28,6 +30,7 @@ LiveTvItems.prototype.close = function() {
 	dom.remove("playerBackdrop")
 	dom.off("#view", "scroll", this.scroll);
 	dom.off("body","keydown", this.lostfocus);
+	dom.empty("#details")
 }
 LiveTvItems.prototype.load = function(settings,backstate) {
 	settings = settings || {};
@@ -49,6 +52,11 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	this.id = guid.create();
 	var token = guid.create();	
 	var node;
+
+	   var newdata = {
+			   Items:[],
+			   TotalRecordCount:0
+		   }
 
 	
 	
@@ -81,7 +89,8 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	});	
 
 	dom.delegate("#collection", "a", "keydown", navigation);
-	
+
+/*	
 	var now = new Date().toISOString();
 	var today = new Date()
 	var tomorrow = new Date()
@@ -97,6 +106,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
   		   HasAired: 'false',
   		   MaxStartDate: now,
   		   success: displayUserItems,
+   		   getOverviews: true,
   		   error: error				
   	   });
      else
@@ -105,39 +115,85 @@ LiveTvItems.prototype.load = function(settings,backstate) {
  		   HasAired: 'false',
  		   MinStartDate: now,
  		   MaxStartDate: today,
+   		   getOverviews: true,
  		   success: displayUserItems,
  		   error: error				
  	   });
     else
     if (settings.activeButton == 3)
-   	   emby.getLiveTvPrograms({
-   		   HasAired: 'false',
-   		   MinStartDate: now,
-   		   MaxStartDate: prefsDays,
-   		   isSeries: true,
-   		   success: displayUserItems,
-   		   error: error				
-   	   });
+    	if (self.dataLoaded)
+    		displayUserItems(self.data)
+        else{
+		    self.dataLoaded = true;
+      	    emby.getLiveTvPrograms({
+   	  	       HasAired: 'false',
+   		       MinStartDate: now,
+   		       MaxStartDate: prefsDays,
+   		       isSeries: true,
+   		       getOverviews: true,
+   		       success: displayUserItems,
+   		       error: error
+   	       });
+        }
     else
     if (settings.activeButton == 4)
    	   emby.getLiveTvPrograms({
    		   HasAired: 'false',
    		   isMovie: true,
+   		   getOverviews: true,
    		   success: displayUserItems,
    		   error: error				
    	   });
-	
+*/
+	displayUserItems(prefs.data)
 
-    function setSeriesTimer(idx){
+    function setTimers(idx){
+	    if (typeof newdata.Items[idx].SeriesTimerId != 'undefined'){
+	    	setSeriesTimer(idx);
+		}
+		checkForSeriesTimer(idx)
+	    if (typeof newdata.Items[idx].TimerId != 'undefined'){
+	    	setItemTimer(idx);
+		}
+	    checkForItemTimer(idx)
+    }
+    function checkForSeriesTimer(idx){
+    	self.timerdata.Items.forEach (function(item){
+    		if ((item.Status == "New" || item.Status == 'InProgress') && item.ChannelId == newdata.Items[idx].ChannelId && item.ProgramId == newdata.Items[idx].Id){
+    			if (typeof item.SeriesTimerId != 'undefined')
+    			    newdata.Items[idx]['SeriesTimerId'] = item.SeriesTimerId
+    		}
+    	})
+    }	
+    function checkForItemTimer(idx){
+    	self.timerdata.Items.forEach (function(item){
+    		if ((item.Status == "New" || item.Status == 'InProgress') && item.ChannelId == newdata.Items[idx].ChannelId && item.ProgramId == newdata.Items[idx].Id)
+    			newdata.Items[idx]['TimerId'] = item.Id
+    	})
+    }	
+	
+	function setItemTimer(idx){
 		var found = false;
     	self.timerdata.Items.forEach (function(item){
-    		if ((item.ChannelId == self.data.Items[idx].ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.Items[idx].SeriesTimerId)
+    		if (item.ChannelId == newdata.Items[idx].ChannelId && item.Id == newdata.Items[idx].TimerId && (item.Status == "New" || item.Status == 'InProgress'))
     			found = true
     	})
 		if (!found)
-			delete self.data.Items[idx].SeriesTimerId
+			delete newdata.Items[idx].TimerId
     }
-    function formatDate(isoDate) {
+	
+	function setSeriesTimer(idx){
+		var found = false;
+    	self.timerdata.Items.forEach (function(item){
+    		if (item.ChannelId == newdata.Items[idx].ChannelId && item.Id == newdata.Items[idx].TimerId && (item.Status == "New" || item.Status == 'InProgress'))
+    			if (typeof item.SeriesTimerId != 'undefined')
+    			   found = true
+    	})
+		if (!found)
+			delete newdata.Items[idx].SeriesTimerId
+    }
+
+	function formatDate(isoDate) {
     	  var monthNames = [
 	          "Jan", "Feb", "Mar",
     	      "Apr", "May", "Jun", "Jul",
@@ -159,7 +215,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 
     function displayUserItems(data) {
    	   self.data = data;
-   	   emby.getLiveTvSeriesTimers({
+   	   emby.getLiveTvTimers({
  		   success: getChannels,
    		   error: error				
    	   });
@@ -175,15 +231,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
        self.channeldata = channeldata
 	   // get shows and remove duplicates.
 	   var now = new Date().toISOString()
-	   var newdata = {
-		   Items:[],
-		   TotalRecordCount:0
-	   }
-    	
-	   // set Series timers
-	   for (var i = 0; i < self.data.Items.length ; i++)
-	      if (typeof (self.data.Items[i].SeriesTimerId != 'undefined'))
-	    	  setSeriesTimer(i);
+       newdata.Items = []
 
        // binary search for start position
 	   var a = 0
@@ -214,7 +262,11 @@ LiveTvItems.prototype.load = function(settings,backstate) {
     	    		 newdata.Items[x]['ChannelNumber'] = self.channeldata.Items[y].Number;
     	    		 newdata.Items[x]['ChannelName'] = self.channeldata.Items[y].Name
     	    	 }
-
+       
+       // set timers
+       for (var i = 0; i < newdata.Items.length ; i++){
+	    	setTimers(i)
+	    }
        newdata.TotalRecordCount = newdata.Items.length;
 	   var length = newdata.Items.length;
 	   var temp;
@@ -242,7 +294,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		for(var idx = 0;idx<elmnts.length;idx++)
 			if (elmnts[idx].dataset.index == self.lastItemIndex)
 			{	
-				dom.focus(elmnts[idx]);
+				vfocus(elmnts[idx]);
 				break;
 			}
 		document.getElementById("view").scrollLeft = self.lastItemPosition;
@@ -324,7 +376,8 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		      	view.scrollTop += (rect.bottom - window.innerHeight + 5);
 		   }
 		   node.focus();
-		   if (node.classList.contains("latest-item") || node.classList.contains("user-views-item")) {
+		   if (node.classList.contains("latest-item")) {
+			   updateDetails(node)
 			   dom.data("#view", "lastFocus", "#" + node.id);
 		   }
 		}
@@ -335,41 +388,67 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 			if (node.classList.contains("latest-item") || node.classList.contains("user-views-item")) {
 				dom.data("#view", "lastFocus", "#" + node.id);
 			}
-			if (dom.hasClass(node, "latest-item")) {
-				self.node = node
-			   	emby.getLiveTvChannel({
-			   	   id: dom.data(node,"channelid"),
-			   	   success: updateDetails,
-			   	   error: error				
-			    });
-
-			   	var index = dom.data(node.parentNode, "index");
-			} else {
-				dom.empty("#details");
-			}			
 		}
 	}
 
-	function updateDetails(data){
-		return
-		var year = dom.data(self.node, "year") || "";
-		var runtime = Number(dom.data(self.node, "runtime")) || 0;
-		var startdate = dom.data(self.node, "startdate") || "";
-		var hours = (runtime >= 60 ? Math.floor(runtime/60) + " hr " : "");
-		var mins = (runtime % 60 > 0 ? runtime % 60 + " min" : "");
-		dom.html("#details", {
-			nodeName: "div",
-			childNodes: [{
-				nodeName: "div",
-				className: "title",
-				text: dom.data(self.node, "episode") ? dom.data(self.node, "episode").split(';')[0] : dom.data(self.node,"name")
-			}, {
-				nodeName: "div",
-				className: "subtitle",
-				text: year + (runtime ? " / " + hours + mins : "") + (startdate ? " / " + formatDate(startdate) : "") + ' / '+data.Name + ' ('+data.Number+')'			
-			}]
-		});
-		
+	function updateDetails(node){
+	       // binary search for episode
+		   var a = 0
+		   var x = 0
+		   var z = self.data.Items.length
+		   var sortname = dom.data(node,"sortname")
+		   var channelid = dom.data(node,"channelid")
+		   var startdate = dom.data(node,"startdate")
+		   
+		   for (x=Math.floor((a+z)/2); (z-a) > 10;x=Math.floor((a+z)/2)){
+			   if (self.data.Items[x].SortName < sortname)
+			      a = x
+			   else
+			      z = x	  
+		   }
+		var item;
+		var now = new Date().toISOString();
+		for (x=a;x<self.data.Items.length;x++)
+			if (self.data.Items[x].SortName == sortname && self.data.Items[x].ChannelId == channelid && self.data.Items[x].StartDate == startdate){
+				item = self.data.Items[x];
+				break
+			}
+		if (item){
+			var year = item.ProductionYear;
+			var runtime = Math.round(item.RunTimeTicks/(60*10000000));
+			var startdate = item.StartDate;
+			var hours = (runtime >= 60 ? Math.floor(runtime/60) + " hr " : "");
+			var mins = (runtime % 60 > 0 ? runtime % 60 + " min" : "");
+			var itemStartDate = new Date(item.StartDate)
+			var end = Math.abs(new Date(item.EndDate) - itemStartDate)
+			var start = Math.abs(new Date() - itemStartDate)
+ 		    node = document.getElementsByClassName("overview")[0];
+		    node.textContent = item.Overview
+ 		    node = document.getElementsByClassName("dtitle")[0];
+		    node.textContent = item.EpisodeTitle? item.EpisodeTitle.split(';')[0]: item.Name
+ 		    node = document.getElementsByClassName("year")[0];
+		    node.textContent = item.ProductionYear
+ 		    node = document.getElementsByClassName("rating")[0];
+		    node.textContent = item.OfficialRating
+ 		    node = document.getElementsByClassName("runtime")[0];
+		    node.textContent = hours || mins ? hours + mins : ""
+		    if (item.StartDate && item.StartDate > now){
+ 		        node = document.getElementsByClassName("airs")[0];
+		        node.textContent = "Airs "+formatDate(item.StartDate)+" on "+item.ChannelName+ " ("+item.ChannelNumber+")"
+		    }
+		    else
+		    if (item.StartDate && item.StartDate <= now && item.EndDate >= now){
+ 		        node = document.getElementsByClassName("airs")[0];
+		        node.textContent = "Now Playing on "+item.ChannelName+ " ("+item.ChannelNumber+")"
+		    }
+		    else
+		    if (item.EndDate && item.EndDate < now){
+ 		        node = document.getElementsByClassName("airs")[0];
+		        node.textContent = "Series Airs on "+item.ChannelName+ " ("+item.ChannelNumber+")"
+		    }
+ 		    node = document.getElementsByClassName("genre")[0];
+		    node.textContent = item.Genres.join(" / ")
+		}
 	}
 	function error(data) {
 		complete();

@@ -93,6 +93,7 @@
 					id: event.detail.id,
 					name: event.detail.name,
 					sortName: event.detail.sortName,
+					data: prefs.data,
 					activeButton: event.detail.activeButton,
 					action: "livetvitems"
 				}, "livetvitems");
@@ -212,6 +213,7 @@
 							break;	
 							
 						case "livetvitems":
+							prefs.data = event.state.data
 							livetvitems.load(event.state,true);					
 							break;	
 							
@@ -419,8 +421,10 @@
 			dom.on("#view", "mousewheel", function(event) {
 				if (event.deltaY) {
 					this.scrollLeft += event.deltaY;
+					this.scrollTop += event.deltaY;
 				} else {
 					this.scrollLeft -= event.wheelDeltaY;
+					this.scrollTop -= event.wheelDeltaY;
 				}
 			});	
 								

@@ -204,9 +204,11 @@ EMBY.prototype.getLiveTvPrograms = function(settings){
 	var isSeries = settings.isSeries || "";
 	var StartIndex = settings.StartIndex || "";
 	var HasAired = settings.HasAired || "";
+	var getOverviews = settings.getOverviews || ""
 	
 	//was: SortBy=sortName&SortOrder=Ascending&
-	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&Fields=SortName&SortOrder=Ascending&enableImageTypes=primary,thumb,backdrop'+
+	ajax.request(this.settings.ServerUrl + '/LiveTV/Programs?SortBy=sortName&SortOrder=Ascending&enableImageTypes=primary,thumb,backdrop'+
+		(getOverviews ? "&Fields=SortName,Overview,Genres" : "&Fields=SortName")+	
 		(limit ? "&limit=" + limit : "")+
 		(HasAired ? "&HasAired=" + HasAired : "")+
 		(MinStartDate ? "&MinStartDate=" + MinStartDate : "")+

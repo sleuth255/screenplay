@@ -330,7 +330,79 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 	var initialise = settings.initialise;
 	var startIndex = data.StartIndex || 0;
 	var addClass = settings.addClass || "";
-											
+
+    var item = data.Items[0]
+	var year = item.ProductionYear;
+	var runtime = Math.round(item.RunTimeTicks/(60*10000000));
+	var startdate = item.StartDate;
+	var hours = (runtime >= 60 ? Math.floor(runtime/60) + " hr " : "");
+	var mins = (runtime % 60 > 0 ? runtime % 60 + " min" : "");
+	var now = new Date().toISOString();
+	var itemStartDate = new Date(item.StartDate)
+	var end = Math.abs(new Date(item.EndDate) - itemStartDate)
+	var start = Math.abs(new Date() - itemStartDate)
+	
+    dom.empty("#details")
+	dom.append("#details",{
+		nodeName: "div",
+		id: "episodedescription",
+		style: {
+			position: "absolute",
+			top: "-700px",
+			left: "1000px",
+			"font-size": "26px",
+			width: "640px"
+		},
+		childNodes: [{
+			nodeName: "div",
+			className: "title dtitle",
+			text: item.EpisodeTitle? item.EpisodeTitle.split(';')[0]: item.Name
+		}, item.AlbumArtist ? {
+			nodeName: "div",
+			className: "artist",
+			text: item.AlbumArtist
+		} : {}, item.ProductionYear ? {
+			nodeName: "div",
+			className: "year",
+			text: item.ProductionYear
+		} : {}, item.OfficialRating ? {
+			nodeName: "div",
+			className: "rating",
+			text: item.OfficialRating
+		} : {}, item.RunTimeTicks || item.CumulativeRunTimeTicks ? {
+			nodeName: "div",
+			className: "runtime",
+			text: hours + mins
+		} : {}, item.StartDate && item.StartDate > now ? {
+			nodeName: "div",
+			className: "airs",
+			text: "Airs "+formatDate(item.StartDate)+" on "+item.ChannelName+ " ("+item.ChannelNumber+")"
+		} : {}, item.StartDate && item.StartDate <= now && item.EndDate >= now ? {
+			nodeName: "div",
+			className: "airs",
+			text: "Now Playing on "+item.ChannelName+ " ("+item.ChannelNumber+")"
+		} : {}, item.EndDate && item.EndDate < now ? {
+			nodeName: "div",
+			className: "airs",
+			text: "Series Airs on "+item.ChannelName+ " ("+item.ChannelNumber+")"
+		} : {}, item.Genres && item.Genres.length > 0 ? {
+			nodeName: "div",
+			className: "genre",
+			text: item.Genres.join(" / ")
+		} : {}, item.Overview ? {
+			nodeName: "div",
+			className: "overview",
+			text: item.Overview
+		} : {}, item.CommunityRating ? {
+			nodeName: "div",
+			className: "rank",
+			childNodes: this.rating(item.CommunityRating)
+		} : {}]
+	})
+
+
+	
+	
     if (data.Items.length > 0) {
 		var width = device.columnWidth;
 			var totalRecords = data.TotalRecordCount % 2 ? data.TotalRecordCount + 1 : data.TotalRecordCount;
@@ -370,7 +442,8 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 			var left = "";
 			var right = "";	
 			
-			var imageId = item.ImageTags.Primary ? item.Id: data.parentId;
+			//var imageId = item.ImageTags.Primary ? item.Id: data.parentId;
+			var imageId = item.ImageTags.Primary ? item.Id : "";
 			var imageTag = item.ImageTags.Primary ? item.ImageTags.Primary : "";	
 			var imageType = "primary";
 			var imageClass =  "cover cover-thumb-tiny";
@@ -379,7 +452,7 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 				style: {
 					position: "absolute",
 				    top: valign+"px",
-				    left: "10px"
+				    left: "100px"
 				},
 				className: "row-" + index,  
 				id: cid,
@@ -396,6 +469,7 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 				dataset: {
 					backdrop: item.BackdropImageTags[0],
 					name: item.Name,
+					sortname: item.SortName,
 					episode: item.EpisodeTitle ? item.EpisodeTitle : "",
 					channelid: item.ChannelId,
 					year: item.ProductionYear ? item.ProductionYear : "",
@@ -412,9 +486,10 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 					nodeName: "div",
 					className: imageClass,
 					style: {
-						backgroundImage: PlayedPercentage > 0 ? 
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 90, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericLiveTvImage.jpg')" :
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 90}) + "),url('./images/GenericLiveTvImage.jpg')" 	
+						backgroundImage: imageId ? PlayedPercentage > 0 ? 
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 90, percentPlayed: Math.floor(PlayedPercentage)}) + "),url('./images/GenericPortraitImage.jpg')" :
+								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 90}) + "),url('./images/GenericPortraitImage.jpg')"
+								         : "url('./images/GenericLiveTvImage.jpg')"
 					     }
 					},{
 				        nodeName: "div",
@@ -437,11 +512,8 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 					text: year + (runtime ? " / " + hours + mins : "") + (startdate ? " / " + formatDate(startdate) : "") + ' / '+ item.ChannelName + ' ('+item.ChannelNumber+')'			
 				}]
 			})
-
-		
 		})
 	   dom.css("#"+id,{width: parseInt(dom.data(dom.querySelector("#"+id).lastChild,"location"),10) + device.columnWidth + "px"})
-	   dom.empty("#details")
     }
     function formatDate(isoDate) {
   	  var monthNames = [
@@ -845,7 +917,7 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 	var tvitem = tvdata;
 	var container = settings.container;
 	
-	var imageId = item.Id;
+	var imageId = item.ImageTags.Primary ? item.Id : "";
 	var imageTag = item.ImageTags.Primary;
 	var imageType = "primary";
 	if (item.Type == "Episode")
@@ -872,7 +944,8 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 					className: imageClass,
 					style: 
 					{
-						backgroundImage: "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600}) + "),url('./images/GenericLiveTvImage.jpg')"
+						backgroundImage: imageId ? "url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: 600}) + "),url('./images/GenericPortraitImage.jpg')"
+								: "url('./images/GenericLiveTvImage.jpg')"
 					},
 				    childNodes:
 				    [{

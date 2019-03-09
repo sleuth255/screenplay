@@ -62,6 +62,7 @@ function Prefs() {
 	this.itemId = null;
 	this.ticks = null;
 	this.serverSwitched = false;
+	this.data;
 };
 
 
