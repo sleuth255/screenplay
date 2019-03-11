@@ -137,11 +137,13 @@
 				home.close();
 				livetv.close();
 				livetvitems.close();
+				var tValid = event.detail.timersValid ? true : false
 				history.pushState({
-					action: "item",					
+					action: "item",	
+					timersvalid: tValid,
 					id: event.detail.id		
 				}, "item");
-			    item.load(event.detail.id,false);
+			    item.load(event.detail.id,false,tValid);
 			});						
 
 			dom.on(document, "playItem", function(event) {
@@ -162,7 +164,8 @@
 			});	
 			dom.on(document, "reloadItem", function(event) {
 				item.close()
-				item.load(event.detail.Id,false);
+				var tValid = event.detail.timersValid ? true : false
+				item.load(event.detail.Id,false,tValid);
 			});	
 			dom.on(document, "itemDeleted", function(event) {
 				playerpopup.show({
@@ -218,7 +221,7 @@
 							break;	
 							
 						case "item":
-							item.load(event.state.id,true);					
+							item.load(event.state.id,true,event.state.timersvalid);					
 							break;	
 
 						case "settings":

@@ -100,7 +100,7 @@ a {
     contain: layout style;
 }
 .cardIndicatorsTabular {
-    left: 30em;
+    left: -2.5em;
     top: .2em;
     position: absolute;
     display: -webkit-box;
@@ -1028,8 +1028,8 @@ input:hover {
 	display: inline-block;
 	padding: 5px;
 	margin: 5px 5px 5px 0px;
-	background-color: #666;
 	min-width: 40px;
+	background-color: #666;
 	text-align: center;	
 }
 

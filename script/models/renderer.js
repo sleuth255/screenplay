@@ -355,49 +355,30 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 		},
 		childNodes: [{
 			nodeName: "div",
-			className: "title dtitle",
-			text: item.EpisodeTitle? item.EpisodeTitle.split(';')[0]: item.Name
-		}, item.AlbumArtist ? {
+			className: "title dtitle"
+		},{ 
 			nodeName: "div",
-			className: "artist",
-			text: item.AlbumArtist
-		} : {}, item.ProductionYear ? {
+			className: "artist"
+		},{
 			nodeName: "div",
-			className: "year",
-			text: item.ProductionYear
-		} : {}, item.OfficialRating ? {
+			className: "year"
+		},{
 			nodeName: "div",
-			className: "rating",
-			text: item.OfficialRating
-		} : {}, item.RunTimeTicks || item.CumulativeRunTimeTicks ? {
+			className: "rating"
+		},{
 			nodeName: "div",
-			className: "runtime",
-			text: hours + mins
-		} : {}, item.StartDate && item.StartDate > now ? {
+			className: "runtime"
+		},{
 			nodeName: "div",
-			className: "airs",
-			text: "Airs "+formatDate(item.StartDate)+" on "+item.ChannelName+ " ("+item.ChannelNumber+")"
-		} : {}, item.StartDate && item.StartDate <= now && item.EndDate >= now ? {
-			nodeName: "div",
-			className: "airs",
-			text: "Now Playing on "+item.ChannelName+ " ("+item.ChannelNumber+")"
-		} : {}, item.EndDate && item.EndDate < now ? {
-			nodeName: "div",
-			className: "airs",
-			text: "Series Airs on "+item.ChannelName+ " ("+item.ChannelNumber+")"
-		} : {}, item.Genres && item.Genres.length > 0 ? {
+			className: "airs"
+		},{
 			nodeName: "div",
 			className: "genre",
-			text: item.Genres.join(" / ")
-		} : {}, item.Overview ? {
+		},{
 			nodeName: "div",
 			className: "overview",
-			text: item.Overview
-		} : {}, item.CommunityRating ? {
-			nodeName: "div",
-			className: "rank",
-			childNodes: this.rating(item.CommunityRating)
-		} : {}]
+			text: ''
+		}]
 	})
 
 
@@ -509,7 +490,7 @@ RENDERER.prototype.userAllTvItemsTabular = function(data, settings) {
 				},{
 					nodeName: "div",
 					className: "subtitle",
-					text: year + (runtime ? " / " + hours + mins : "") + (startdate ? " / " + formatDate(startdate) : "") + ' / '+ item.ChannelName + ' ('+item.ChannelNumber+')'			
+					text: (startdate ? formatDate(startdate) : "") + ' / '+ item.ChannelName + ' ('+item.ChannelNumber+')'			
 				}]
 			})
 		})

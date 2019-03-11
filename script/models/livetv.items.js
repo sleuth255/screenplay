@@ -284,7 +284,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		}	
 			
 		if (backstate == false || self.lastItemIndex == null)
-            focus(".latest-item");
+            vfocus(".latest-item");
 		else
 			restoreCollectionFocus();
 	}
@@ -377,7 +377,11 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		   }
 		   node.focus();
 		   if (node.classList.contains("latest-item")) {
-			   updateDetails(node)
+			    emby.getUserItem({
+			 	   id: dom.data(node,"id"),
+			 	   success: updateDetails,
+			 	   error: error					
+			 	})	
 			   dom.data("#view", "lastFocus", "#" + node.id);
 		   }
 		}
@@ -391,28 +395,8 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		}
 	}
 
-	function updateDetails(node){
-	       // binary search for episode
-		   var a = 0
-		   var x = 0
-		   var z = self.data.Items.length
-		   var sortname = dom.data(node,"sortname")
-		   var channelid = dom.data(node,"channelid")
-		   var startdate = dom.data(node,"startdate")
-		   
-		   for (x=Math.floor((a+z)/2); (z-a) > 10;x=Math.floor((a+z)/2)){
-			   if (self.data.Items[x].SortName < sortname)
-			      a = x
-			   else
-			      z = x	  
-		   }
-		var item;
+	function updateDetails(item){
 		var now = new Date().toISOString();
-		for (x=a;x<self.data.Items.length;x++)
-			if (self.data.Items[x].SortName == sortname && self.data.Items[x].ChannelId == channelid && self.data.Items[x].StartDate == startdate){
-				item = self.data.Items[x];
-				break
-			}
 		if (item){
 			var year = item.ProductionYear;
 			var runtime = Math.round(item.RunTimeTicks/(60*10000000));
@@ -423,13 +407,13 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 			var end = Math.abs(new Date(item.EndDate) - itemStartDate)
 			var start = Math.abs(new Date() - itemStartDate)
  		    node = document.getElementsByClassName("overview")[0];
-		    node.textContent = item.Overview
+		    item.Overview ? node.textContent = item.Overview : node.textContent = ''
  		    node = document.getElementsByClassName("dtitle")[0];
 		    node.textContent = item.EpisodeTitle? item.EpisodeTitle.split(';')[0]: item.Name
  		    node = document.getElementsByClassName("year")[0];
 		    node.textContent = item.ProductionYear
  		    node = document.getElementsByClassName("rating")[0];
-		    node.textContent = item.OfficialRating
+		    item.OfficialRating ? node.textContent = item.OfficialRating : node.textContent = "U"
  		    node = document.getElementsByClassName("runtime")[0];
 		    node.textContent = hours || mins ? hours + mins : ""
 		    if (item.StartDate && item.StartDate > now){

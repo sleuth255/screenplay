@@ -7,7 +7,7 @@ function Item() {
 	this.data = {};
 	this.tvdata = {};
 	this.timerdata = {};
-	this.iteration;
+	this.itemtimerdata = {};
 	this.playedStatus;
 	this.itemRecordOn;
 	this.seriesRecordOn;
@@ -16,6 +16,7 @@ function Item() {
 	this.seriesRecordOff;
 	this.lostfocus;
 	this.iterations
+	this.idx;
 };
 
 Item.prototype.close = function(){
@@ -23,7 +24,7 @@ Item.prototype.close = function(){
 	dom.remove("#item")
 };
 
-Item.prototype.load = function(id, backstate) {
+Item.prototype.load = function(id, backstate,timersValid) {
 	var self = this;
     var timerDTO ={
     	RecordAnyTime:true,
@@ -126,16 +127,17 @@ Item.prototype.load = function(id, backstate) {
      }
 	function processItem(data) {
 		self.timerdata = data;
-    	if (typeof (self.tvdata.SeriesTimerId != 'undefined')){
-    		var found = false;
-        	self.timerdata.Items.forEach (function(item){
-        		if ((item.ChannelId == self.tvdata.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.tvdata.SeriesTimerId)
-        			found = true
-        	})
-    		if (!found)
-    			delete self.tvdata.SeriesTimerId
-    	}
-
+		if (!timersValid)
+    	   if (typeof (self.tvdata.SeriesTimerId) != 'undefined'){
+    		   var found = false;
+        	   self.timerdata.Items.forEach (function(item){
+        		   if ((item.ChannelId == self.tvdata.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.tvdata.SeriesTimerId)
+        			   found = true
+        	   })
+    		   if (!found)
+    			   delete self.tvdata.SeriesTimerId
+    	   }
+        
     	now = new Date().toISOString();
 
 		
@@ -176,7 +178,7 @@ Item.prototype.load = function(id, backstate) {
 		   });
 		   if (typeof self.data.ChannelId != 'undefined' && (self.data.StartDate > now || self.data.EndDate < now)) // liveTv item
 		   {
-			  if (self.data.EndDate > now){ // can only record if show has not ended
+			  if (!timersValid){ // can only record if origin isn't tasks page
 		         dom.append("#userViews_0", {
 			         nodeName: "a",
 			         href: "#",
@@ -485,22 +487,32 @@ Item.prototype.load = function(id, backstate) {
     function getSeriesTimers(data) {
         self.data = data;
     	emby.getLiveTvSeriesTimers({
-  		  success: processRecordState,
+  		  success: updateItemTimerState,
     	  error: error				
     	});
      }
+    function updateItemTimerState(data){
+    	self.timerdata = data
+    	emby.getLiveTvTimers({
+    		  success: processRecordState,
+      	  error: error		
+      	});
+    }
     function processRecordState(data){
-		self.timerdata = data;
-    	if (typeof (self.data.SeriesTimerId != 'undefined')){
-    		var found = false;
-        	self.timerdata.Items.forEach (function(item){
-        		if ((item.ChannelId == self.data.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.SeriesTimerId)
-        			found = true
-        	})
-    		if (!found)
-    			delete self.data.SeriesTimerId
-    	}
-
+		self.itemtimerdata = data;
+		if (!timersValid)
+    	    if (typeof (self.data.SeriesTimerId) != 'undefined'){
+    	        var found = false;
+        	    self.timerdata.Items.forEach (function(item){
+        	    if ((item.ChannelId == self.data.ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.SeriesTimerId)
+        	        found = true
+        	    })
+    		    if (!found){
+    		   	    self.data['MasterSeriesTimerId'] = self.data.SeriesTimerId
+    		   	    delete self.data.SeriesTimerId
+    		    }
+    	    }
+        
     	if (self.data.SeriesTimerId)
     		cancelSeriesRecordTimer(self.data.SeriesTimerId)
     	else
@@ -516,13 +528,47 @@ Item.prototype.load = function(id, backstate) {
     function cancelSeriesRecordTimer(TimerId){
         self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
         self.seriesRecordOff = true;
-  	   emby.deleteLiveTvSeriesTimer({
- 		   id: TimerId,
- 		   success: handleResult,
- 		   error: recorderror
- 	   })
-     }
+  	    emby.deleteLiveTvSeriesTimer({
+ 		    id: TimerId,
+ 		    success: handleResult,
+ 		    error: recorderror
+ 	    })
+    }
+    function discardResult(data){
+    	return
+    }
  	function scheduleSeriesRecordTimer(){
+ 		self.idx = -1
+ 		cancelAnyItemTimers()
+ 	}
+ 	function cancelAnyItemTimers(){
+ 		//checkSeriesRecordTimer()
+ 		//return
+ 		self.idx++
+ 		if (self.idx >= self.itemtimerdata.Items.length){
+ 			checkSeriesRecordTimer()
+ 			return
+ 		}
+ 		if (typeof (self.itemtimerdata.Items[self.idx].SeriesTimerId) == 'undefined' && self.itemtimerdata.Items[self.idx].Name == self.data.Name)
+ 	 	   emby.deleteLiveTvTimer({
+ 			   id: self.itemtimerdata.Items[self.idx].Id,
+ 			   success: cancelAnyItemTimers,
+ 			   error: cancelAnyItemTimers
+ 		   })
+ 		else
+ 			cancelAnyItemTimers()
+ 	}
+ 	function checkSeriesRecordTimer(){
+	    if (typeof (self.data.MasterSeriesTimerId) != 'undefined')
+		   	   emby.deleteLiveTvSeriesTimer({
+		 		   id: self.data.MasterSeriesTimerId,
+		 		   success: doSeriesRecordTimer,
+		 		   error: discardResult
+		 	   })
+	 	else
+		   doSeriesRecordTimer()
+ 	}
+ 	function doSeriesRecordTimer(){
         self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
  		self.seriesRecordOn = true;
  		timerDTO.ServerId = self.data.ServerId;
@@ -531,6 +577,7 @@ Item.prototype.load = function(id, backstate) {
  		timerDTO.StartDate = self.data.StartDate;
  		timerDTO.EndDate = self.data.EndDate;
  		timerDTO.Name = self.data.Name;
+ 		timerDTO.Type = "SeriesRecordTimer"
  		timerDTO.ParentPrimaryImageTag = self.data.ParentPrimaryImageTag;
  		timerDTO.ParentThumbImageTag = self.data.ParentThumbImageTag;
  		timerDTO.ParentThumbItemId = self.data.ParentThumbItemId;
@@ -551,10 +598,23 @@ Item.prototype.load = function(id, backstate) {
 	   })
     }
 	function scheduleItemRecordTimer(){
+		//doItemRecordTimer()
+		//return;
+	    if (typeof (self.data.MasterSeriesTimerId) != 'undefined')
+		   	   emby.deleteLiveTvSeriesTimer({
+		 		   id: self.data.MasterSeriesTimerId,
+		 		   success: doItemRecordTimer,
+		 		   error: discardResult
+		 	   })
+	 	else
+		   doItemRecordTimer()
+	}
+	function doItemRecordTimer(){
         self.itemRecordOn = self.seriesRecordOn = self.itemRecordOff = self.seriesRecordOff = false;
 		self.itemRecordOn = true;
 		timerDTO.ServerId = self.data.ServerId;
 		timerDTO.ChannelId = self.data.ChannelId;
+		timerDTO.Type = "Timer"
 		timerDTO.ProgramId = self.data.Id;
 		timerDTO.StartDate = self.data.StartDate;
 		timerDTO.EndDate = self.data.EndDate
@@ -576,12 +636,19 @@ Item.prototype.load = function(id, backstate) {
     function updateSeriesTimers(data) {
         self.data = data;
     	emby.getLiveTvSeriesTimers({
-  		  success: updateItemPage,
+  		  success: updateItemTimers,
     	  error: error				
     	});
      }
+    function updateItemTimers(data){
+    	self.timerdata = data
+    	emby.getLiveTvTimers({
+    		  success: updateItemPage,
+      	  error: error				
+      	});
+    }
 	function updateItemPage(data){
-		self.timerdata = data
+		self.itemtimerdata = data
     	if (typeof (self.data.SeriesTimerId != 'undefined')){
     		var found = false;
         	self.timerdata.Items.forEach (function(item){
@@ -598,11 +665,13 @@ Item.prototype.load = function(id, backstate) {
 					duration: 1500,
 					text: "Click again to record the Series"
 				});	
+			self.data['timersValid'] = timersValid
 			dom.dispatchCustonEvent(document, "reloadItem", self.data)
 	        return
 		}
 		self.iterations++
 		if (self.iterations > 50){
+			self.data['timersValid'] = timersValid
 			dom.dispatchCustonEvent(document, "reloadItem", self.data)
 	        return
 		}

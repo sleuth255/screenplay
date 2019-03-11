@@ -10,6 +10,7 @@ function LiveTv() {
 	this.timer2 = null;
 	
 	this.startIndex;
+	this.timersValid
 	this.currentIndex;
 	this.itemIndex;
 	this.limit;
@@ -44,6 +45,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 	settings = settings || {};
 	
 	var self = this;
+	self.timersValid = false;
 	self.activeButton = settings.activeButton || 1
 	self.heading = self.activeButton == 1 ? "On Now" 
 			     : self.activeButton == 2 ? "Next Up" 
@@ -520,11 +522,16 @@ LiveTv.prototype.load = function(settings, backstate) {
 			dataset.name = event.delegateTarget.dataset.name;
 			dataset.sortName = event.delegateTarget.dataset.sortname
 			dataset.id = event.delegateTarget.dataset.id;
+			prefs.data = self.data
 			dataset.activeButton = self.activeButton;
 			dom.dispatchCustonEvent(document, "LiveTvItemsSelected", dataset);
 		}
-		else
-		    dom.dispatchCustonEvent(document, "mediaItemSelected", event.delegateTarget.dataset);
+		else{
+		    var dataset = {}
+		    dataset.id = event.delegateTarget.dataset.id
+		    dataset.timersValid = self.timersValid
+		    dom.dispatchCustonEvent(document, "mediaItemSelected", dataset);
+		}
 	});	
 
 	dom.delegate("#collection", "a", "keydown", navigation);
@@ -547,7 +554,6 @@ LiveTv.prototype.load = function(settings, backstate) {
 	prefsDays = prefsDays.toISOString();
     if (self.activeButton == 1)
  	   emby.getLiveTvPrograms({
- 		   //limit: 1000,
  		   HasAired: 'false',
  		   MaxStartDate: now,
  		   success: displayUserItems,
@@ -556,7 +562,6 @@ LiveTv.prototype.load = function(settings, backstate) {
      else
     if (self.activeButton == 2)
 	   emby.getLiveTvPrograms({
-		   //limit: 50000,
 		   HasAired: 'false',
 		   MinStartDate: now,
 		   MaxStartDate: today,
@@ -572,10 +577,8 @@ LiveTv.prototype.load = function(settings, backstate) {
 		    self.dataLoaded = true;
 			
    	       emby.getLiveTvPrograms({
-   		       //limit: 50000,
    		       HasAired: 'false',
    		       MinStartDate: now,
-   		       // MaxStartDate: tomorrow,
    		       MaxStartDate: prefsDays,
    		       isSeries: true,
    		       success: displayUserItems,
@@ -586,7 +589,6 @@ LiveTv.prototype.load = function(settings, backstate) {
     else
     if (self.activeButton == 4)
    	   emby.getLiveTvPrograms({
-   		   //limit: 50000,
    		   HasAired: 'false',
    		   isMovie: true,
    		   success: displayUserItems,
@@ -637,6 +639,7 @@ LiveTv.prototype.load = function(settings, backstate) {
             focus(".activeButton");
 			return;
     	}
+    	self.timersValid = true;
  	    emby.getLiveTvProgram({
    	       id: self.timerarray[0].ProgramId,
        	   success: pushItemData,
@@ -788,9 +791,9 @@ LiveTv.prototype.load = function(settings, backstate) {
 		}
         
 	    // set timers
-	    for (var i = 0; i < self.data.Items.length ; i++){
-	    	setTimers(i)
-	    }
+        for (var i = 0; i < self.data.Items.length ; i++){
+    	    setTimers(i)
+        }
 	    
 	    self.data.Items[self.data.Items.length] = {Name: "DummyItemName"}
 	    var item = self.data.Items[0]
