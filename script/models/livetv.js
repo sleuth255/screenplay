@@ -662,6 +662,16 @@ LiveTv.prototype.load = function(settings, backstate) {
     	}
     	self.itemIndex++;
     	if (self.itemIndex >= self.timerarray.length){
+    		// Sort items by name
+    		var length = self.newdata.Items.length
+    	    for (var j = 0; j < length; j++)
+    	        for (var i=0; i < (length - j - 1); i++)
+    	            if (self.newdata.Items[i].Name > self.newdata.Items[i+1].Name)
+    	            {
+    	               temp = self.newdata.Items[i];
+    	               self.newdata.Items[i] = self.newdata.Items[i+1];
+    	               self.newdata.Items[i+1] = temp;
+    	            }
     		displayUserItems(self.newdata)
     		return
     	}
@@ -692,20 +702,21 @@ LiveTv.prototype.load = function(settings, backstate) {
 	}			
 
     function setTimers(idx){
-	    if (typeof self.data.Items[idx].SeriesTimerId != 'undefined'){
+	    if (typeof self.data.Items[idx].SeriesTimerId != 'undefined')
 	    	setSeriesTimer(idx);
-		}
-		checkForSeriesTimer(idx)
-	    if (typeof self.data.Items[idx].TimerId != 'undefined'){
+	    if (typeof self.data.Items[idx].SeriesTimerId == 'undefined')
+ 		    checkForSeriesTimer(idx)
+	    if (typeof self.data.Items[idx].TimerId != 'undefined')
 	    	setItemTimer(idx);
-		}
-	    checkForItemTimer(idx)
+	    if (typeof self.data.Items[idx].TimerId == 'undefined')
+	        checkForItemTimer(idx)
     }
     function checkForSeriesTimer(idx){
     	self.timerdata.Items.forEach (function(item){
     		var time1 = new Date(item.StartDate).getTime();
     		var time2 = new Date(self.data.Items[idx].StartDate).getTime()
-    		if (item.ChannelId == self.data.Items[idx].ChannelId && time1 == time2){
+      		if ((item.ChannelId == self.data.Items[idx].ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.Items[idx].SeriesTimerId){
+    		//if (item.ChannelId == self.data.Items[idx].ChannelId && time1 == time2){
     			self.data.Items[idx]['SeriesTimerId'] = item.Id
     		}
     	})
@@ -732,7 +743,8 @@ LiveTv.prototype.load = function(settings, backstate) {
     	self.timerdata.Items.forEach (function(item){
     		var time1 = new Date(item.StartDate).getTime();
     		var time2 = new Date(self.data.Items[idx].StartDate).getTime()
-    		if (item.ChannelId == self.data.Items[idx].ChannelId && time1 == time2)
+      		if ((item.ChannelId == self.data.Items[idx].ChannelId || item.RecordAnyChannel == true ) && item.Id == self.data.Items[idx].SeriesTimerId)
+    		//if (item.ChannelId == self.data.Items[idx].ChannelId && time1 == time2)
     			found = true
     	})
 		if (!found)

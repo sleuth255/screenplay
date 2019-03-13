@@ -947,6 +947,9 @@ input:hover {
 #episodedetails .title {
 	font-size: 30px;
 	font-weight: bold;	
+	max-width: 800px;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 #episodedetails .subtitle {
