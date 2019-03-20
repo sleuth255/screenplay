@@ -54,7 +54,7 @@ PlayerLoader.prototype.load = function(data) {
    	   launchPlayer(self.data);
     }
     function launchPlayer(data){
-		prefs.resumeTicks = 0;
+		//prefs.resumeTicks = 0;
 	    dom.dispatchCustonEvent(document, "launchPlayer", data);
 	}
 	function error(){

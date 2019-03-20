@@ -684,10 +684,12 @@ LiveTv.prototype.load = function(settings, backstate) {
 	function discarderror(data) {
     	var tdata = {};
  	    if (self.timerarray[self.itemIndex].IsSeriesTimer){
- 	       tdata["SeriesTimerId"] = self.timerarray[self.itemIndex].TimerId;
- 	       tdata.Overview = '';
- 	       tdata.Id = self.timerarray[self.itemIndex].ParentPrimaryImageItemId
-   	       self.newdata.Items.push(tdata);
+ 	 	    emby.getLiveTvProgram({
+ 	   	        id: self.timerarray[self.itemIndex].ParentPrimaryImageItemId,
+ 	        	success: pushItemData,
+ 	        	error: cantfixerror				
+ 	        });
+ 	 	    return
  	    }
     	self.itemIndex++;
     	if (self.itemIndex >= self.timerarray.length){
@@ -699,7 +701,19 @@ LiveTv.prototype.load = function(settings, backstate) {
         	success: pushItemData,
         	error: discarderror				
         });
-	}			
+	}	
+	function cantfixerror(data){
+    	self.itemIndex++;
+    	if (self.itemIndex >= self.timerarray.length){
+    		displayUserItems(self.newdata)
+    		return
+    	}
+ 	    emby.getLiveTvProgram({
+   	        id: self.timerarray[self.itemIndex].ProgramId,
+        	success: pushItemData,
+        	error: discarderror				
+        });
+	}
 
     function setTimers(idx){
 	    if (typeof self.data.Items[idx].SeriesTimerId != 'undefined')

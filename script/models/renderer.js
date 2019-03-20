@@ -745,11 +745,10 @@ RENDERER.prototype.userResumeItems = function(data, settings) {
 					nodeName: "div",
 					className: "cover cover-thumb",
 					style: {
-						backgroundImage: imageId ? item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + ")" :
-								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + ")" 	
-								                     : "url('./images/GenericImage.png')"
-					},
+						backgroundImage: item.ParentThumbImageTag ?
+								"url(" + emby.getImageUrl({'itemId': item.ParentBackdropItemId, tag: item.ParentThumbImageTag, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericLiveTvImage.jpg')" :
+								"url(" + emby.getImageUrl({'itemId': item.Id, tag: item.ImageTags.Thumb, imageType: 'Thumb', height: 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + "),url('./images/GenericLiveTvImage.jpg')"	
+						},
 					childNodes: [{
 			           nodeName: "div",
 			           className: item.UserData.Played ? "cardIndicators indicator" : "nothing"
@@ -822,7 +821,7 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 	var hours = (time >= 60 ? Math.floor(time/60) + " hr " : "");
 	var mins = (time % 60 > 0 ? time % 60 + " min" : "");
 	var now = new Date().toISOString();
-	if (typeof tvitem.EndDate != 'undefined' && tvitem.EndDate < now){
+	if (typeof tvitem.EndDate != 'undefined' && typeof tvitem.ChannelName != 'undefined' && tvitem.EndDate < now){
 		item.Overview = "";
 		tvitem.EpisodeTitle = item.Name + " Series Recording"
 	}
@@ -861,7 +860,7 @@ RENDERER.prototype.userItem = function(data,tvdata, settings) {
 			nodeName: "div",
 			className: "genre",
 			text: "Now Playing on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
-		} : {}, tvitem.EndDate && tvitem.EndDate < now ? {
+		} : {}, tvitem.EndDate && tvitem.ChannelName && tvitem.EndDate < now ? {
 			nodeName: "div",
 			className: "genre",
 			text: "Series Airs on "+tvitem.ChannelName+ " ("+tvitem.ChannelNumber+")"
@@ -992,7 +991,7 @@ RENDERER.prototype.userItemChildren = function(data, settings) {
 						backgroundImage: imageId ? item.MediaType == "Video" && item.UserData.PlayedPercentage > 0 ? 
 								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400, percentPlayed: Math.floor(item.UserData.PlayedPercentage)}) + ")" :
 								"url(" + emby.getImageUrl({'itemId': imageId, tag: imageTag, imageType: imageType, height: index == 0 ? 600 : 400}) + ")" 	
-								                     : "url('./images/GenericImage.png')"
+								                     : "url('./images/GenericLiveTvImage.png')"
 					},
 					childNodes: [{
 			           nodeName: "div",

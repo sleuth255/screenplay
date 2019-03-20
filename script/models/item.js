@@ -389,7 +389,7 @@ Item.prototype.load = function(id, backstate,timersValid) {
 		});
 		dom.on("#viewResume", "click", function(event) {
 			event.preventDefault();
-			prefs.resumeTicks = data.UserData.PlaybackPositionTicks;
+			prefs.resumeTicks = self.data.UserData.PlaybackPositionTicks;
 			flashButton(event.target);
 			dom.dispatchCustonEvent(document, "playItem", self.data);
 		});
