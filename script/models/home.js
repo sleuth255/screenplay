@@ -8,6 +8,7 @@ function Home() {
 	this.total = 0;
 	this.count = 0;
 	this.lostfocus
+	this.data;
 };
 
 Home.prototype.close = function(){
@@ -80,11 +81,28 @@ Home.prototype.load = function() {
 			   if (data.EnabledUsers[x] == emby.settings.User.Id)
 				   prefs.liveTvEnabled = true;
 			emby.getUserViews({
-				success: displayUserViews,
+				success: getResumeItems,
 				error: error			
 			});	
 	}
 	
+	function getResumeItems(data){
+		self.data = data
+		emby.getUserItems({
+			enableImageTypes: "primary,thumb,backdrop",
+			includeItemTypes: "movie,episode",		
+			sortBy: 'dateplayed',
+			sortOrder: 'descending',
+			parent: {collectionType: data.collectionType, name: data.name, imageTag: data.imageTag},	
+			filters: 'IsResumable',
+			success: processItems,
+			error: error				
+		});
+	}
+	function processItems(data){
+		displayUserResumeItems(data)
+		displayUserViews(self.data)
+	}
 	function displayUserViews(data) {
 		var limit = 5;
 		var rowCount = 12;
@@ -107,16 +125,6 @@ Home.prototype.load = function() {
 		self.total += data.Items.length;
 		columnCount =  Math.ceil(data.Items.length / rowCount);
 			
-		emby.getUserItems({
-			enableImageTypes: "primary,thumb,backdrop",
-			includeItemTypes: "movie,episode",		
-			sortBy: 'dateplayed',
-			sortOrder: 'descending',
-			parent: {collectionType: data.collectionType, name: data.name, imageTag: data.imageTag},	
-			filters: 'IsResumable',
-			success: displayUserResumeItems,
-			error: error				
-		});
 							
 		
 		data.Items.forEach(function(item, index) {
