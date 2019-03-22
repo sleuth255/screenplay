@@ -105,6 +105,7 @@ RENDERER.prototype.userAllTvItemsPlaceholder = function(data, settings) {
 						sortname: item.SortName.charAt(0).toUpperCase()+item.SortName.substring(1),
 						episode: item.EpisodeTitle ? item.EpisodeTitle : "",
 						channelid: item.ChannelId,
+						seriestimer: item.SeriesTimerId,
 						year: item.ProductionYear ? item.ProductionYear : "",
 						runtime: item.RunTimeTicks ? Math.round((item.RunTimeTicks/(60*10000000))) : "",
 						startdate: item.StartDate,

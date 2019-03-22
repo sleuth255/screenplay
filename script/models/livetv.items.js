@@ -14,6 +14,7 @@ function LiveTvItems() {
 	this.node;
 	this.dataLoaded;
 	this.data = {};
+	this.dataValid = false;
 	this.timerdata = {};
 	this.itemtimerdata = {};
 	this.channeldata = {}
@@ -71,6 +72,21 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 		backgroundImage: "url(./images/generic-backdrop.png)"
 	});
 	
+	dom.remove("#spinnerBackdrop")
+	dom.append("body", {
+		nodeName: "div",
+		className: "backdrop",
+		id: "spinnerBackdrop",
+		childNodes: [{
+			nodeName: "img",
+			className: "spinningimage",
+			src: "images/spinner.png",
+			width: 200,
+			height: 200
+		}]
+	});
+	dom.hide('#spinnerBackdrop')
+
 	dom.html("#view", {
 		nodeName: "div",
 		className: "collection-view",
@@ -145,9 +161,53 @@ LiveTvItems.prototype.load = function(settings,backstate) {
    		   error: error				
    	   });
 */
-	displayUserItems(prefs.data)
+	if (settings.activeButton == 5){
+		if (backstate == true){
+			checkUserItems(self.data)
+			return
+		}
+    	dom.show('#spinnerBackdrop')
+		var now = new Date().toISOString();
+		var prefsDays = new Date()
+		prefsDays.setHours((24*prefs.showDays),0,0,0)
+		prefsDays = prefsDays.toISOString();
+  	    emby.getLiveTvPrograms({
+	  	       HasAired: 'false',
+		       MinStartDate: now,
+		       MaxStartDate: prefsDays,
+		       isSeries: true,
+		       getOverviews: true,
+		       success: checkUserItems,
+		       error: error
+	       });
+	}
+	else
+	    displayUserItems(prefs.data)
 
-    function setTimers(idx){
+    function checkUserItems(data){
+		self.data = data
+		if (countEpisodes(settings.name) > 0)
+			displayUserItems(data)
+		else{
+		    dom.hide('#spinnerBackdrop')
+		    settings.timersValid = true;
+			playerpopup.show({
+				duration: 1000,
+				text: "No episodes found"
+			});	
+	        dom.dispatchCustonEvent(document, "taskItemSelected", settings);
+		}
+	}
+	function countEpisodes(name){
+		var count=0;
+		for (var x=0; x< self.data.Items.length;x++)
+			if (self.data.Items[x].Name == name)
+				count++;
+		return count
+    	
+    }
+	
+function setTimers(idx){
 	    if (typeof newdata.Items[idx].SeriesTimerId != 'undefined'){
 	    	setSeriesTimer(idx);
 		}
@@ -271,6 +331,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 	   var length = newdata.Items.length;
 	   var temp;
 		
+	    dom.hide('#spinnerBackdrop')
 		var id = guid.create();	
 									
 		if (newdata.Items.length > 0) {					

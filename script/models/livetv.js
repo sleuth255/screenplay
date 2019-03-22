@@ -517,7 +517,16 @@ LiveTv.prototype.load = function(settings, backstate) {
 		event.preventDefault()
 		self.lastItemIndex = event.delegateTarget.dataset.index;
 		self.lastItemPosition = document.getElementById("view").scrollLeft;
-		if (self.activeButton != 5 && countEpisodes(event.delegateTarget.dataset.name) > 1){
+		if (self.activeButton == 5 && event.delegateTarget.dataset.seriestimer != 'undefined'){
+			var dataset = {}
+			dataset.name = event.delegateTarget.dataset.name;
+			dataset.sortName = event.delegateTarget.dataset.sortname
+			dataset.id = event.delegateTarget.dataset.id;
+			dataset.activeButton = self.activeButton;
+			dom.dispatchCustonEvent(document, "LiveTvItemsSelected", dataset);
+		}
+		else
+		if (countEpisodes(event.delegateTarget.dataset.name) > 1){
 			var dataset = {}
 			dataset.name = event.delegateTarget.dataset.name;
 			dataset.sortName = event.delegateTarget.dataset.sortname

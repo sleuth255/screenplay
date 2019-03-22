@@ -146,6 +146,14 @@
 			    item.load(event.detail.id,false,tValid);
 			});						
 
+			dom.on(document, "taskItemSelected", function(event) {
+				collection.close()
+				home.close();
+				livetv.close();
+				livetvitems.close();
+			    item.load(event.detail.id,false,true);
+			});						
+
 			dom.on(document, "playItem", function(event) {
 				history.pushState({
 					action: "item",					
