@@ -285,7 +285,8 @@ User.prototype.login = function() {
 	}	
 	
 	function fieldKeyEvent(event) {
-		event.stopPropagation();
+		if (event.which !== keys.KEY_RED && event.which !== keys.KEY_YELLOW && event.which !== keys.KEY_BLUE && event.which !== keys.KEY_GREEN)
+		    event.stopPropagation();
 				
 		switch (event.which) {
 			case keys.KEY_LEFT:
@@ -375,6 +376,8 @@ User.prototype.login = function() {
 	function keyPress(key)
 	{
 		if (key.length== 1){
+			if (key === keys.KEY_RED || key === kyes.KEY_YELLOW || key === keys.KEY_BLUE || key === keys.KEY_GREEN)
+				return;
 		    var value = dom.val("#password");
 		    dom.val("#password", value + key);
 		}

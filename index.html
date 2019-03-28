@@ -191,6 +191,11 @@
 
 			
 			window.addEventListener("popstate", function(event) {
+				if (dom.exists("#serverSettings" || dom.exists("#userLoginSettings"))){
+					webOS.platformBack()
+					return;
+				}
+					
 				if (dom.exists("#player"))
 				{
 					player.close()
@@ -287,7 +292,7 @@
 			{
                 if (dom.exists("#screenplaySettings"))
 					return;
-				
+					
                 if ((event.which == keys.KEY_RED && Math.floor(prefs.redButton) == 1)
 			    || (event.which == keys.KEY_GREEN && Math.floor(prefs.greenButton) == 1)
 			    || (event.which == keys.KEY_YELLOW && Math.floor(prefs.yellowButton) == 1)
@@ -414,12 +419,6 @@
 					    case keys.KEY_STOP:
 					    	history.back();
 						    return;
-					    //case keys.KEY_FAST_FWD:
-						 //   player.fastforward();
-						  //  return;
-					    //case keys.KEY_REWIND:
-						 //   player.rewind();
-						  //  return;
 					    case keys.KEY_ESC || keys.KEY.BACK:
 					    	player.close()
 					    	return;

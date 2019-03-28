@@ -392,7 +392,6 @@ Home.prototype.load = function() {
 
 	function navigation(event) {
 		event.preventDefault();
-		event.stopPropagation();
 		var self = event.delegateTarget;
 
 		if (event.which == keys.KEY_OK) {

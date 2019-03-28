@@ -127,7 +127,8 @@ Server.prototype.add = function() {
 	});
 	dom.on("#serverUrl", "keydown", function(event) {
 		event.preventDefault();
-		event.stopPropagation();
+		if (event.which !== keys.KEY_RED && event.which !== keys.KEY_YELLOW && event.which !== keys.KEY_BLUE && event.which !== keys.KEY_GREEN)
+		    event.stopPropagation();
 		switch(event.which) {
 		case keys.KEY_OK:
             enterPress(event);
@@ -198,6 +199,8 @@ Server.prototype.add = function() {
 	function keyPress(key)
 	{
 		if (key.length == 1){
+			if (key === keys.KEY_RED || key === keys.KEY_YELLOW || key === keys.KEY_BLUE || key === keys.KEY_GREEN)
+				return;
 			var value = dom.val("#serverUrl");
 		    dom.val("#serverUrl", value + key);
 		}
