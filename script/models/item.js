@@ -17,6 +17,7 @@ function Item() {
 	this.lostfocus;
 	this.iterations
 	this.idx;
+	this.orphanedSeriesTimer = null;
 };
 
 Item.prototype.close = function(){
@@ -24,8 +25,9 @@ Item.prototype.close = function(){
 	dom.remove("#item")
 };
 
-Item.prototype.load = function(id, backstate,timersValid) {
+Item.prototype.load = function(id, backstate,timersValid,isTaskItem) {
 	var self = this;
+	self.orphanedSeriesTimer = null;
     var timerDTO ={
     	RecordAnyTime:true,
     	SkipEpisodesInLibrary:false,
@@ -140,8 +142,7 @@ Item.prototype.load = function(id, backstate,timersValid) {
         
     	now = new Date().toISOString();
 
-		
-		if (self.data.Type == "Series" || self.data.Type == "Season")
+		if ((self.data.Type == "Series" || self.data.Type == "Season") && !isTaskItem)
 		{
 			dom.html("#view", {
 				nodeName: "div",
@@ -176,7 +177,7 @@ Item.prototype.load = function(id, backstate,timersValid) {
 				   id: "itemContent"
 			   }]
 		   });
-		   if (typeof self.data.ChannelId != 'undefined' && (self.data.StartDate > now || self.data.EndDate < now)) // liveTv item
+		   if ((typeof self.data.ChannelId != 'undefined' && (self.data.StartDate > now || self.data.EndDate < now)) || isTaskItem) // liveTv item
 		   {
 			  if (!timersValid){ // can only record if origin isn't tasks page
 		         dom.append("#userViews_0", {
@@ -270,7 +271,7 @@ Item.prototype.load = function(id, backstate,timersValid) {
 		      });		
 		   }
 		   
-		   if (typeof self.data.ChannelId == 'undefined') // not a liveTv item
+		   if (typeof self.data.ChannelId == 'undefined' && !isTaskItem) // not a liveTv item
 		   {
 		      dom.append("#userViews_0", {
 			      nodeName: "a",
@@ -329,39 +330,44 @@ Item.prototype.load = function(id, backstate,timersValid) {
 		
 		dom.addClass("#item", "item-view-" + self.data.Type.toLowerCase());
 		
+		if(isTaskItem && typeof self.tvdata.SeriesTimerId == 'undefined'){  // orphaned series timer
+			self.tvdata.SeriesTimerId = prefs.seriesTimerId // so renderer shows it
+			self.orphanedSeriesTimer = prefs.seriesTimerId  // so timer handler knows what to delete
+		}
+		
 		renderer.userItem(self.data,self.tvdata, {
 			container: "#itemContent"
 		});
 		
-		switch(self.data.Type) {
-			case "Series":
-				emby.getShowsSeasons({
-					id: self.data.Id,
-					fields: "ItemCounts,AudioInfo",	
-					success: function(data) {
-						data.heading = "Seasons";						
-						displayUserItemChildren(data)
-					},
-					error: error				
-				});	
-				break;
+		if (!isTaskItem)
+		    switch(self.data.Type) {
+			    case "Series":
+				    emby.getShowsSeasons({
+					    id: self.data.Id,
+					    fields: "ItemCounts,AudioInfo",	
+					    success: function(data) {
+						    data.heading = "Seasons";						
+						    displayUserItemChildren(data)
+					    },
+					    error: error				
+				    });	
+				    break;
 
-			case "Season":
-				emby.getShowsEpisodes({
-					id: self.data.SeriesId,
-					seasonId: self.data.Id,
-					fields: "ItemCounts,AudioInfo",	
-					success: function(data) {
-						data.heading = "Episodes";						
-						displayUserItemChildren(data)
-					},
-					error: error				
-				});	
-				break;
-								
-		}	
+			    case "Season":
+				    emby.getShowsEpisodes({
+					    id: self.data.SeriesId,
+					    seasonId: self.data.Id,
+					    fields: "ItemCounts,AudioInfo",	
+					    success: function(data) {
+   						    data.heading = "Episodes";						
+						    displayUserItemChildren(data)
+					    },
+					    error: error				
+				    });	
+				    break;
+		    }	
 		
-		if (self.data.Type != "Series" && self.data.Type != "Season")
+		if ((self.data.Type != "Series" && self.data.Type != "Season")  || isTaskItem)
 		{
             if (dom.exists("#userViews a:first-child"))
 			    focus("#userViews a:first-child");
@@ -486,6 +492,10 @@ Item.prototype.load = function(id, backstate,timersValid) {
     }
     function getSeriesTimers(data) {
         self.data = data;
+        if (self.orphanedSeriesTimer != null){
+        	self.data.SeriesTimerId = self.orphanedSeriesTimer;
+        	self.orphanedSeriesTimer = null
+        }
     	emby.getLiveTvSeriesTimers({
   		  success: updateItemTimerState,
     	  error: error				

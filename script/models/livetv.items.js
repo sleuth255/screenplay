@@ -186,7 +186,7 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 
     function checkUserItems(data){
 		self.data = data
-		if (countEpisodes(settings.name) > 0)
+		if (countEpisodes(settings.name,settings.seriestimer) > 0)
 			displayUserItems(data)
 		else{
 		    dom.hide('#spinnerBackdrop')
@@ -195,13 +195,14 @@ LiveTvItems.prototype.load = function(settings,backstate) {
 				duration: 1000,
 				text: "No episodes found"
 			});	
+			prefs.seriesTimerId = settings.seriestimer
 	        dom.dispatchCustonEvent(document, "taskItemSelected", settings);
 		}
 	}
-	function countEpisodes(name){
+	function countEpisodes(name,seriestimer){
 		var count=0;
 		for (var x=0; x< self.data.Items.length;x++)
-			if (self.data.Items[x].Name == name)
+			if (self.data.Items[x].Name == name && self.data.Items[x].SeriesTimerId == seriestimer)
 				count++;
 		return count
     	

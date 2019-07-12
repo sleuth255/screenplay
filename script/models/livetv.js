@@ -522,6 +522,7 @@ LiveTv.prototype.load = function(settings, backstate) {
 			dataset.name = event.delegateTarget.dataset.name;
 			dataset.sortName = event.delegateTarget.dataset.sortname
 			dataset.id = event.delegateTarget.dataset.id;
+			dataset.seriestimer = event.delegateTarget.dataset.seriestimer;
 			dataset.activeButton = self.activeButton;
 			dom.dispatchCustonEvent(document, "LiveTvItemsSelected", dataset);
 		}
@@ -685,32 +686,11 @@ LiveTv.prototype.load = function(settings, backstate) {
     		return
     	}
  	    emby.getLiveTvProgram({
-   	        id: self.timerarray[self.itemIndex].ProgramId,
+   	        id: self.timerarray[self.itemIndex].IsSeriesTimer? self.timerarray[self.itemIndex].ParentPrimaryImageItemId : self.timerarray[self.itemIndex].ProgramId,
         	success: pushItemData,
-        	error: discarderror				
+        	error: cantfixerror				
         });
     }
-	function discarderror(data) {
-    	var tdata = {};
- 	    if (self.timerarray[self.itemIndex].IsSeriesTimer){
- 	 	    emby.getLiveTvProgram({
- 	   	        id: self.timerarray[self.itemIndex].ParentPrimaryImageItemId,
- 	        	success: pushItemData,
- 	        	error: cantfixerror				
- 	        });
- 	 	    return
- 	    }
-    	self.itemIndex++;
-    	if (self.itemIndex >= self.timerarray.length){
-    		displayUserItems(self.newdata)
-    		return
-    	}
- 	    emby.getLiveTvProgram({
-   	        id: self.timerarray[self.itemIndex].ProgramId,
-        	success: pushItemData,
-        	error: discarderror				
-        });
-	}	
 	function cantfixerror(data){
     	self.itemIndex++;
     	if (self.itemIndex >= self.timerarray.length){

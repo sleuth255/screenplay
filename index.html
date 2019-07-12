@@ -151,7 +151,7 @@
 				home.close();
 				livetv.close();
 				livetvitems.close();
-			    item.load(event.detail.id,false,true);
+			    item.load(event.detail.id,false,true,true);
 			});						
 
 			dom.on(document, "playItem", function(event) {
@@ -191,7 +191,19 @@
 
 			
 			window.addEventListener("popstate", function(event) {
-				if (dom.exists("#serverSettings" || dom.exists("#userLoginSettings"))){
+				if (dom.exists("#serverSettings")){
+					playerpopup.show({
+						duration: 1000,
+						text: "back"
+					});	
+					webOS.platformBack()
+					return;
+				}
+				if (dom.exists("#userLoginSettings")){
+					playerpopup.show({
+						duration: 1000,
+						text: "back"
+					});	
 					webOS.platformBack()
 					return;
 				}

@@ -60,6 +60,7 @@ function Prefs() {
 	this.spinnerTimer = null;
 	this.playerSkipped = false;
 	this.itemId = null;
+	this.seriesTimerId = null;
 	this.ticks = null;
 	this.serverSwitched = false;
 	this.data;
