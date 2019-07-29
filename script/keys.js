@@ -25,7 +25,7 @@ function KEYS() {
 	this.KEY_ESC = 27;
 	this.KEY_OK = 13;
 	this.KEY_ENTER = 35;
-	this.KEY_SAPCE = 32;
+	this.KEY_SPACE = 32;
 							
 	this.KEY_LEFT = 37;
 	this.KEY_UP = 38;

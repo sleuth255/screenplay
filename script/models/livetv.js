@@ -691,6 +691,27 @@ LiveTv.prototype.load = function(settings, backstate) {
         	error: cantfixerror				
         });
     }
+	function discarderror(data) {
+    	var tdata = {};
+ 	    if (self.timerarray[self.itemIndex].IsSeriesTimer){
+ 	 	    emby.getLiveTvProgram({
+ 	   	        id: self.timerarray[self.itemIndex].ParentPrimaryImageItemId,
+ 	        	success: pushItemData,
+ 	        	error: cantfixerror				
+ 	        });
+ 	 	    return
+ 	    }
+    	self.itemIndex++;
+    	if (self.itemIndex >= self.timerarray.length){
+    		displayUserItems(self.newdata)
+    		return
+    	}
+ 	    emby.getLiveTvProgram({
+   	        id: self.timerarray[self.itemIndex].ProgramId,
+        	success: pushItemData,
+        	error: discarderror				
+        });
+	}	
 	function cantfixerror(data){
     	self.itemIndex++;
     	if (self.itemIndex >= self.timerarray.length){

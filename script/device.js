@@ -9,7 +9,7 @@ function DEVICE() {
 	this.client = "screenplay";
 	this.name = "LG Smart TV";
 	this.id = storage.exists("emby.device.id") ? storage.get("emby.device.id") : storage.set("emby.device.id", guid.create());
-	this.version = "v1.5.6";
+	this.version = "v1.5.8";
 	this.author = "The Paradigm Grid",			
 	this.language = navigator.language;
 	this.platform = navigator.platform;
